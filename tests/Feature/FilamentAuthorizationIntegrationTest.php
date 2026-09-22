@@ -38,19 +38,25 @@ uses(LazilyRefreshDatabase::class);
  */
 
 // Temporary Eloquent model stubs used exclusively to test the Gate/Policy pipeline without creating production models
-class StubCategoryModel extends Model
-{
-    protected $table = 'stub_categories';
+if (! class_exists('StubCategoryModel')) {
+    class StubCategoryModel extends Model
+    {
+        protected $table = 'stub_categories';
+    }
 }
 
-class StubProductModel extends Model
-{
-    protected $table = 'stub_products';
+if (! class_exists('StubProductModel')) {
+    class StubProductModel extends Model
+    {
+        protected $table = 'stub_products';
+    }
 }
 
-class StubOrderModel extends Model
-{
-    protected $table = 'stub_orders';
+if (! class_exists('StubOrderModel')) {
+    class StubOrderModel extends Model
+    {
+        protected $table = 'stub_orders';
+    }
 }
 
 beforeEach(function () {
