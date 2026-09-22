@@ -59,4 +59,12 @@ class CategoryPolicy
     {
         return $user->can('categories.delete');
     }
+
+    /**
+     * Determine whether the user can bulk delete models.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('categories.delete');
+    }
 }

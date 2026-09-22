@@ -30,14 +30,16 @@ test('A: Admin can authorize all representative policy abilities via centralized
         ->and($this->categoryPolicy->view($admin))->toBeTrue()
         ->and($this->categoryPolicy->create($admin))->toBeTrue()
         ->and($this->categoryPolicy->update($admin))->toBeTrue()
-        ->and($this->categoryPolicy->delete($admin))->toBeTrue();
+        ->and($this->categoryPolicy->delete($admin))->toBeTrue()
+        ->and($this->categoryPolicy->deleteAny($admin))->toBeTrue();
 
     // ProductPolicy
     expect($this->productPolicy->viewAny($admin))->toBeTrue()
         ->and($this->productPolicy->view($admin))->toBeTrue()
         ->and($this->productPolicy->create($admin))->toBeTrue()
         ->and($this->productPolicy->update($admin))->toBeTrue()
-        ->and($this->productPolicy->delete($admin))->toBeTrue();
+        ->and($this->productPolicy->delete($admin))->toBeTrue()
+        ->and($this->productPolicy->deleteAny($admin))->toBeTrue();
 
     // OrderPolicy
     expect($this->orderPolicy->viewAny($admin))->toBeTrue()
@@ -56,7 +58,8 @@ test('B: Manager CategoryPolicy authorization (viewAny/create/update allowed, de
         ->and($this->categoryPolicy->view($manager))->toBeTrue()
         ->and($this->categoryPolicy->create($manager))->toBeTrue()
         ->and($this->categoryPolicy->update($manager))->toBeTrue()
-        ->and($this->categoryPolicy->delete($manager))->toBeFalse();
+        ->and($this->categoryPolicy->delete($manager))->toBeFalse()
+        ->and($this->categoryPolicy->deleteAny($manager))->toBeFalse();
 });
 
 test('C: Manager ProductPolicy authorization (viewAny/create/update allowed, delete denied)', function () {
@@ -67,7 +70,8 @@ test('C: Manager ProductPolicy authorization (viewAny/create/update allowed, del
         ->and($this->productPolicy->view($manager))->toBeTrue()
         ->and($this->productPolicy->create($manager))->toBeTrue()
         ->and($this->productPolicy->update($manager))->toBeTrue()
-        ->and($this->productPolicy->delete($manager))->toBeFalse();
+        ->and($this->productPolicy->delete($manager))->toBeFalse()
+        ->and($this->productPolicy->deleteAny($manager))->toBeFalse();
 });
 
 test('D: Manager OrderPolicy authorization (viewAny/create/update/cancel allowed, refund denied)', function () {
@@ -90,7 +94,8 @@ test('E: Staff ProductPolicy authorization (viewAny allowed, create/update/delet
         ->and($this->productPolicy->view($staff))->toBeTrue()
         ->and($this->productPolicy->create($staff))->toBeFalse()
         ->and($this->productPolicy->update($staff))->toBeFalse()
-        ->and($this->productPolicy->delete($staff))->toBeFalse();
+        ->and($this->productPolicy->delete($staff))->toBeFalse()
+        ->and($this->productPolicy->deleteAny($staff))->toBeFalse();
 });
 
 test('F: Staff OrderPolicy authorization (viewAny/create/update allowed, cancel/refund denied)', function () {
@@ -113,14 +118,16 @@ test('G: A user with no role and no permission is denied across all policy metho
         ->and($this->categoryPolicy->view($guestUser))->toBeFalse()
         ->and($this->categoryPolicy->create($guestUser))->toBeFalse()
         ->and($this->categoryPolicy->update($guestUser))->toBeFalse()
-        ->and($this->categoryPolicy->delete($guestUser))->toBeFalse();
+        ->and($this->categoryPolicy->delete($guestUser))->toBeFalse()
+        ->and($this->categoryPolicy->deleteAny($guestUser))->toBeFalse();
 
     // ProductPolicy
     expect($this->productPolicy->viewAny($guestUser))->toBeFalse()
         ->and($this->productPolicy->view($guestUser))->toBeFalse()
         ->and($this->productPolicy->create($guestUser))->toBeFalse()
         ->and($this->productPolicy->update($guestUser))->toBeFalse()
-        ->and($this->productPolicy->delete($guestUser))->toBeFalse();
+        ->and($this->productPolicy->delete($guestUser))->toBeFalse()
+        ->and($this->productPolicy->deleteAny($guestUser))->toBeFalse();
 
     // OrderPolicy
     expect($this->orderPolicy->viewAny($guestUser))->toBeFalse()

@@ -59,4 +59,12 @@ class ProductPolicy
     {
         return $user->can('products.delete');
     }
+
+    /**
+     * Determine whether the user can bulk delete models.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('products.delete');
+    }
 }
