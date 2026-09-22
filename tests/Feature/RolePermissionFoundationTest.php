@@ -51,7 +51,7 @@ test('B & D: all 29 defined permissions exist and no unexpected permissions exis
         ->and(Permission::count())->toBe(29);
 });
 
-test('E: Manager has exactly the 23 intended permissions', function () {
+test('E & G: Manager has exactly the 23 intended permissions (unchanged in RP-3B)', function () {
     $manager = Role::findByName('Manager', 'web');
 
     $expectedManagerPermissions = [
@@ -73,7 +73,7 @@ test('E: Manager has exactly the 23 intended permissions', function () {
         ->and($manager->permissions()->count())->toBe(23);
 });
 
-test('F: Staff has exactly the 9 intended permissions', function () {
+test('F & H: Staff has exactly the 9 intended permissions (unchanged in RP-3B)', function () {
     $staff = Role::findByName('Staff', 'web');
 
     $expectedStaffPermissions = [
@@ -91,7 +91,7 @@ test('F: Staff has exactly the 9 intended permissions', function () {
         ->and($staff->permissions()->count())->toBe(9);
 });
 
-test('G & H: Admin has no database permissions but is recognized by centralized Gate authorization', function () {
+test('Admin has no database permissions but is recognized by centralized Gate authorization', function () {
     $adminRole = Role::findByName('Admin', 'web');
 
     // Admin has no direct permissions in database
@@ -112,6 +112,62 @@ test('G & H: Admin has no database permissions but is recognized by centralized 
         ->and(Gate::forUser($adminUser)->allows('nonexistent.permission'))->toBeTrue()
         ->and($adminUser->can('products.delete'))->toBeTrue()
         ->and($adminUser->can('orders.refund'))->toBeTrue();
+});
+
+test('RP-3B A, B, C: newly provisioned Filament admin receives panel access, Admin role, and passes Gate', function () {
+    $email = 'prov-admin-'.uniqid().'@example.com';
+
+    $this->artisan('make:filament-user', [
+        '--name' => 'Provisioned Admin',
+        '--email' => $email,
+        '--password' => 'password123',
+        '--panel' => 'admin',
+    ])->assertSuccessful();
+
+    $admin = User::where('email', $email)->first();
+
+    expect($admin)->not->toBeNull()
+        ->and($admin->can_access_admin_panel)->toBeTrue()
+        ->and($admin->hasRole('Admin'))->toBeTrue()
+        ->and(Gate::forUser($admin)->allows('products.delete'))->toBeTrue()
+        ->and(Gate::forUser($admin)->allows('categories.delete'))->toBeTrue()
+        ->and(Gate::forUser($admin)->allows('orders.refund'))->toBeTrue();
+});
+
+test('RP-3B D: normal user does NOT automatically receive Admin role or panel access', function () {
+    $normalUser = User::factory()->create();
+
+    expect($normalUser->hasRole('Admin'))->toBeFalse()
+        ->and($normalUser->roles)->toBeEmpty()
+        ->and($normalUser->can_access_admin_panel)->toBeFalse()
+        ->and(Gate::forUser($normalUser)->allows('products.view'))->toBeFalse()
+        ->and(Gate::forUser($normalUser)->allows('products.delete'))->toBeFalse();
+});
+
+test('RP-3B E & F: panel access separation — Admin role does NOT bypass can_access_admin_panel', function () {
+    // Case 1: User has Admin role, but can_access_admin_panel = false
+    $adminWithoutPanel = User::factory()->create(['can_access_admin_panel' => false]);
+    $adminWithoutPanel->assignRole('Admin');
+
+    // Business authorization passes
+    expect(Gate::forUser($adminWithoutPanel)->allows('products.delete'))->toBeTrue()
+        ->and($adminWithoutPanel->can('categories.delete'))->toBeTrue();
+
+    // But panel access is DENIED (HTTP 403)
+    $this->actingAs($adminWithoutPanel)
+        ->get('/admin')
+        ->assertForbidden();
+
+    // Case 2: User has Admin role, and can_access_admin_panel = true
+    $adminWithPanel = User::factory()->create(['can_access_admin_panel' => true]);
+    $adminWithPanel->assignRole('Admin');
+
+    // Business authorization passes AND panel access is GRANTED (HTTP 200)
+    expect(Gate::forUser($adminWithPanel)->allows('products.delete'))->toBeTrue();
+
+    $this->actingAs($adminWithPanel)
+        ->get('/admin')
+        ->assertOk();
 });
 
 test('I: Manager does NOT receive delete, refund, or nonexistent permissions', function () {
@@ -162,24 +218,6 @@ test('J: Staff user does NOT receive administrative, delete, refund, or catalog 
         ->and(Gate::forUser($staffUser)->allows('customers.create'))->toBeTrue()
         ->and(Gate::forUser($staffUser)->allows('customers.update'))->toBeTrue()
         ->and(Gate::forUser($staffUser)->allows('inventory.view'))->toBeTrue();
-});
-
-test('K & L: panel access remains separate from roles and permissions', function () {
-    // Admin role with can_access_admin_panel = false cannot access /admin
-    $adminWithoutPanel = User::factory()->create(['can_access_admin_panel' => false]);
-    $adminWithoutPanel->assignRole('Admin');
-
-    $this->actingAs($adminWithoutPanel)
-        ->get('/admin')
-        ->assertForbidden();
-
-    // Manager role with can_access_admin_panel = true can access /admin
-    $managerWithPanel = User::factory()->create(['can_access_admin_panel' => true]);
-    $managerWithPanel->assignRole('Manager');
-
-    $this->actingAs($managerWithPanel)
-        ->get('/admin')
-        ->assertOk();
 });
 
 test('seeder is idempotent and running multiple times creates no duplicates', function () {
