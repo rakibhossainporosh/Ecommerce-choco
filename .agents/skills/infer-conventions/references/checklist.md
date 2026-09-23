@@ -77,12 +77,14 @@ Each item gives the fork, then a hint (a grep or dir to spot which side the app 
 
 ## F. Frontend & views
 
-No Livewire/Inertia/Flux package is installed. This app may be API-only. Confirm from `resources/views` before sweeping, and treat the Livewire/Flux dimensions as not applicable.
+This app ships a frontend stack, so the items below apply.
 
 28. Frontend stack: Blade+Livewire vs Inertia (Vue/React/Svelte) vs Blade-only / API + separate SPA.
     - Hint: `composer.json` + `package.json`; `ls resources/js/pages`, `resources/views`.
 29. Blade composition: class `<x-*>` components vs anonymous components (`@props`) vs `@include` partials.
     - Hint: `ls app/View/Components`; grep `<x-`, `@include` in `resources/views`.
+30. Livewire component format: Volt functional/class components, native Livewire 4 single-file (SFC), multi-file (MFC), view-based, or class-based components. Evaluate full-page vs nested separately because it is an independent usage choice.
+    - Hint: check the installed Livewire major and `livewire/volt`; inspect `app/Livewire`, `resources/views/livewire`, and Livewire 4 component/page directories for `@volt`, SFC, MFC, view-based, and class-based formats.
 32. Localization: short keys (`lang/*/*.php` + `__('messages.welcome')`) vs JSON string keys (`lang/*.json` + `__('Full sentence')`).
     - Hint: `ls lang`; grep dotted `__('` vs sentence keys.
 

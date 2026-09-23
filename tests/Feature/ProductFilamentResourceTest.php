@@ -7,6 +7,8 @@ use App\Filament\Resources\Products\ProductResource;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\Unit;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -26,9 +28,11 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Schema::disableForeignKeyConstraints();
+    ProductVariant::truncate();
     Product::truncate();
     Brand::truncate();
     Category::truncate();
+    Unit::truncate();
     DB::table('category_product')->truncate();
     Schema::enableForeignKeyConstraints();
 });
@@ -115,13 +119,14 @@ test('9. User with can_access_admin_panel set to false is forbidden from panel',
         ->assertForbidden();
 });
 
-test('10. Admin can create product with category via CreateProduct page', function () {
+test('10. Admin can create product with category and first variant via CreateProduct page', function () {
     $admin = User::factory()->create(['can_access_admin_panel' => true]);
     $admin->assignRole('Admin');
     $this->actingAs($admin);
 
     $category = Category::factory()->create(['is_active' => true]);
     $brand = Brand::factory()->create(['is_active' => true]);
+    $unit = Unit::factory()->create(['is_active' => true]);
 
     Livewire::test(CreateProduct::class)
         ->fillForm([
@@ -132,6 +137,11 @@ test('10. Admin can create product with category via CreateProduct page', functi
             'short_description' => 'Gourmet dark chocolate with sea salt crystals.',
             'is_active' => true,
             'is_featured' => true,
+            'unit_id' => $unit->id,
+            'sku' => 'SKU-BELGIAN-SALT-01',
+            'cost_price' => '60.00',
+            'selling_price' => '95.00',
+            'unit_quantity' => '1.000',
         ])
         ->call('create')
         ->assertHasNoFormErrors();
@@ -145,7 +155,9 @@ test('10. Admin can create product with category via CreateProduct page', functi
     ]);
 
     $createdProduct = Product::where('slug', 'belgian-dark-chocolate-sea-salt')->first();
-    expect($createdProduct->categories->pluck('id'))->toContain($category->id);
+    expect($createdProduct->categories->pluck('id'))->toContain($category->id)
+        ->and($createdProduct->variants)->toHaveCount(1)
+        ->and($createdProduct->defaultVariant->sku)->toBe('SKU-BELGIAN-SALT-01');
 });
 
 test('11. Manager can create product via CreateProduct page', function () {
@@ -154,6 +166,7 @@ test('11. Manager can create product via CreateProduct page', function () {
     $this->actingAs($manager);
 
     $category = Category::factory()->create(['is_active' => true]);
+    $unit = Unit::factory()->create(['is_active' => true]);
 
     Livewire::test(CreateProduct::class)
         ->fillForm([
@@ -161,6 +174,11 @@ test('11. Manager can create product via CreateProduct page', function () {
             'slug' => 'manager-artisan-bar',
             'categories' => [$category->id],
             'is_active' => true,
+            'unit_id' => $unit->id,
+            'sku' => 'SKU-MGR-BAR-01',
+            'cost_price' => '40.00',
+            'selling_price' => '70.00',
+            'unit_quantity' => '1.000',
         ])
         ->call('create')
         ->assertHasNoFormErrors();
@@ -169,6 +187,10 @@ test('11. Manager can create product via CreateProduct page', function () {
         'name' => 'Manager Artisan Bar',
         'slug' => 'manager-artisan-bar',
     ]);
+
+    $createdProduct = Product::where('slug', 'manager-artisan-bar')->first();
+    expect($createdProduct->defaultVariant)->not->toBeNull()
+        ->and($createdProduct->defaultVariant->sku)->toBe('SKU-MGR-BAR-01');
 });
 
 test('12. Admin can update product via EditProduct page', function () {

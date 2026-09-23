@@ -4,6 +4,7 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -24,6 +25,7 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Schema::disableForeignKeyConstraints();
+    ProductVariant::truncate();
     Product::truncate();
     Brand::truncate();
     Category::truncate();

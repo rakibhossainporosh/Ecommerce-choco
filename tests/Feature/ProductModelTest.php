@@ -3,6 +3,7 @@
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ beforeEach(function () {
     DB::purge('mysql');
 
     DB::statement('SET FOREIGN_KEY_CHECKS=0');
+    ProductVariant::truncate();
     Product::truncate();
     Brand::truncate();
     Category::truncate();
