@@ -215,8 +215,8 @@ test('15. Foreign key ON DELETE SET NULL sets child parent_id to null when paren
 
     expect($child->parent_id)->toBe($parent->id);
 
-    // When the parent is permanently deleted from the database
-    $parent->forceDelete();
+    // When the parent is permanently deleted from the database schema
+    $parent->forceDeleteQuietly();
 
     $child->refresh();
 
