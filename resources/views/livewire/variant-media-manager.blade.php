@@ -84,7 +84,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         @foreach ($fallbackMedia as $fb)
                             <div class="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk($fb->disk)->url($fb->path) }}" alt="{{ $fb->alt_text }}" class="w-full h-24 object-cover" />
+                                <img src="{{ $fb->url() }}" alt="{{ $fb->alt_text }}" class="w-full h-24 object-cover" />
                                 <div class="p-1.5 text-[10px] text-gray-500 dark:text-gray-400 truncate">
                                     {{ $fb->original_name }}
                                 </div>
@@ -113,7 +113,7 @@
                         {{-- Image with Badges --}}
                         <div class="relative bg-gray-100 dark:bg-gray-900">
                             <img
-                                src="{{ \Illuminate\Support\Facades\Storage::disk($media->disk)->url($media->path) }}"
+                                src="{{ $media->url() }}"
                                 alt="{{ $media->alt_text }}"
                                 class="w-full h-36 object-cover"
                             />

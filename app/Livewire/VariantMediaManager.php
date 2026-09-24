@@ -2,10 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Media;
 use App\Models\ProductVariant;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -35,14 +37,28 @@ class VariantMediaManager extends Component
 
         $this->validate([
             'uploads' => ['required', 'array', 'min:1'],
-            'uploads.*' => ['image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+            'uploads.*' => [
+                'required',
+                'file',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'mimetypes:image/jpeg,image/png,image/webp',
+                'max:5120',
+            ],
         ], [
+            'uploads.*.image' => 'The uploaded file must be a valid image.',
             'uploads.*.mimes' => 'Images must be in jpeg, jpg, png, or webp format.',
+            'uploads.*.mimetypes' => 'Images must be in jpeg, jpg, png, or webp format.',
             'uploads.*.max' => 'Each image must not exceed 5 MB in size.',
         ]);
 
         foreach ($this->uploads as $file) {
-            $path = $file->store('variants', 'public');
+            $extension = $file->guessExtension() ?: $file->getClientOriginalExtension();
+            $path = $file->storeAs(
+                "variants/{$this->variant->id}",
+                (string) Str::uuid().'.'.strtolower($extension),
+                'public'
+            );
             $fullPath = Storage::disk('public')->path($path);
             $dimensions = @getimagesize($fullPath);
 
@@ -104,7 +120,15 @@ class VariantMediaManager extends Component
             abort(403, 'Unauthorized to delete media.');
         }
 
-        $this->variant->deleteMedia($mediaId);
+        $media = $this->variant->media()->findOrFail($mediaId);
+        $disk = $media->disk;
+        $path = $media->path;
+
+        $this->variant->deleteMedia($media);
+
+        // After DB transaction commit: safely purge physical file if unreferenced
+        Media::deletePhysicalFileIfUnreferenced($disk, $path);
+
         $this->variant->refresh();
         $this->dispatch('media-updated');
     }

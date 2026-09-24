@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MediaRelationManager extends RelationManager
 {
@@ -112,10 +113,9 @@ class MediaRelationManager extends RelationManager
                             ->helperText('Allowed formats: JPEG, JPG, PNG, WEBP. Maximum file size: 5 MB per image.')
                             ->multiple()
                             ->disk('public')
-                            ->directory(fn (RelationManager $livewire): string => $livewire->getOwnerRecord() instanceof ProductVariant ? 'variants' : 'products')
+                            ->directory(fn (RelationManager $livewire): string => ($livewire->getOwnerRecord() instanceof ProductVariant ? 'variants/' : 'products/').$livewire->getOwnerRecord()->getKey())
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(5120)
-                            ->preserveFilenames()
                             ->storeFileNamesIn('original_filenames')
                             ->required(),
                     ])
@@ -135,8 +135,9 @@ class MediaRelationManager extends RelationManager
 
                         foreach ($images as $key => $filePath) {
                             if ($filePath instanceof UploadedFile) {
-                                $directory = $owner instanceof ProductVariant ? 'variants' : 'products';
-                                $storedPath = $filePath->store($directory, 'public');
+                                $ownerDir = ($owner instanceof ProductVariant ? 'variants/' : 'products/').$owner->getKey();
+                                $extension = $filePath->guessExtension() ?: $filePath->getClientOriginalExtension();
+                                $storedPath = $filePath->storeAs($ownerDir, (string) Str::uuid().'.'.strtolower($extension), 'public');
                                 $dimensions = @getimagesize($filePath->getRealPath());
 
                                 $owner->addMedia([
@@ -236,7 +237,13 @@ class MediaRelationManager extends RelationManager
 
                         /** @var Product|ProductVariant $owner */
                         $owner = $livewire->getOwnerRecord();
+                        $disk = $record->disk;
+                        $path = $record->path;
+
                         $owner->deleteMedia($record);
+
+                        // Physical cleanup after DB transaction commit, with shared-reference protection
+                        Media::deletePhysicalFileIfUnreferenced($disk, $path);
 
                         Notification::make()
                             ->success()

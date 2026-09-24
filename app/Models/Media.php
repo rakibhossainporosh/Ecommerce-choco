@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 #[Fillable([
@@ -336,6 +338,144 @@ class Media extends Model
     public function mediable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Get the public/external URL for this media file via Laravel's Storage abstraction.
+     *
+     * Future-ready for S3/R2/CDN by relying strictly on Storage::disk($this->disk)->url($this->path).
+     * Does not hard-code /storage/, asset(), or filesystem paths.
+     */
+    public function url(): string
+    {
+        if (blank($this->path)) {
+            return '';
+        }
+
+        $diskName = $this->disk ?: config('filesystems.default', 'public');
+
+        return Storage::disk($diskName)->url($this->path);
+    }
+
+    /**
+     * Get URL as dynamic model attribute.
+     */
+    public function getUrlAttribute(): string
+    {
+        return $this->url();
+    }
+
+    /**
+     * Count how many other media records in the database reference the exact same disk and path.
+     */
+    public function countOtherReferences(): int
+    {
+        if (blank($this->disk) || blank($this->path)) {
+            return 0;
+        }
+
+        return static::query()
+            ->where('disk', $this->disk)
+            ->where('path', $this->path)
+            ->where('id', '!=', $this->getKey() ?? 0)
+            ->count();
+    }
+
+    /**
+     * Determine if another media record shares the exact same disk and path.
+     */
+    public function hasOtherReferences(): bool
+    {
+        return $this->countOtherReferences() > 0;
+    }
+
+    /**
+     * Determine if this media file has zero other database references and is a safe cleanup candidate.
+     */
+    public function isCleanupCandidate(): bool
+    {
+        return ! $this->hasOtherReferences();
+    }
+
+    /**
+     * Check whether a specific disk and path combination is actively referenced by any Media record.
+     *
+     * @param  int|null  $exceptMediaId  Optional media ID to exclude from reference check
+     */
+    public static function isPathReferenced(string $disk, string $path, ?int $exceptMediaId = null): bool
+    {
+        if (blank($disk) || blank($path)) {
+            return false;
+        }
+
+        $query = static::query()
+            ->where('disk', $disk)
+            ->where('path', $path);
+
+        if ($exceptMediaId !== null) {
+            $query->where('id', '!=', $exceptMediaId);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Safely purge a physical file from storage if and only if NO Media records reference it.
+     *
+     * ARCHITECTURAL INVARIANT:
+     * Database state and physical storage cleanup are separate concerns.
+     * This method must NEVER be invoked inside a database transaction.
+     *
+     * @return bool True if physical deletion occurred; false if retained due to active references or missing file.
+     */
+    public static function deletePhysicalFileIfUnreferenced(string $disk, string $path): bool
+    {
+        if (blank($disk) || blank($path)) {
+            return false;
+        }
+
+        // Shared-file protection: Never delete if any Media record still references this disk/path
+        if (static::isPathReferenced($disk, $path)) {
+            return false;
+        }
+
+        $storageDisk = Storage::disk($disk);
+
+        if ($storageDisk->exists($path)) {
+            return $storageDisk->delete($path);
+        }
+
+        return false;
+    }
+
+    /**
+     * Safely purge this media item's physical file from storage if no other records reference it.
+     * Must be called AFTER the database record has been deleted and committed.
+     */
+    public function purgePhysicalFile(): bool
+    {
+        if (blank($this->disk) || blank($this->path)) {
+            return false;
+        }
+
+        return static::deletePhysicalFileIfUnreferenced($this->disk, $this->path);
+    }
+
+    /**
+     * Generate a secure, owner-scoped storage path with an opaque unique filename.
+     * Format: {owner-type-plural}/{owner-id}/{uuid}.{extension}
+     *
+     * @param  Model  $owner  Supported owner model (Product or ProductVariant)
+     * @param  string  $extension  Validated file extension (e.g. 'jpg', 'png', 'webp')
+     */
+    public static function generateStoragePath(Model $owner, string $extension): string
+    {
+        $prefix = $owner instanceof ProductVariant ? 'variants' : 'products';
+        $ownerId = $owner->getKey();
+        $uuid = (string) Str::uuid();
+        $cleanExt = strtolower(ltrim($extension, '.'));
+
+        return "{$prefix}/{$ownerId}/{$uuid}.{$cleanExt}";
     }
 
     /**
