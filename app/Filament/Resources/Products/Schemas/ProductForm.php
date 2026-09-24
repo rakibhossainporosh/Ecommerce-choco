@@ -79,13 +79,15 @@ class ProductForm
                     ->multiple()
                     ->searchable()
                     ->preload()
-                    ->required()
+                    ->required(fn (Get $get): bool => (bool) $get('is_active'))
                     ->rules([
-                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                        fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
                             $categoryIds = is_array($value) ? array_map('intval', $value) : [];
 
                             if (empty($categoryIds)) {
-                                $fail('A product must have at least one category.');
+                                if ((bool) $get('is_active')) {
+                                    $fail('A product must have at least one category.');
+                                }
 
                                 return;
                             }
@@ -125,12 +127,25 @@ class ProductForm
                 Toggle::make('is_active')
                     ->label('Active')
                     ->default(true)
-                    ->required(),
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function (bool $state, Set $set): void {
+                        if (! $state) {
+                            $set('is_featured', false);
+                        }
+                    }),
 
                 Toggle::make('is_featured')
                     ->label('Featured')
                     ->default(false)
-                    ->required(),
+                    ->required()
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                            if ((bool) $value && ! (bool) $get('is_active')) {
+                                $fail('An inactive product cannot be featured.');
+                            }
+                        },
+                    ]),
 
                 Section::make('Product Attributes')
                     ->description('Configure dynamic attributes and specifications for this product.')

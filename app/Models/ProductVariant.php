@@ -190,6 +190,13 @@ class ProductVariant extends Model
             ]);
         }
 
+        $unit = Unit::withTrashed()->find($this->unit_id);
+        if (! $unit || $unit->trashed() || ! $unit->is_active) {
+            throw ValidationException::withMessages([
+                'unit_id' => ['Cannot activate a variant with an invalid, inactive, or soft-deleted unit.'],
+            ]);
+        }
+
         $this->validateRequiredAttributes();
     }
 
@@ -200,11 +207,13 @@ class ProductVariant extends Model
      */
     public function activate(): static
     {
-        $this->is_active = true;
-        $this->validateActiveState();
-        $this->save();
+        return DB::transaction(function () {
+            $this->is_active = true;
+            $this->validateActiveState();
+            $this->save();
 
-        return $this;
+            return $this;
+        });
     }
 
     /**
@@ -212,10 +221,12 @@ class ProductVariant extends Model
      */
     public function deactivate(): static
     {
-        $this->is_active = false;
-        $this->save();
+        return DB::transaction(function () {
+            $this->is_active = false;
+            $this->save();
 
-        return $this;
+            return $this;
+        });
     }
 
     /**
@@ -614,7 +625,7 @@ class ProductVariant extends Model
                 $errors['unit_id'] = ['The selected unit does not exist.'];
             } elseif ($unit->trashed()) {
                 $errors['unit_id'] = ['Cannot assign a soft-deleted unit to a product variant.'];
-            } elseif (! $unit->is_active) {
+            } elseif (! $unit->is_active && (! $this->exists || $this->isDirty('unit_id'))) {
                 $errors['unit_id'] = ['Cannot assign an inactive unit to a product variant.'];
             }
         }

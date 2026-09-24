@@ -2,6 +2,7 @@
 
 use App\Models\Attribute;
 use App\Models\AttributeValue;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductAttributeValue;
 use App\Models\ProductVariant;
@@ -26,7 +27,9 @@ beforeEach(function () {
     Attribute::truncate();
     ProductVariant::truncate();
     Product::truncate();
+    Category::truncate();
     Unit::truncate();
+    DB::table('category_product')->truncate();
     Schema::enableForeignKeyConstraints();
 });
 
@@ -38,7 +41,9 @@ afterEach(function () {
     Attribute::truncate();
     ProductVariant::truncate();
     Product::truncate();
+    Category::truncate();
     Unit::truncate();
+    DB::table('category_product')->truncate();
     Schema::enableForeignKeyConstraints();
 });
 
@@ -69,7 +74,9 @@ test('1. Required Product Attribute missing causes validation failure on activat
 
 test('2. Required Product Attribute present allows successful product activation', function () {
     $unit = Unit::factory()->create();
+    $category = Category::factory()->create(['is_active' => true]);
     $product = Product::factory()->inactive()->create();
+    $product->categories()->attach($category->id);
     ProductVariant::factory()->create([
         'product_id' => $product->id,
         'unit_id' => $unit->id,
@@ -140,7 +147,9 @@ test('4. Required Variant Attribute present allows successful variant activation
 
 test('5. Inactive required Attribute is ignored during required attribute validation', function () {
     $unit = Unit::factory()->create();
+    $category = Category::factory()->create(['is_active' => true]);
     $product = Product::factory()->inactive()->create();
+    $product->categories()->attach($category->id);
     ProductVariant::factory()->create([
         'product_id' => $product->id,
         'unit_id' => $unit->id,
@@ -160,7 +169,9 @@ test('5. Inactive required Attribute is ignored during required attribute valida
 
 test('6. Soft-deleted required Attribute is ignored during required attribute validation', function () {
     $unit = Unit::factory()->create();
+    $category = Category::factory()->create(['is_active' => true]);
     $product = Product::factory()->inactive()->create();
+    $product->categories()->attach($category->id);
     ProductVariant::factory()->create([
         'product_id' => $product->id,
         'unit_id' => $unit->id,
@@ -184,7 +195,9 @@ test('6. Soft-deleted required Attribute is ignored during required attribute va
 
 test('7. Optional to required transition enforces required attribute on active product validation', function () {
     $unit = Unit::factory()->create();
+    $category = Category::factory()->create(['is_active' => true]);
     $product = Product::factory()->create();
+    $product->categories()->attach($category->id);
     ProductVariant::factory()->create([
         'product_id' => $product->id,
         'unit_id' => $unit->id,
@@ -253,7 +266,9 @@ test('8. Required to optional transition removes requirement without deleting ex
 
 test('9. Active to inactive transition preserves existing assignments and ignores required validation', function () {
     $unit = Unit::factory()->create();
+    $category = Category::factory()->create(['is_active' => true]);
     $product = Product::factory()->create();
+    $product->categories()->attach($category->id);
     ProductVariant::factory()->create([
         'product_id' => $product->id,
         'unit_id' => $unit->id,
@@ -599,7 +614,9 @@ test('24. Inactive Product allows saving incomplete/draft attribute state', func
 
 test('25. Product activate() helper enforces active state validation', function () {
     $unit = Unit::factory()->create();
+    $category = Category::factory()->create(['is_active' => true]);
     $product = Product::factory()->inactive()->create();
+    $product->categories()->attach($category->id);
     ProductVariant::factory()->create([
         'product_id' => $product->id,
         'unit_id' => $unit->id,
@@ -712,7 +729,9 @@ test('28. Product active state validation requires exactly one active default va
 
 test('29. Product activation fails if any active variant has a missing required variant attribute', function () {
     $unit = Unit::factory()->create();
+    $category = Category::factory()->create(['is_active' => true]);
     $product = Product::factory()->inactive()->create();
+    $product->categories()->attach($category->id);
 
     $variant = ProductVariant::factory()->create([
         'product_id' => $product->id,

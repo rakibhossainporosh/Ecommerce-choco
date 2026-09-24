@@ -21,6 +21,16 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     /**
+     * The model's default attribute values.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_active' => true,
+        'is_featured' => false,
+    ];
+
+    /**
      * Bootstrap model event hooks.
      */
     protected static function booted(): void
@@ -29,6 +39,12 @@ class Product extends Model
             $product->validateBusinessRules();
 
             if ($product->exists && $product->isDirty('is_active') && $product->is_active) {
+                $product->validateActiveState();
+            }
+        });
+
+        static::restoring(function (Product $product): void {
+            if ($product->is_active) {
                 $product->validateActiveState();
             }
         });
@@ -131,8 +147,10 @@ class Product extends Model
      */
     public function validateActiveState(): void
     {
+        // 1. Must have at least one active, non-deleted variant
         $activeVariants = $this->variants()
             ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->get();
 
         if ($activeVariants->isEmpty()) {
@@ -141,6 +159,7 @@ class Product extends Model
             ]);
         }
 
+        // 2. Must have exactly one active, non-deleted default variant
         $defaultVariants = $activeVariants->where('is_default', true);
         if ($defaultVariants->count() !== 1) {
             throw ValidationException::withMessages([
@@ -148,8 +167,42 @@ class Product extends Model
             ]);
         }
 
+        // 3. Must have at least one active, non-deleted category
+        $hasActiveCategory = $this->categories()
+            ->where('is_active', true)
+            ->whereNull('categories.deleted_at')
+            ->exists();
+
+        if (! $hasActiveCategory) {
+            throw ValidationException::withMessages([
+                'categories' => ['An active product must have at least one active category.'],
+            ]);
+        }
+
+        // 4. If brand is assigned, brand must exist, not be soft-deleted, and be active
+        if ($this->brand_id !== null) {
+            $brand = Brand::withTrashed()->find($this->brand_id);
+            if (! $brand || $brand->trashed() || ! $brand->is_active) {
+                throw ValidationException::withMessages([
+                    'brand_id' => ['An active product cannot have an invalid, inactive, or soft-deleted brand.'],
+                ]);
+            }
+        }
+
+        // 5. Every active variant must have a valid, active, non-deleted unit
+        foreach ($activeVariants as $variant) {
+            $unit = Unit::withTrashed()->find($variant->unit_id);
+            if (! $unit || $unit->trashed() || ! $unit->is_active) {
+                throw ValidationException::withMessages([
+                    'unit_id' => ["Variant '{$variant->sku}' has an invalid, inactive, or soft-deleted unit."],
+                ]);
+            }
+        }
+
+        // 6. Required Product-scope Attributes
         $this->validateRequiredAttributes();
 
+        // 7. Required Variant-scope Attributes for all active variants
         foreach ($activeVariants as $variant) {
             $variant->validateRequiredAttributes();
         }
@@ -162,11 +215,13 @@ class Product extends Model
      */
     public function activate(): static
     {
-        $this->is_active = true;
-        $this->validateActiveState();
-        $this->save();
+        return DB::transaction(function () {
+            $this->is_active = true;
+            $this->validateActiveState();
+            $this->save();
 
-        return $this;
+            return $this;
+        });
     }
 
     /**
@@ -174,10 +229,101 @@ class Product extends Model
      */
     public function deactivate(): static
     {
-        $this->is_active = false;
-        $this->save();
+        return DB::transaction(function () {
+            $this->is_active = false;
+            $this->is_featured = false;
+            $this->save();
 
-        return $this;
+            return $this;
+        });
+    }
+
+    /**
+     * Synchronize categories for the product.
+     *
+     * @param  array<int>  $categoryIds
+     * @return $this
+     *
+     * @throws ValidationException
+     */
+    public function syncCategories(array $categoryIds): static
+    {
+        return DB::transaction(function () use ($categoryIds) {
+            if ($this->is_active && empty($categoryIds)) {
+                throw ValidationException::withMessages([
+                    'categories' => ['Cannot remove all categories from an active product.'],
+                ]);
+            }
+
+            if (! empty($categoryIds)) {
+                static::validateCategoryAssignment($categoryIds);
+            }
+
+            $this->categories()->sync($categoryIds);
+
+            if ($this->is_active) {
+                $hasActiveCategory = $this->categories()
+                    ->where('is_active', true)
+                    ->whereNull('categories.deleted_at')
+                    ->exists();
+
+                if (! $hasActiveCategory) {
+                    throw ValidationException::withMessages([
+                        'categories' => ['An active product must have at least one active category.'],
+                    ]);
+                }
+            }
+
+            return $this;
+        });
+    }
+
+    /**
+     * Attach a single category to the product.
+     *
+     * @return $this
+     *
+     * @throws ValidationException
+     */
+    public function attachCategory(int|Category $category): static
+    {
+        $categoryId = $category instanceof Category ? $category->id : (int) $category;
+
+        return DB::transaction(function () use ($categoryId) {
+            $currentIds = $this->categories()->pluck('categories.id')->all();
+
+            if (in_array($categoryId, $currentIds, true)) {
+                throw ValidationException::withMessages([
+                    'categories' => ['Category is already assigned to this product.'],
+                ]);
+            }
+
+            $newIds = array_merge($currentIds, [$categoryId]);
+            static::validateCategoryAssignment($newIds);
+
+            $this->categories()->attach($categoryId);
+
+            return $this;
+        });
+    }
+
+    /**
+     * Detach a single category from the product.
+     *
+     * @return $this
+     *
+     * @throws ValidationException
+     */
+    public function detachCategory(int|Category $category): static
+    {
+        $categoryId = $category instanceof Category ? $category->id : (int) $category;
+
+        return DB::transaction(function () use ($categoryId) {
+            $currentIds = $this->categories()->pluck('categories.id')->all();
+            $newIds = array_values(array_filter($currentIds, fn ($id) => (int) $id !== (int) $categoryId));
+
+            return $this->syncCategories($newIds);
+        });
     }
 
     /**
@@ -571,7 +717,12 @@ class Product extends Model
             }
         }
 
-        // 3. Brand validation: optional, but if supplied must exist, not be soft-deleted, and be active
+        // 3. Featured constraint: Inactive product cannot be featured
+        if (! $this->is_active && $this->is_featured) {
+            $errors['is_featured'] = ['An inactive product cannot be featured.'];
+        }
+
+        // 4. Brand validation: optional, but if supplied must exist, not be soft-deleted, and be active for new assignments
         if ($this->brand_id !== null) {
             $brand = Brand::withTrashed()->find($this->brand_id);
 
@@ -579,7 +730,7 @@ class Product extends Model
                 $errors['brand_id'] = ['The selected brand does not exist.'];
             } elseif ($brand->trashed()) {
                 $errors['brand_id'] = ['Cannot assign a soft-deleted brand to a product.'];
-            } elseif (! $brand->is_active) {
+            } elseif (! $brand->is_active && (! $this->exists || $this->isDirty('brand_id'))) {
                 $errors['brand_id'] = ['Cannot assign an inactive brand to a product.'];
             }
         }

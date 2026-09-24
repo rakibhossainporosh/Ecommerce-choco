@@ -149,7 +149,7 @@ test('10. withTrashed retrieves soft-deleted Product', function () {
 });
 
 test('11. Soft-deleted Product can be restored', function () {
-    $product = Product::factory()->create();
+    $product = Product::factory()->inactive()->create();
     $product->delete();
     expect($product->trashed())->toBeTrue();
 
@@ -255,7 +255,7 @@ test('18. Soft-deleting a product leaves pivot rows intact in category_product',
 
 test('19. Restoring a soft-deleted product restores access to its categories', function () {
     $category = Category::factory()->create();
-    $product = Product::factory()->create();
+    $product = Product::factory()->inactive()->create();
     $product->categories()->attach($category->id);
 
     $product->delete();
