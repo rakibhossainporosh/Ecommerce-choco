@@ -1,0 +1,58 @@
+[1mdiff --git a/app/Models/Product.php b/app/Models/Product.php[m
+[1mindex 761a94d..4167340 100644[m
+[1m--- a/app/Models/Product.php[m
+[1m+++ b/app/Models/Product.php[m
+[36m@@ -10,6 +10,7 @@[m
+ use Illuminate\Database\Eloquent\Relations\BelongsToMany;[m
+ use Illuminate\Database\Eloquent\Relations\HasMany;[m
+ use Illuminate\Database\Eloquent\Relations\HasOne;[m
+[32m+[m[32muse Illuminate\Database\Eloquent\Relations\MorphMany;[m
+ use Illuminate\Database\Eloquent\SoftDeletes;[m
+ use Illuminate\Support\Facades\DB;[m
+ use Illuminate\Validation\ValidationException;[m
+[36m@@ -113,6 +114,16 @@[m [mpublic function assignedAttributes(): BelongsToMany[m
+             ->withTimestamps();[m
+     }[m
+ [m
+[32m+[m[32m    /**[m
+[32m+[m[32m     * Get all media items for the product.[m
+[32m+[m[32m     *[m
+[32m+[m[32m     * @return MorphMany<Media, $this>[m
+[32m+[m[32m     */[m
+[32m+[m[32m    public function media(): MorphMany[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return $this->morphMany(Media::class, 'mediable');[m
+[32m+[m[32m    }[m
+[32m+[m
+     /**[m
+      * Validate that all active required product-scope attributes are assigned.[m
+      *[m
+[1mdiff --git a/app/Models/ProductVariant.php b/app/Models/ProductVariant.php[m
+[1mindex 86fd9e2..58f360e 100644[m
+[1m--- a/app/Models/ProductVariant.php[m
+[1m+++ b/app/Models/ProductVariant.php[m
+[36m@@ -10,6 +10,7 @@[m
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;[m
+ use Illuminate\Database\Eloquent\Relations\BelongsToMany;[m
+ use Illuminate\Database\Eloquent\Relations\HasMany;[m
+[32m+[m[32muse Illuminate\Database\Eloquent\Relations\MorphMany;[m
+ use Illuminate\Database\Eloquent\SoftDeletes;[m
+ use Illuminate\Support\Facades\DB;[m
+ use Illuminate\Validation\ValidationException;[m
+[36m@@ -143,6 +144,16 @@[m [mpublic function assignedAttributes(): BelongsToMany[m
+             ->withTimestamps();[m
+     }[m
+ [m
+[32m+[m[32m    /**[m
+[32m+[m[32m     * Get all media items for the product variant.[m
+[32m+[m[32m     *[m
+[32m+[m[32m     * @return MorphMany<Media, $this>[m
+[32m+[m[32m     */[m
+[32m+[m[32m    public function media(): MorphMany[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return $this->morphMany(Media::class, 'mediable');[m
+[32m+[m[32m    }[m
+[32m+[m
+     /**[m
+      * Validate that all active required variant-scope attributes are assigned.[m
+      *[m
