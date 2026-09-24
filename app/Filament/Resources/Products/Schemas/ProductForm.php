@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Unit;
@@ -10,6 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -130,6 +132,10 @@ class ProductForm
                     ->default(false)
                     ->required(),
 
+                Section::make('Product Attributes')
+                    ->description('Configure dynamic attributes and specifications for this product.')
+                    ->components(fn () => static::getProductAttributeComponents()),
+
                 Section::make('Initial Default Variant')
                     ->description('Every product must have at least one valid variant. Configure the initial default variant below.')
                     ->visible(fn (string $operation): bool => $operation === 'create')
@@ -209,7 +215,112 @@ class ProductForm
                             ->default(1)
                             ->required(fn (string $operation): bool => $operation === 'create')
                             ->minValue(0.001),
+
+                        Section::make('Variant Attributes')
+                            ->description('Configure dynamic attributes for this initial variant.')
+                            ->components(fn () => static::getVariantAttributeComponents('variant_attributes')),
                     ]),
             ]);
+    }
+
+    /**
+     * @return array<Component>
+     */
+    public static function getProductAttributeComponents(string $statePrefix = 'product_attributes'): array
+    {
+        $attributes = Attribute::query()
+            ->where('scope', Attribute::SCOPE_PRODUCT)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $components = [];
+
+        foreach ($attributes as $attribute) {
+            $components[] = static::createAttributeField($attribute, $statePrefix);
+        }
+
+        return $components;
+    }
+
+    /**
+     * @return array<Component>
+     */
+    public static function getVariantAttributeComponents(string $statePrefix = 'variant_attributes'): array
+    {
+        $attributes = Attribute::query()
+            ->where('scope', Attribute::SCOPE_VARIANT)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $components = [];
+
+        foreach ($attributes as $attribute) {
+            $components[] = static::createAttributeField($attribute, $statePrefix);
+        }
+
+        return $components;
+    }
+
+    public static function createAttributeField(Attribute $attribute, string $statePrefix): mixed
+    {
+        $statePath = "{$statePrefix}.{$attribute->id}";
+
+        $field = match ($attribute->type) {
+            Attribute::ATTRIBUTE_TYPE_TEXT => TextInput::make($statePath)
+                ->label($attribute->name)
+                ->maxLength(255),
+
+            Attribute::ATTRIBUTE_TYPE_TEXTAREA => Textarea::make($statePath)
+                ->label($attribute->name)
+                ->rows(3)
+                ->columnSpanFull(),
+
+            Attribute::ATTRIBUTE_TYPE_NUMBER => TextInput::make($statePath)
+                ->label($attribute->name)
+                ->numeric(),
+
+            Attribute::ATTRIBUTE_TYPE_BOOLEAN => Toggle::make($statePath)
+                ->label($attribute->name)
+                ->default(false),
+
+            Attribute::ATTRIBUTE_TYPE_SELECT => Select::make($statePath)
+                ->label($attribute->name)
+                ->options(fn () => $attribute->values()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                )
+                ->searchable()
+                ->preload()
+                ->native(false),
+
+            Attribute::ATTRIBUTE_TYPE_MULTISELECT => Select::make($statePath)
+                ->label($attribute->name)
+                ->multiple()
+                ->options(fn () => $attribute->values()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                )
+                ->searchable()
+                ->preload()
+                ->native(false),
+        };
+
+        if (filled($attribute->description)) {
+            $field->helperText($attribute->description);
+        }
+
+        if ($attribute->is_required) {
+            $field->required();
+        }
+
+        return $field;
     }
 }

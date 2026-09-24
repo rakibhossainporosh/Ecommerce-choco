@@ -29,6 +29,9 @@ class CreateProduct extends CreateRecord
                 'is_active' => true,
             ];
 
+            $productAttributes = $data['product_attributes'] ?? [];
+            $variantAttributes = $data['variant_attributes'] ?? [];
+
             unset(
                 $data['variant_name'],
                 $data['unit_id'],
@@ -37,14 +40,33 @@ class CreateProduct extends CreateRecord
                 $data['cost_price'],
                 $data['selling_price'],
                 $data['compare_at_price'],
-                $data['unit_quantity']
+                $data['unit_quantity'],
+                $data['product_attributes'],
+                $data['variant_attributes']
             );
 
             /** @var Product $product */
             $product = static::getModel()::create($data);
 
+            $productSyncPayload = [];
+            foreach ($productAttributes as $attrId => $val) {
+                if ($val !== null && $val !== '' && $val !== []) {
+                    $productSyncPayload[$attrId] = $val;
+                }
+            }
+            $product->syncAttributes($productSyncPayload);
+
             $variantData['product_id'] = $product->id;
-            ProductVariant::create($variantData);
+            /** @var ProductVariant $variant */
+            $variant = ProductVariant::create($variantData);
+
+            $variantSyncPayload = [];
+            foreach ($variantAttributes as $attrId => $val) {
+                if ($val !== null && $val !== '' && $val !== []) {
+                    $variantSyncPayload[$attrId] = $val;
+                }
+            }
+            $variant->syncAttributes($variantSyncPayload);
 
             return $product;
         });
