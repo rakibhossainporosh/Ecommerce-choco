@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 
@@ -116,6 +118,28 @@ class ProductVariant extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    /**
+     * Get the dynamic attribute value assignments for the variant.
+     *
+     * @return HasMany<VariantAttributeValue, $this>
+     */
+    public function variantAttributeValues(): HasMany
+    {
+        return $this->hasMany(VariantAttributeValue::class);
+    }
+
+    /**
+     * Get the distinct attributes assigned to the variant.
+     *
+     * @return BelongsToMany<Attribute, $this>
+     */
+    public function assignedAttributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class, 'variant_attribute_values', 'product_variant_id', 'attribute_id')
+            ->distinct()
+            ->withTimestamps();
     }
 
     /**

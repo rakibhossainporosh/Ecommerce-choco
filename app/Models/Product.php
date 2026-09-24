@@ -72,6 +72,28 @@ class Product extends Model
     }
 
     /**
+     * Get the dynamic attribute value assignments for the product.
+     *
+     * @return HasMany<ProductAttributeValue, $this>
+     */
+    public function productAttributeValues(): HasMany
+    {
+        return $this->hasMany(ProductAttributeValue::class);
+    }
+
+    /**
+     * Get the distinct attributes assigned to the product.
+     *
+     * @return BelongsToMany<Attribute, $this>
+     */
+    public function assignedAttributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attribute_values')
+            ->distinct()
+            ->withTimestamps();
+    }
+
+    /**
      * Atomically create a product with its required first default variant.
      *
      * @param  array<string, mixed>  $productAttributes

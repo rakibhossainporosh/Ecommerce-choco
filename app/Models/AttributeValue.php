@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Database\Factories\AttributeValueFactory;
+use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 
@@ -40,6 +42,12 @@ class AttributeValue extends Model
         static::saving(function (AttributeValue $value): void {
             $value->validateBusinessRules();
         });
+
+        static::deleting(function (AttributeValue $value): void {
+            if ($value->isForceDeleting() && $value->hasAssignments()) {
+                throw new DomainException('Cannot force-delete this attribute value because it has associated product or variant assignments.');
+            }
+        });
     }
 
     /**
@@ -50,6 +58,35 @@ class AttributeValue extends Model
     public function attribute(): BelongsTo
     {
         return $this->belongsTo(Attribute::class);
+    }
+
+    /**
+     * Get the product attribute assignments for this attribute value.
+     *
+     * @return HasMany<ProductAttributeValue, $this>
+     */
+    public function productAttributeValues(): HasMany
+    {
+        return $this->hasMany(ProductAttributeValue::class);
+    }
+
+    /**
+     * Get the variant attribute assignments for this attribute value.
+     *
+     * @return HasMany<VariantAttributeValue, $this>
+     */
+    public function variantAttributeValues(): HasMany
+    {
+        return $this->hasMany(VariantAttributeValue::class);
+    }
+
+    /**
+     * Determine whether this attribute value has product or variant assignments.
+     */
+    public function hasAssignments(): bool
+    {
+        return $this->productAttributeValues()->exists()
+            || $this->variantAttributeValues()->exists();
     }
 
     /**

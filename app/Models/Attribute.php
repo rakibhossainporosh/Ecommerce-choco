@@ -80,6 +80,10 @@ class Attribute extends Model
             if (! $attribute->canBeDeleted()) {
                 throw new DomainException('Cannot delete this attribute because it has associated attribute values.');
             }
+
+            if ($attribute->isForceDeleting() && $attribute->hasAssignments()) {
+                throw new DomainException('Cannot force-delete this attribute because it has associated product or variant assignments.');
+            }
         });
     }
 
@@ -91,6 +95,35 @@ class Attribute extends Model
     public function values(): HasMany
     {
         return $this->hasMany(AttributeValue::class);
+    }
+
+    /**
+     * Get the product attribute assignments for this attribute.
+     *
+     * @return HasMany<ProductAttributeValue, $this>
+     */
+    public function productAttributeValues(): HasMany
+    {
+        return $this->hasMany(ProductAttributeValue::class);
+    }
+
+    /**
+     * Get the variant attribute assignments for this attribute.
+     *
+     * @return HasMany<VariantAttributeValue, $this>
+     */
+    public function variantAttributeValues(): HasMany
+    {
+        return $this->hasMany(VariantAttributeValue::class);
+    }
+
+    /**
+     * Determine whether this attribute has product or variant assignments.
+     */
+    public function hasAssignments(): bool
+    {
+        return $this->productAttributeValues()->exists()
+            || $this->variantAttributeValues()->exists();
     }
 
     /**
