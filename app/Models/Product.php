@@ -27,6 +27,10 @@ class Product extends Model
     {
         static::saving(function (Product $product): void {
             $product->validateBusinessRules();
+
+            if ($product->exists && $product->isDirty('is_active') && $product->is_active) {
+                $product->validateActiveState();
+            }
         });
     }
 
@@ -91,6 +95,403 @@ class Product extends Model
         return $this->belongsToMany(Attribute::class, 'product_attribute_values')
             ->distinct()
             ->withTimestamps();
+    }
+
+    /**
+     * Validate that all active required product-scope attributes are assigned.
+     *
+     * @throws ValidationException
+     */
+    public function validateRequiredAttributes(): void
+    {
+        $requiredAttributes = Attribute::query()
+            ->where('scope', Attribute::SCOPE_PRODUCT)
+            ->where('is_active', true)
+            ->where('is_required', true)
+            ->get();
+
+        $assignedAttributeIds = $this->productAttributeValues()
+            ->pluck('attribute_id')
+            ->unique()
+            ->all();
+
+        foreach ($requiredAttributes as $attribute) {
+            if (! in_array($attribute->id, $assignedAttributeIds, true)) {
+                throw ValidationException::withMessages([
+                    'attributes' => ["Required product attribute '{$attribute->name}' is missing."],
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Validate the active product state invariants.
+     *
+     * @throws ValidationException
+     */
+    public function validateActiveState(): void
+    {
+        $activeVariants = $this->variants()
+            ->where('is_active', true)
+            ->get();
+
+        if ($activeVariants->isEmpty()) {
+            throw ValidationException::withMessages([
+                'is_active' => ['An active product must have at least one active variant.'],
+            ]);
+        }
+
+        $defaultVariants = $activeVariants->where('is_default', true);
+        if ($defaultVariants->count() !== 1) {
+            throw ValidationException::withMessages([
+                'is_active' => ['An active product must have exactly one active default variant.'],
+            ]);
+        }
+
+        $this->validateRequiredAttributes();
+
+        foreach ($activeVariants as $variant) {
+            $variant->validateRequiredAttributes();
+        }
+    }
+
+    /**
+     * Transition the product to active state.
+     *
+     * @throws ValidationException
+     */
+    public function activate(): static
+    {
+        $this->is_active = true;
+        $this->validateActiveState();
+        $this->save();
+
+        return $this;
+    }
+
+    /**
+     * Transition the product to inactive state.
+     */
+    public function deactivate(): static
+    {
+        $this->is_active = false;
+        $this->save();
+
+        return $this;
+    }
+
+    /**
+     * Synchronize the dynamic attribute assignments for the product.
+     *
+     * @param  array<mixed>  $assignments
+     * @return $this
+     *
+     * @throws ValidationException
+     */
+    public function syncAttributes(array $assignments): static
+    {
+        return DB::transaction(function () use ($assignments) {
+            $normalized = $this->normalizeAndValidateAssignmentPayload($assignments, Attribute::SCOPE_PRODUCT);
+
+            $this->productAttributeValues()->delete();
+
+            foreach ($normalized as $item) {
+                $this->productAttributeValues()->create($item);
+            }
+
+            if ($this->is_active) {
+                $this->validateRequiredAttributes();
+            }
+
+            return $this;
+        });
+    }
+
+    /**
+     * Alias for syncAttributes.
+     *
+     * @param  array<mixed>  $assignments
+     * @return $this
+     *
+     * @throws ValidationException
+     */
+    public function syncAssignedAttributes(array $assignments): static
+    {
+        return $this->syncAttributes($assignments);
+    }
+
+    /**
+     * Normalize and validate an attribute assignment payload.
+     *
+     * @param  array<mixed>  $assignments
+     * @return array<int, array{attribute_id: int, attribute_value_id: ?int, text_value: ?string, number_value: mixed, boolean_value: ?bool}>
+     *
+     * @throws ValidationException
+     */
+    protected function normalizeAndValidateAssignmentPayload(array $assignments, string $expectedScope): array
+    {
+        $normalized = [];
+
+        foreach ($assignments as $key => $raw) {
+            $attrId = null;
+            $entry = [];
+
+            if (is_array($raw)) {
+                $attrId = $raw['attribute_id'] ?? (is_numeric($key) && (int) $key > 0 ? (int) $key : null);
+                $entry = $raw;
+            } else {
+                $attrId = is_numeric($key) && (int) $key > 0 ? (int) $key : null;
+                $entry = ['value' => $raw];
+            }
+
+            if (blank($attrId)) {
+                throw ValidationException::withMessages([
+                    'attributes' => ['Each attribute assignment must specify an attribute ID.'],
+                ]);
+            }
+
+            $attribute = Attribute::withTrashed()->find($attrId);
+            if (! $attribute) {
+                throw ValidationException::withMessages([
+                    'attributes' => ["The attribute with ID {$attrId} does not exist."],
+                ]);
+            }
+
+            if ($attribute->scope !== $expectedScope) {
+                $target = $expectedScope === Attribute::SCOPE_PRODUCT ? 'product' : 'variant';
+                throw ValidationException::withMessages([
+                    'attributes' => ["Cannot assign {$attribute->scope}-scoped attribute '{$attribute->name}' to a {$target}."],
+                ]);
+            }
+
+            if ($attribute->trashed()) {
+                throw ValidationException::withMessages([
+                    'attributes' => ["Cannot assign deleted attribute '{$attribute->name}'."],
+                ]);
+            }
+
+            if (! $attribute->is_active) {
+                throw ValidationException::withMessages([
+                    'attributes' => ["Cannot assign inactive attribute '{$attribute->name}'."],
+                ]);
+            }
+
+            if ($attribute->type === Attribute::ATTRIBUTE_TYPE_MULTISELECT) {
+                $valIds = [];
+                if (isset($entry['attribute_value_ids']) && is_array($entry['attribute_value_ids'])) {
+                    $valIds = $entry['attribute_value_ids'];
+                } elseif (isset($entry['values']) && is_array($entry['values'])) {
+                    $valIds = $entry['values'];
+                } elseif (isset($entry['value']) && is_array($entry['value'])) {
+                    $valIds = $entry['value'];
+                } elseif (array_key_exists('attribute_value_id', $entry)) {
+                    $valIds = [$entry['attribute_value_id']];
+                } elseif (isset($entry['value']) && ! is_array($entry['value'])) {
+                    $valIds = [$entry['value']];
+                }
+
+                $hasMixed = (isset($entry['text_value']) && $entry['text_value'] !== null)
+                    || (isset($entry['number_value']) && $entry['number_value'] !== null)
+                    || (isset($entry['boolean_value']) && $entry['boolean_value'] !== null);
+
+                if ($hasMixed) {
+                    throw ValidationException::withMessages([
+                        'attributes' => ["Invalid value storage for multiselect attribute '{$attribute->name}'."],
+                    ]);
+                }
+
+                foreach ($valIds as $valId) {
+                    $normalized[] = [
+                        'attribute_id' => (int) $attrId,
+                        'attribute_value_id' => $valId !== null ? (int) $valId : null,
+                        'text_value' => null,
+                        'number_value' => null,
+                        'boolean_value' => null,
+                    ];
+                }
+
+                continue;
+            }
+
+            $item = [
+                'attribute_id' => (int) $attrId,
+                'attribute_value_id' => $entry['attribute_value_id'] ?? null,
+                'text_value' => $entry['text_value'] ?? null,
+                'number_value' => $entry['number_value'] ?? null,
+                'boolean_value' => $entry['boolean_value'] ?? null,
+            ];
+
+            if (array_key_exists('value', $entry)
+                && ! array_key_exists('text_value', $entry)
+                && ! array_key_exists('number_value', $entry)
+                && ! array_key_exists('boolean_value', $entry)
+                && ! array_key_exists('attribute_value_id', $entry)
+            ) {
+                $val = $entry['value'];
+                switch ($attribute->type) {
+                    case Attribute::ATTRIBUTE_TYPE_TEXT:
+                    case Attribute::ATTRIBUTE_TYPE_TEXTAREA:
+                        $item['text_value'] = $val !== null ? (string) $val : null;
+                        break;
+                    case Attribute::ATTRIBUTE_TYPE_NUMBER:
+                        $item['number_value'] = $val;
+                        break;
+                    case Attribute::ATTRIBUTE_TYPE_BOOLEAN:
+                        $item['boolean_value'] = $val;
+                        break;
+                    case Attribute::ATTRIBUTE_TYPE_SELECT:
+                        $item['attribute_value_id'] = $val !== null ? (int) $val : null;
+                        break;
+                }
+            }
+
+            $storageCount = 0;
+            if ($item['text_value'] !== null) {
+                $storageCount++;
+            }
+            if ($item['number_value'] !== null) {
+                $storageCount++;
+            }
+            if ($item['boolean_value'] !== null) {
+                $storageCount++;
+            }
+            if ($item['attribute_value_id'] !== null) {
+                $storageCount++;
+            }
+
+            if ($storageCount > 1) {
+                throw ValidationException::withMessages([
+                    'attributes' => ["Invalid value storage for attribute '{$attribute->name}'."],
+                ]);
+            }
+
+            $normalized[] = $item;
+        }
+
+        $groupedByAttr = [];
+        foreach ($normalized as $item) {
+            $groupedByAttr[$item['attribute_id']][] = $item;
+        }
+
+        foreach ($groupedByAttr as $attrId => $items) {
+            $attribute = Attribute::withTrashed()->find($attrId);
+
+            if ($attribute->type !== Attribute::ATTRIBUTE_TYPE_MULTISELECT && count($items) > 1) {
+                throw ValidationException::withMessages([
+                    'attributes' => ["Attribute '{$attribute->name}' can only have one value assigned."],
+                ]);
+            }
+
+            if ($attribute->type === Attribute::ATTRIBUTE_TYPE_MULTISELECT) {
+                $valIds = array_column($items, 'attribute_value_id');
+                if (count($valIds) !== count(array_unique($valIds))) {
+                    throw ValidationException::withMessages([
+                        'attributes' => ["Duplicate value for multiselect attribute '{$attribute->name}'."],
+                    ]);
+                }
+            }
+
+            foreach ($items as $item) {
+                switch ($attribute->type) {
+                    case Attribute::ATTRIBUTE_TYPE_TEXT:
+                    case Attribute::ATTRIBUTE_TYPE_TEXTAREA:
+                        if ($item['text_value'] === null || trim((string) $item['text_value']) === '') {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["The text value is required for '{$attribute->name}'."],
+                            ]);
+                        }
+                        if ($item['attribute_value_id'] !== null || $item['number_value'] !== null || $item['boolean_value'] !== null) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["Invalid value storage for text attribute '{$attribute->name}'."],
+                            ]);
+                        }
+                        break;
+
+                    case Attribute::ATTRIBUTE_TYPE_NUMBER:
+                        if ($item['number_value'] === null || ! is_numeric($item['number_value'])) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["The number value is required and must be numeric for '{$attribute->name}'."],
+                            ]);
+                        }
+                        if ($item['attribute_value_id'] !== null || $item['text_value'] !== null || $item['boolean_value'] !== null) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["Invalid value storage for number attribute '{$attribute->name}'."],
+                            ]);
+                        }
+                        break;
+
+                    case Attribute::ATTRIBUTE_TYPE_BOOLEAN:
+                        if ($item['boolean_value'] === null) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["The boolean value is required for '{$attribute->name}'."],
+                            ]);
+                        }
+                        if ($item['attribute_value_id'] !== null || $item['text_value'] !== null || $item['number_value'] !== null) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["Invalid value storage for boolean attribute '{$attribute->name}'."],
+                            ]);
+                        }
+                        break;
+
+                    case Attribute::ATTRIBUTE_TYPE_SELECT:
+                    case Attribute::ATTRIBUTE_TYPE_MULTISELECT:
+                        if ($item['attribute_value_id'] === null) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["The attribute value is required for '{$attribute->name}'."],
+                            ]);
+                        }
+                        if ($item['text_value'] !== null || $item['number_value'] !== null || $item['boolean_value'] !== null) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["Invalid value storage for select attribute '{$attribute->name}'."],
+                            ]);
+                        }
+
+                        $attrValue = AttributeValue::withTrashed()->find($item['attribute_value_id']);
+                        if (! $attrValue) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ['The selected attribute value does not exist.'],
+                            ]);
+                        }
+                        if ((int) $attrValue->attribute_id !== (int) $attribute->id) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["The selected attribute value '{$attrValue->name}' does not belong to attribute '{$attribute->name}'."],
+                            ]);
+                        }
+                        if ($attrValue->trashed()) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["Cannot assign deleted attribute value '{$attrValue->name}'."],
+                            ]);
+                        }
+                        if (! $attrValue->is_active) {
+                            throw ValidationException::withMessages([
+                                'attributes' => ["Cannot assign inactive attribute value '{$attrValue->name}'."],
+                            ]);
+                        }
+                        break;
+                }
+            }
+        }
+
+        if ($this->is_active) {
+            $requiredAttributes = Attribute::query()
+                ->where('scope', $expectedScope)
+                ->where('is_active', true)
+                ->where('is_required', true)
+                ->get();
+
+            $submittedAttrIds = array_unique(array_column($normalized, 'attribute_id'));
+
+            foreach ($requiredAttributes as $reqAttr) {
+                if (! in_array($reqAttr->id, $submittedAttrIds, true)) {
+                    $scopeName = $expectedScope === Attribute::SCOPE_PRODUCT ? 'product' : 'variant';
+                    throw ValidationException::withMessages([
+                        'attributes' => ["Required {$scopeName} attribute '{$reqAttr->name}' is missing."],
+                    ]);
+                }
+            }
+        }
+
+        return $normalized;
     }
 
     /**
