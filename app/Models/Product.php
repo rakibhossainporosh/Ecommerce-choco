@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Database\Factories\ProductFactory;
+use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 #[Fillable(['name', 'slug', 'short_description', 'description', 'meta_title', 'meta_description', 'is_active', 'is_featured', 'brand_id'])]
 class Product extends Model
@@ -122,6 +125,171 @@ class Product extends Model
     public function media(): MorphMany
     {
         return $this->morphMany(Media::class, 'mediable');
+    }
+
+    /**
+     * Get ordered media relationship for the product.
+     *
+     * @return MorphMany<Media, $this>
+     */
+    public function orderedMedia(): MorphMany
+    {
+        return $this->media()->orderBy('sort_order', 'asc')->orderBy('id', 'asc');
+    }
+
+    /**
+     * Get the primary media for the product.
+     */
+    public function primaryMedia(): ?Media
+    {
+        if ($this->relationLoaded('media')) {
+            return $this->media->firstWhere('is_primary', true);
+        }
+
+        return $this->media()->where('is_primary', true)->first();
+    }
+
+    /**
+     * Get resolved media gallery for storefront/display.
+     *
+     * @return Collection<int, Media>
+     */
+    public function getResolvedMedia(): Collection
+    {
+        if ($this->relationLoaded('media')) {
+            return $this->media->sortBy([
+                ['sort_order', 'asc'],
+                ['id', 'asc'],
+            ])->values();
+        }
+
+        return $this->orderedMedia()->get();
+    }
+
+    /**
+     * Get the resolved primary media for storefront/display.
+     */
+    public function getResolvedPrimaryMedia(): ?Media
+    {
+        $primary = $this->primaryMedia();
+
+        if ($primary) {
+            return $primary;
+        }
+
+        // Fallback: media with lowest sort_order
+        if ($this->relationLoaded('media')) {
+            return $this->media->sortBy([
+                ['sort_order', 'asc'],
+                ['id', 'asc'],
+            ])->first();
+        }
+
+        return $this->orderedMedia()->first();
+    }
+
+    /**
+     * Explicitly add a media record to this product.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function addMedia(array $attributes): Media
+    {
+        return Media::createForOwner($this, $attributes);
+    }
+
+    /**
+     * Set a specific media record belonging to this product as primary.
+     *
+     * @throws DomainException
+     */
+    public function setPrimaryMedia(int|Media $media): Media
+    {
+        $mediaModel = is_int($media) ? Media::query()->findOrFail($media) : $media;
+        $mediaModel->validateOwnership($this);
+
+        return $mediaModel->setPrimary();
+    }
+
+    /**
+     * Safely delete a media record belonging to this product.
+     *
+     * NOTE: DB transactions are not filesystem transactions. Physical file cleanup
+     * will be handled in a later lifecycle phase.
+     *
+     * @throws DomainException
+     */
+    public function deleteMedia(int|Media $media): bool
+    {
+        $mediaModel = is_int($media) ? Media::query()->findOrFail($media) : $media;
+        $mediaModel->validateOwnership($this);
+
+        return $mediaModel->deleteSafely();
+    }
+
+    /**
+     * Reorder the product's complete media gallery to 1..N sort_order.
+     *
+     * @param  array<int>  $mediaIds
+     *
+     * @throws InvalidArgumentException
+     */
+    public function reorderMedia(array $mediaIds): static
+    {
+        if (count($mediaIds) !== count(array_unique($mediaIds))) {
+            throw new InvalidArgumentException('Duplicate media IDs provided for reordering.');
+        }
+
+        return DB::transaction(function () use ($mediaIds): static {
+            $currentMedia = $this->media()->lockForUpdate()->get(['id', 'sort_order', 'is_primary']);
+            $currentIds = $currentMedia->pluck('id')->all();
+
+            if ($currentMedia->isEmpty()) {
+                if (! empty($mediaIds)) {
+                    throw new InvalidArgumentException('Cannot reorder media when product has no media records.');
+                }
+
+                return $this;
+            }
+
+            if (empty($mediaIds)) {
+                throw new InvalidArgumentException('Reorder list cannot be empty when product has media records.');
+            }
+
+            $requestedIds = array_map('intval', $mediaIds);
+            $existingIds = array_map('intval', $currentIds);
+
+            $diffMissing = array_diff($existingIds, $requestedIds);
+            $diffExtra = array_diff($requestedIds, $existingIds);
+
+            if (! empty($diffMissing) || ! empty($diffExtra)) {
+                throw new InvalidArgumentException('Reorder media list must represent the complete current media set without missing, unknown, or foreign IDs.');
+            }
+
+            foreach ($requestedIds as $index => $id) {
+                $newSortOrder = $index + 1;
+                Media::query()
+                    ->where('id', $id)
+                    ->where('mediable_type', $this->getMorphClass())
+                    ->where('mediable_id', $this->getKey())
+                    ->update(['sort_order' => $newSortOrder]);
+            }
+
+            return $this;
+        });
+    }
+
+    /**
+     * Update alt_text for a media record belonging to this product.
+     *
+     * @throws DomainException
+     */
+    public function updateMediaAltText(int|Media $media, ?string $altText): Media
+    {
+        $mediaModel = is_int($media) ? Media::query()->findOrFail($media) : $media;
+        $mediaModel->validateOwnership($this);
+
+        return $mediaModel->updateAltText($altText);
     }
 
     /**

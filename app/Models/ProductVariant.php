@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\ProductVariantFactory;
 use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 #[Fillable([
     'product_id',
@@ -152,6 +154,199 @@ class ProductVariant extends Model
     public function media(): MorphMany
     {
         return $this->morphMany(Media::class, 'mediable');
+    }
+
+    /**
+     * Get ordered media relationship for the product variant.
+     *
+     * @return MorphMany<Media, $this>
+     */
+    public function orderedMedia(): MorphMany
+    {
+        return $this->media()->orderBy('sort_order', 'asc')->orderBy('id', 'asc');
+    }
+
+    /**
+     * Get the primary media for the product variant.
+     */
+    public function primaryMedia(): ?Media
+    {
+        if ($this->relationLoaded('media')) {
+            return $this->media->firstWhere('is_primary', true);
+        }
+
+        return $this->media()->where('is_primary', true)->first();
+    }
+
+    /**
+     * Get resolved media gallery for the variant.
+     * If the variant has >= 1 media, returns variant media only.
+     * If the variant has 0 media, falls back to the parent product's media.
+     * Does NOT merge variant and product media.
+     *
+     * @return Collection<int, Media>
+     */
+    public function getResolvedMedia(): Collection
+    {
+        $variantMedia = $this->relationLoaded('media')
+            ? $this->media->sortBy([['sort_order', 'asc'], ['id', 'asc']])->values()
+            : $this->orderedMedia()->get();
+
+        if ($variantMedia->isNotEmpty()) {
+            return $variantMedia;
+        }
+
+        $product = $this->relationLoaded('product') ? $this->product : $this->product()->first();
+
+        if (! $product) {
+            return new Collection;
+        }
+
+        return $product->getResolvedMedia();
+    }
+
+    /**
+     * Get the resolved primary media for the variant.
+     *
+     * If variant has own media:
+     * 1. Variant primary media if one exists.
+     * 2. Otherwise variant media with lowest sort_order.
+     *
+     * If variant has zero media:
+     * 1. Product primary media if one exists.
+     * 2. Otherwise Product media with lowest sort_order.
+     * 3. If Product has no media, returns null.
+     */
+    public function getResolvedPrimaryMedia(): ?Media
+    {
+        $hasMedia = $this->relationLoaded('media')
+            ? $this->media->isNotEmpty()
+            : $this->media()->exists();
+
+        if ($hasMedia) {
+            $primary = $this->primaryMedia();
+            if ($primary) {
+                return $primary;
+            }
+
+            if ($this->relationLoaded('media')) {
+                return $this->media->sortBy([['sort_order', 'asc'], ['id', 'asc']])->first();
+            }
+
+            return $this->orderedMedia()->first();
+        }
+
+        $product = $this->relationLoaded('product') ? $this->product : $this->product()->first();
+
+        if (! $product) {
+            return null;
+        }
+
+        return $product->getResolvedPrimaryMedia();
+    }
+
+    /**
+     * Explicitly add a media record to this variant.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function addMedia(array $attributes): Media
+    {
+        return Media::createForOwner($this, $attributes);
+    }
+
+    /**
+     * Set a specific media record belonging to this variant as primary.
+     *
+     * @throws DomainException
+     */
+    public function setPrimaryMedia(int|Media $media): Media
+    {
+        $mediaModel = is_int($media) ? Media::query()->findOrFail($media) : $media;
+        $mediaModel->validateOwnership($this);
+
+        return $mediaModel->setPrimary();
+    }
+
+    /**
+     * Safely delete a media record belonging to this variant.
+     *
+     * NOTE: DB transactions are not filesystem transactions. Physical file cleanup
+     * will be handled in a later lifecycle phase.
+     *
+     * @throws DomainException
+     */
+    public function deleteMedia(int|Media $media): bool
+    {
+        $mediaModel = is_int($media) ? Media::query()->findOrFail($media) : $media;
+        $mediaModel->validateOwnership($this);
+
+        return $mediaModel->deleteSafely();
+    }
+
+    /**
+     * Reorder the variant's complete media gallery to 1..N sort_order.
+     *
+     * @param  array<int>  $mediaIds
+     *
+     * @throws InvalidArgumentException
+     */
+    public function reorderMedia(array $mediaIds): static
+    {
+        if (count($mediaIds) !== count(array_unique($mediaIds))) {
+            throw new InvalidArgumentException('Duplicate media IDs provided for reordering.');
+        }
+
+        return DB::transaction(function () use ($mediaIds): static {
+            $currentMedia = $this->media()->lockForUpdate()->get(['id', 'sort_order', 'is_primary']);
+            $currentIds = $currentMedia->pluck('id')->all();
+
+            if ($currentMedia->isEmpty()) {
+                if (! empty($mediaIds)) {
+                    throw new InvalidArgumentException('Cannot reorder media when variant has no media records.');
+                }
+
+                return $this;
+            }
+
+            if (empty($mediaIds)) {
+                throw new InvalidArgumentException('Reorder list cannot be empty when variant has media records.');
+            }
+
+            $requestedIds = array_map('intval', $mediaIds);
+            $existingIds = array_map('intval', $currentIds);
+
+            $diffMissing = array_diff($existingIds, $requestedIds);
+            $diffExtra = array_diff($requestedIds, $existingIds);
+
+            if (! empty($diffMissing) || ! empty($diffExtra)) {
+                throw new InvalidArgumentException('Reorder media list must represent the complete current media set without missing, unknown, or foreign IDs.');
+            }
+
+            foreach ($requestedIds as $index => $id) {
+                $newSortOrder = $index + 1;
+                Media::query()
+                    ->where('id', $id)
+                    ->where('mediable_type', $this->getMorphClass())
+                    ->where('mediable_id', $this->getKey())
+                    ->update(['sort_order' => $newSortOrder]);
+            }
+
+            return $this;
+        });
+    }
+
+    /**
+     * Update alt_text for a media record belonging to this variant.
+     *
+     * @throws DomainException
+     */
+    public function updateMediaAltText(int|Media $media, ?string $altText): Media
+    {
+        $mediaModel = is_int($media) ? Media::query()->findOrFail($media) : $media;
+        $mediaModel->validateOwnership($this);
+
+        return $mediaModel->updateAltText($altText);
     }
 
     /**

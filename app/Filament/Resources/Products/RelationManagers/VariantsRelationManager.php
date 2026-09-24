@@ -7,6 +7,7 @@ use App\Models\Attribute;
 use App\Models\ProductVariant;
 use App\Models\Unit;
 use Closure;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -20,7 +21,9 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -127,6 +130,12 @@ class VariantsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('sku')
             ->columns([
+                ImageColumn::make('primary_image')
+                    ->label('Image')
+                    ->disk('public')
+                    ->state(fn (ProductVariant $record): ?string => $record->getResolvedPrimaryMedia()?->path)
+                    ->circular(),
+
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->searchable()
@@ -137,6 +146,16 @@ class VariantsRelationManager extends RelationManager
                     ->placeholder('—')
                     ->searchable()
                     ->sortable(),
+
+                TextColumn::make('media_status')
+                    ->label('Media')
+                    ->state(function (ProductVariant $record): string {
+                        $count = $record->media()->count();
+
+                        return $count > 0 ? "{$count} image(s)" : 'Fallback (Product)';
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => str_contains($state, 'Fallback') ? 'gray' : 'info'),
 
                 TextColumn::make('unit.name')
                     ->label('Unit')
@@ -181,6 +200,17 @@ class VariantsRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
+                Action::make('media')
+                    ->label('Media')
+                    ->icon('heroicon-o-photo')
+                    ->badge(fn (ProductVariant $record): ?int => $record->media()->count() ?: null)
+                    ->color(fn (ProductVariant $record): string => $record->media()->count() > 0 ? 'success' : 'gray')
+                    ->modalHeading(fn (ProductVariant $record): string => 'Variant Media: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalWidth(Width::FourExtraLarge)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->modalContent(fn (ProductVariant $record) => view('filament.resources.products.variant-media-modal', ['variant' => $record])),
+
                 EditAction::make()
                     ->mutateRecordDataUsing(function (array $data, ProductVariant $record): array {
                         $record->loadMissing(['variantAttributeValues.attribute']);
