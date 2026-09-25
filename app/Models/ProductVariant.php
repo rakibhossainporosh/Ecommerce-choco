@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
@@ -164,6 +165,26 @@ class ProductVariant extends Model
     public function orderedMedia(): MorphMany
     {
         return $this->media()->orderBy('sort_order', 'asc')->orderBy('id', 'asc');
+    }
+
+    /**
+     * Get the inventory record associated with the variant.
+     *
+     * @return HasOne<Inventory, $this>
+     */
+    public function inventory(): HasOne
+    {
+        return $this->hasOne(Inventory::class, 'product_variant_id');
+    }
+
+    /**
+     * Get the inventory movements associated with the variant.
+     *
+     * @return HasMany<InventoryMovement, $this>
+     */
+    public function inventoryMovements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class, 'product_variant_id');
     }
 
     /**
