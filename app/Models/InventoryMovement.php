@@ -84,6 +84,16 @@ class InventoryMovement extends Model
     }
 
     /**
+     * Alias for creator relation.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->creator();
+    }
+
+    /**
      * Get the polymorphic reference entity (e.g. future Order, Return, Adjustment).
      *
      * @return MorphTo<Model, $this>

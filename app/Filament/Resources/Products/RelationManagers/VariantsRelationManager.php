@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Exceptions\InventoryException;
 use App\Filament\Resources\Products\Schemas\ProductForm;
 use App\Models\Attribute;
+use App\Models\Inventory;
 use App\Models\ProductVariant;
 use App\Models\Unit;
 use Closure;
@@ -26,6 +28,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -129,6 +132,7 @@ class VariantsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('sku')
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['inventory', 'unit']))
             ->columns([
                 ImageColumn::make('primary_image')
                     ->label('Image')
@@ -165,6 +169,47 @@ class VariantsRelationManager extends RelationManager
                     ->label('Selling Price')
                     ->money('BDT')
                     ->sortable(),
+
+                TextColumn::make('inventory.quantity')
+                    ->label('Stock')
+                    ->placeholder('0')
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
+                        Inventory::select('quantity')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
+                        $direction
+                    ))
+                    ->visible(fn () => auth()->user()?->can('viewAny', Inventory::class)),
+
+                TextColumn::make('inventory.low_stock_threshold')
+                    ->label('Threshold')
+                    ->placeholder('0')
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
+                        Inventory::select('low_stock_threshold')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
+                        $direction
+                    ))
+                    ->visible(fn () => auth()->user()?->can('viewAny', Inventory::class)),
+
+                TextColumn::make('stock_status')
+                    ->label('Status')
+                    ->state(function (ProductVariant $record): string {
+                        $inventory = $record->inventory;
+                        if (! $inventory || $inventory->quantity <= 0) {
+                            return 'Out of Stock';
+                        }
+
+                        if ($inventory->quantity <= $inventory->low_stock_threshold) {
+                            return 'Low Stock';
+                        }
+
+                        return 'In Stock';
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'In Stock' => 'success',
+                        'Low Stock' => 'warning',
+                        'Out of Stock' => 'danger',
+                        default => 'gray',
+                    })
+                    ->visible(fn () => auth()->user()?->can('viewAny', Inventory::class)),
 
                 IconColumn::make('is_default')
                     ->label('Default')
@@ -210,6 +255,193 @@ class VariantsRelationManager extends RelationManager
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
                     ->modalContent(fn (ProductVariant $record) => view('filament.resources.products.variant-media-modal', ['variant' => $record])),
+
+                Action::make('adjustStock')
+                    ->label('Adjust Stock')
+                    ->icon('heroicon-o-arrows-up-down')
+                    ->color('primary')
+                    ->modalHeading(fn (ProductVariant $record): string => 'Adjust Stock: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalWidth(Width::Medium)
+                    ->authorize(fn () => auth()->user()?->can('adjust', Inventory::class))
+                    ->form([
+                        Select::make('type')
+                            ->label('Adjustment Type')
+                            ->options([
+                                'in' => 'Stock In',
+                                'out' => 'Stock Out',
+                            ])
+                            ->default('in')
+                            ->required()
+                            ->live(),
+
+                        TextInput::make('quantity')
+                            ->label('Quantity')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(1)
+                            ->required()
+                            ->helperText('Enter a positive whole number.')
+                            ->rules(['required', 'integer', 'min:1']),
+
+                        Select::make('reason')
+                            ->label('Reason')
+                            ->options(fn (Get $get): array => match ($get('type')) {
+                                'out' => [
+                                    'Damaged' => 'Damaged',
+                                    'Correction' => 'Correction',
+                                    'Expired' => 'Expired',
+                                    'Lost' => 'Lost',
+                                    'Other' => 'Other',
+                                ],
+                                default => [
+                                    'Opening Stock' => 'Opening Stock',
+                                    'Restock' => 'Restock',
+                                    'Purchase' => 'Purchase',
+                                    'Correction' => 'Correction',
+                                    'Other' => 'Other',
+                                ],
+                            })
+                            ->required()
+                            ->live(),
+
+                        TextInput::make('custom_reason')
+                            ->label('Custom Reason')
+                            ->placeholder('Specify custom reason')
+                            ->visible(fn (Get $get): bool => $get('reason') === 'Other')
+                            ->required(fn (Get $get): bool => $get('reason') === 'Other')
+                            ->maxLength(255),
+
+                        TextInput::make('note')
+                            ->label('Note (Optional)')
+                            ->placeholder('e.g., Received from supplier, damage notes, etc.')
+                            ->nullable()
+                            ->maxLength(1000),
+                    ])
+                    ->action(function (Action $action, ProductVariant $record, array $data): void {
+                        abort_unless(auth()->user()?->can('adjust', Inventory::class), 403, 'Unauthorized.');
+
+                        $quantity = (int) $data['quantity'];
+                        $type = $data['type'] ?? 'in';
+                        $rawReason = $data['reason'] ?? '';
+                        $finalReason = ($rawReason === 'Other' && ! empty($data['custom_reason']))
+                            ? (string) $data['custom_reason']
+                            : (string) $rawReason;
+                        $note = ! empty($data['note']) ? (string) $data['note'] : null;
+
+                        try {
+                            $inventory = $record->inventory()->first();
+
+                            if (! $inventory) {
+                                if ($type === 'opening' || ($type === 'in' && $finalReason === 'Opening Stock')) {
+                                    $inventory = Inventory::createForVariant(
+                                        variant: $record,
+                                        openingQuantity: $quantity,
+                                        reason: $finalReason,
+                                        note: $note,
+                                        createdBy: auth()->user(),
+                                    );
+                                } else {
+                                    $inventory = Inventory::createForVariant($record);
+                                    if ($type === 'in') {
+                                        $inventory->adjustIn($quantity, $finalReason, $note, auth()->user());
+                                    } else {
+                                        $inventory->adjustOut($quantity, $finalReason, $note, auth()->user());
+                                    }
+                                }
+                            } else {
+                                if ($type === 'opening' || ($type === 'in' && $finalReason === 'Opening Stock')) {
+                                    $inventory->openStock($quantity, $finalReason, $note, auth()->user());
+                                } elseif ($type === 'in') {
+                                    $inventory->adjustIn($quantity, $finalReason, $note, auth()->user());
+                                } elseif ($type === 'out') {
+                                    $inventory->adjustOut($quantity, $finalReason, $note, auth()->user());
+                                }
+                            }
+
+                            Notification::make()
+                                ->title('Stock adjusted successfully.')
+                                ->body("New stock level: {$inventory->fresh()->quantity}")
+                                ->success()
+                                ->send();
+                        } catch (InventoryException $e) {
+                            Notification::make()
+                                ->title('Stock Adjustment Failed')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+
+                            $action->halt();
+                        } catch (\Throwable $e) {
+                            report($e);
+                            Notification::make()
+                                ->title('Stock Adjustment Error')
+                                ->body('An unexpected error occurred while adjusting stock: '.$e->getMessage())
+                                ->danger()
+                                ->send();
+
+                            $action->halt();
+                        }
+                    }),
+
+                Action::make('editThreshold')
+                    ->label('Set Threshold')
+                    ->icon('heroicon-o-adjustments-horizontal')
+                    ->color('gray')
+                    ->modalHeading(fn (ProductVariant $record): string => 'Low Stock Threshold: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalWidth(Width::Medium)
+                    ->authorize(fn () => auth()->user()?->can('adjust', Inventory::class))
+                    ->fillForm(fn (ProductVariant $record): array => [
+                        'low_stock_threshold' => $record->inventory?->low_stock_threshold ?? 0,
+                    ])
+                    ->form([
+                        TextInput::make('low_stock_threshold')
+                            ->label('Low Stock Threshold')
+                            ->helperText('Alert threshold when stock drops to or below this level.')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->required()
+                            ->rules(['required', 'integer', 'min:0']),
+                    ])
+                    ->action(function (Action $action, ProductVariant $record, array $data): void {
+                        abort_unless(auth()->user()?->can('adjust', Inventory::class), 403, 'Unauthorized.');
+
+                        $threshold = (int) $data['low_stock_threshold'];
+
+                        try {
+                            $inventory = $record->inventory()->first();
+                            if (! $inventory) {
+                                Inventory::createForVariant($record, lowStockThreshold: $threshold);
+                            } else {
+                                $inventory->update(['low_stock_threshold' => $threshold]);
+                            }
+
+                            Notification::make()
+                                ->title('Low stock threshold updated successfully.')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            report($e);
+                            Notification::make()
+                                ->title('Threshold Update Error')
+                                ->body('An unexpected error occurred while updating threshold: '.$e->getMessage())
+                                ->danger()
+                                ->send();
+
+                            $action->halt();
+                        }
+                    }),
+
+                Action::make('stockHistory')
+                    ->label('Stock History')
+                    ->icon('heroicon-o-clock')
+                    ->color('gray')
+                    ->modalHeading(fn (ProductVariant $record): string => 'Stock History: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalWidth(Width::FiveExtraLarge)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->authorize(fn () => auth()->user()?->can('viewHistory', Inventory::class))
+                    ->modalContent(fn (ProductVariant $record) => view('filament.resources.products.variant-stock-history-modal', ['variant' => $record])),
 
                 EditAction::make()
                     ->mutateRecordDataUsing(function (array $data, ProductVariant $record): array {
