@@ -211,6 +211,7 @@ test('6. History is scoped strictly to the selected ProductVariant', function ()
 
 test('7. Movements are ordered newest first (created_at DESC, id DESC)', function () {
     [$product, $variant] = createHistoryTestProductWithVariant();
+    Carbon::setTestNow('2026-09-25 09:00:00');
     $inventory = Inventory::createForVariant($variant, 10);
 
     Carbon::setTestNow('2026-09-25 10:00:00');

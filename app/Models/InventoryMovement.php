@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\InventoryMovementType;
 use Database\Factories\InventoryMovementFactory;
+use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,20 @@ class InventoryMovement extends Model
      * @var string|null
      */
     public const UPDATED_AT = null;
+
+    /**
+     * Bootstrap model event hooks.
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (InventoryMovement $movement): void {
+            throw new DomainException('Inventory movements are immutable ledger records and cannot be updated.');
+        });
+
+        static::deleting(function (InventoryMovement $movement): void {
+            throw new DomainException('Inventory movements are immutable ledger records and cannot be deleted.');
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
