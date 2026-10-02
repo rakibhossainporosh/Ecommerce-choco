@@ -106,6 +106,39 @@ class ProductVariant extends Model
     }
 
     /**
+     * Determine whether this variant can be safely deleted according to business rules.
+     */
+    public function canBeDeleted(): bool
+    {
+        // 1. If variant is active, at least one other active, non-deleted variant must remain
+        if ($this->is_active) {
+            $otherActiveExists = static::where('product_id', $this->product_id)
+                ->where('id', '!=', $this->id)
+                ->where('is_active', true)
+                ->exists();
+
+            if (! $otherActiveExists) {
+                return false;
+            }
+        }
+
+        // 2. A default Variant cannot be deleted while another active Variant is not already designated as default
+        if ($this->is_default) {
+            $otherDefaultExists = static::where('product_id', $this->product_id)
+                ->where('id', '!=', $this->id)
+                ->where('is_default', true)
+                ->where('is_active', true)
+                ->exists();
+
+            if (! $otherDefaultExists) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Get the product that owns the variant.
      *
      * @return BelongsTo<Product, $this>
