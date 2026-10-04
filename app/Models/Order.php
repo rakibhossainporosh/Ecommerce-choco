@@ -5,12 +5,14 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Exceptions\InvalidOrderTransitionException;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable([
     'order_number',
@@ -125,5 +127,168 @@ class Order extends Model
     public function cancelledBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
+    /**
+     * Check if the order can transition to the given status.
+     */
+    public function canTransitionTo(OrderStatus $target): bool
+    {
+        return $this->status->canTransitionTo($target);
+    }
+
+    /**
+     * Check if the order can be cancelled from its current status.
+     */
+    public function canBeCancelled(): bool
+    {
+        return $this->status->canBeCancelled();
+    }
+
+    /**
+     * Transition the order to a new status atomically with row locking.
+     *
+     * @throws InvalidOrderTransitionException
+     */
+    public function transitionTo(OrderStatus $targetStatus): self
+    {
+        return $this->executeTransition($targetStatus);
+    }
+
+    /**
+     * Internal atomic transition runner with pessimistic row locking.
+     *
+     * @throws InvalidOrderTransitionException
+     */
+    protected function executeTransition(
+        OrderStatus $targetStatus,
+        ?string $cancellationReason = null,
+        ?User $cancelledBy = null,
+    ): self {
+        if (! $this->exists) {
+            throw InvalidOrderTransitionException::unsavedOrder();
+        }
+
+        return DB::transaction(function () use ($targetStatus, $cancellationReason, $cancelledBy): self {
+            /** @var self $lockedOrder */
+            $lockedOrder = static::query()
+                ->whereKey($this->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! $lockedOrder->canTransitionTo($targetStatus)) {
+                throw InvalidOrderTransitionException::cannotTransition($lockedOrder->status, $targetStatus);
+            }
+
+            // Cancellation requires a non-empty reason and records metadata
+            if ($targetStatus === OrderStatus::Cancelled) {
+                $trimmedReason = trim((string) $cancellationReason);
+
+                if ($trimmedReason === '') {
+                    throw InvalidOrderTransitionException::missingCancellationReason($lockedOrder->status);
+                }
+
+                $lockedOrder->status = OrderStatus::Cancelled;
+                $lockedOrder->cancelled_at = now();
+                $lockedOrder->cancelled_by = $cancelledBy?->getKey();
+                $lockedOrder->cancellation_reason = $trimmedReason;
+            } else {
+                $lockedOrder->status = $targetStatus;
+            }
+
+            $lockedOrder->save();
+
+            // Synchronize in-memory model state and clear relation cache
+            $this->setRawAttributes($lockedOrder->getAttributes(), true);
+            $this->unsetRelation('cancelledBy');
+
+            return $this;
+        });
+    }
+
+    /**
+     * Confirm the order.
+     *
+     * @throws InvalidOrderTransitionException
+     */
+    public function confirm(): self
+    {
+        return $this->transitionTo(OrderStatus::Confirmed);
+    }
+
+    /**
+     * Start processing the order.
+     *
+     * @throws InvalidOrderTransitionException
+     */
+    public function startProcessing(): self
+    {
+        return $this->transitionTo(OrderStatus::Processing);
+    }
+
+    /**
+     * Mark the order as shipped.
+     *
+     * @throws InvalidOrderTransitionException
+     */
+    public function ship(): self
+    {
+        return $this->transitionTo(OrderStatus::Shipped);
+    }
+
+    /**
+     * Mark the order as delivered.
+     *
+     * @throws InvalidOrderTransitionException
+     */
+    public function deliver(): self
+    {
+        return $this->transitionTo(OrderStatus::Delivered);
+    }
+
+    /**
+     * Cancel the order with a mandatory reason and optional cancelling user.
+     *
+     * @throws InvalidOrderTransitionException
+     */
+    public function cancel(string $reason, ?User $user = null): self
+    {
+        $trimmedReason = trim($reason);
+
+        if ($trimmedReason === '') {
+            throw InvalidOrderTransitionException::missingCancellationReason();
+        }
+
+        return $this->executeTransition(OrderStatus::Cancelled, $trimmedReason, $user);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === OrderStatus::Pending;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === OrderStatus::Confirmed;
+    }
+
+    public function isProcessing(): bool
+    {
+        return $this->status === OrderStatus::Processing;
+    }
+
+    public function isShipped(): bool
+    {
+        return $this->status === OrderStatus::Shipped;
+    }
+
+    public function isDelivered(): bool
+    {
+        return $this->status === OrderStatus::Delivered;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === OrderStatus::Cancelled;
     }
 }
