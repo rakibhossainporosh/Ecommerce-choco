@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use App\Models\User;
 use App\Policies\CategoryPolicy;
 use App\Policies\OrderPolicy;
@@ -63,9 +64,9 @@ if (! class_exists('UiStubProductModel')) {
 }
 
 if (! class_exists('UiStubOrderModel')) {
-    class UiStubOrderModel extends Model
+    class UiStubOrderModel extends Order
     {
-        protected $table = 'ui_stub_orders';
+        protected $table = 'orders';
     }
 }
 
