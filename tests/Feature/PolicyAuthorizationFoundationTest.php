@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use App\Models\User;
 use App\Policies\CategoryPolicy;
 use App\Policies\OrderPolicy;
@@ -19,6 +20,7 @@ beforeEach(function () {
     $this->categoryPolicy = new CategoryPolicy;
     $this->productPolicy = new ProductPolicy;
     $this->orderPolicy = new OrderPolicy;
+    $this->orderModel = Order::factory()->create();
 });
 
 test('A: Admin can authorize all representative policy abilities via centralized Gate::before', function () {
@@ -43,10 +45,10 @@ test('A: Admin can authorize all representative policy abilities via centralized
 
     // OrderPolicy
     expect($this->orderPolicy->viewAny($admin))->toBeTrue()
-        ->and($this->orderPolicy->view($admin))->toBeTrue()
+        ->and($this->orderPolicy->view($admin, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->create($admin))->toBeTrue()
         ->and($this->orderPolicy->update($admin))->toBeTrue()
-        ->and($this->orderPolicy->cancel($admin))->toBeTrue()
+        ->and($this->orderPolicy->cancel($admin, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->refund($admin))->toBeTrue();
 });
 
@@ -79,10 +81,10 @@ test('D: Manager OrderPolicy authorization (viewAny/create/update/cancel allowed
     $manager->assignRole('Manager');
 
     expect($this->orderPolicy->viewAny($manager))->toBeTrue()
-        ->and($this->orderPolicy->view($manager))->toBeTrue()
+        ->and($this->orderPolicy->view($manager, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->create($manager))->toBeTrue()
         ->and($this->orderPolicy->update($manager))->toBeTrue()
-        ->and($this->orderPolicy->cancel($manager))->toBeTrue()
+        ->and($this->orderPolicy->cancel($manager, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->refund($manager))->toBeFalse();
 });
 
@@ -103,10 +105,10 @@ test('F: Staff OrderPolicy authorization (viewAny/create/update allowed, cancel/
     $staff->assignRole('Staff');
 
     expect($this->orderPolicy->viewAny($staff))->toBeTrue()
-        ->and($this->orderPolicy->view($staff))->toBeTrue()
+        ->and($this->orderPolicy->view($staff, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->create($staff))->toBeTrue()
         ->and($this->orderPolicy->update($staff))->toBeTrue()
-        ->and($this->orderPolicy->cancel($staff))->toBeFalse()
+        ->and($this->orderPolicy->cancel($staff, $this->orderModel))->toBeFalse()
         ->and($this->orderPolicy->refund($staff))->toBeFalse();
 });
 
@@ -131,10 +133,10 @@ test('G: A user with no role and no permission is denied across all policy metho
 
     // OrderPolicy
     expect($this->orderPolicy->viewAny($guestUser))->toBeFalse()
-        ->and($this->orderPolicy->view($guestUser))->toBeFalse()
+        ->and($this->orderPolicy->view($guestUser, $this->orderModel))->toBeFalse()
         ->and($this->orderPolicy->create($guestUser))->toBeFalse()
         ->and($this->orderPolicy->update($guestUser))->toBeFalse()
-        ->and($this->orderPolicy->cancel($guestUser))->toBeFalse()
+        ->and($this->orderPolicy->cancel($guestUser, $this->orderModel))->toBeFalse()
         ->and($this->orderPolicy->refund($guestUser))->toBeFalse();
 });
 
@@ -186,11 +188,11 @@ test('I: Admin role does NOT bypass can_access_admin_panel', function () {
 test('Gate pipeline integration: policies resolve abilities via Gate using temporary test stubs', function () {
     $categoryStub = new class {};
     $productStub = new class {};
-    $orderStub = new class {};
+    $orderStub = Order::factory()->create();
 
     Gate::policy(get_class($categoryStub), CategoryPolicy::class);
     Gate::policy(get_class($productStub), ProductPolicy::class);
-    Gate::policy(get_class($orderStub), OrderPolicy::class);
+    Gate::policy(Order::class, OrderPolicy::class);
 
     // 1. Admin bypasses all restrictions through Gate::before in the Gate pipeline
     $admin = User::factory()->create();

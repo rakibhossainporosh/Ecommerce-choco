@@ -292,3 +292,35 @@ test('13. OrderPolicy direct instance methods evaluate correct permission string
         ->and($policy->viewAny($viewer))->toBeTrue()
         ->and($policy->view($confirmer, $order))->toBeFalse();
 });
+
+test('14. OrderPolicy methods enforce strict concrete Order parameter type with no default value', function () {
+    $reflection = new ReflectionClass(OrderPolicy::class);
+
+    $strictMethods = ['view', 'confirm', 'process', 'ship', 'deliver', 'cancel'];
+
+    foreach ($strictMethods as $methodName) {
+        expect($reflection->hasMethod($methodName))->toBeTrue();
+
+        $method = $reflection->getMethod($methodName);
+        $parameters = $method->getParameters();
+
+        expect($parameters)->toHaveCount(2)
+            ->and($parameters[0]->getName())->toBe('user')
+            ->and($parameters[0]->getType()?->getName())->toBe(User::class)
+            ->and($parameters[0]->isDefaultValueAvailable())->toBeFalse()
+            ->and($parameters[1]->getName())->toBe('order')
+            ->and($parameters[1]->getType()?->getName())->toBe(Order::class)
+            ->and($parameters[1]->isDefaultValueAvailable())->toBeFalse()
+            ->and($parameters[1]->allowsNull())->toBeFalse();
+
+        expect($method->getReturnType()?->getName())->toBe('bool');
+    }
+
+    $viewAny = $reflection->getMethod('viewAny');
+    $viewAnyParams = $viewAny->getParameters();
+    expect($viewAnyParams)->toHaveCount(1)
+        ->and($viewAnyParams[0]->getName())->toBe('user')
+        ->and($viewAnyParams[0]->getType()?->getName())->toBe(User::class)
+        ->and($viewAnyParams[0]->isDefaultValueAvailable())->toBeFalse()
+        ->and($viewAny->getReturnType()?->getName())->toBe('bool');
+});

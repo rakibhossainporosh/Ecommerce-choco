@@ -17,60 +17,48 @@ class OrderPolicy
 
     /**
      * Determine whether the user can view the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function view(User $user, mixed $order = null): bool
+    public function view(User $user, Order $order): bool
     {
         return $user->can('orders.view');
     }
 
     /**
      * Determine whether the user can confirm the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function confirm(User $user, mixed $order = null): bool
+    public function confirm(User $user, Order $order): bool
     {
         return $user->can('orders.confirm');
     }
 
     /**
      * Determine whether the user can process the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function process(User $user, mixed $order = null): bool
+    public function process(User $user, Order $order): bool
     {
         return $user->can('orders.process');
     }
 
     /**
      * Determine whether the user can ship the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function ship(User $user, mixed $order = null): bool
+    public function ship(User $user, Order $order): bool
     {
         return $user->can('orders.ship');
     }
 
     /**
      * Determine whether the user can deliver the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function deliver(User $user, mixed $order = null): bool
+    public function deliver(User $user, Order $order): bool
     {
         return $user->can('orders.deliver');
     }
 
     /**
      * Determine whether the user can cancel the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function cancel(User $user, mixed $order = null): bool
+    public function cancel(User $user, Order $order): bool
     {
         return $user->can('orders.cancel');
     }

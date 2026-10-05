@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use App\Models\User;
 use App\Policies\CategoryPolicy;
 use App\Policies\OrderPolicy;
@@ -52,9 +53,9 @@ if (! class_exists('HardenedStubProductModel')) {
 }
 
 if (! class_exists('HardenedStubOrderModel')) {
-    class HardenedStubOrderModel extends Model
+    class HardenedStubOrderModel extends Order
     {
-        protected $table = 'hardened_stub_orders';
+        protected $table = 'orders';
     }
 }
 
@@ -105,6 +106,7 @@ beforeEach(function () {
     $this->categoryPolicy = new CategoryPolicy;
     $this->productPolicy = new ProductPolicy;
     $this->orderPolicy = new OrderPolicy;
+    $this->orderModel = Order::factory()->create();
 });
 
 /*
@@ -219,7 +221,7 @@ test('admin gate before: Admin has 0 database permissions but authorizes all 29 
         ->and($this->orderPolicy->viewAny($admin))->toBeTrue()
         ->and($this->orderPolicy->create($admin))->toBeTrue()
         ->and($this->orderPolicy->update($admin))->toBeTrue()
-        ->and($this->orderPolicy->cancel($admin))->toBeTrue()
+        ->and($this->orderPolicy->cancel($admin, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->refund($admin))->toBeTrue();
 });
 
@@ -265,10 +267,10 @@ test('role boundary: Manager has exactly 23 permissions and is strictly denied t
         ->and($this->productPolicy->create($manager))->toBeTrue()
         ->and($this->productPolicy->update($manager))->toBeTrue()
         ->and($this->orderPolicy->viewAny($manager))->toBeTrue()
-        ->and($this->orderPolicy->view($manager))->toBeTrue()
+        ->and($this->orderPolicy->view($manager, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->create($manager))->toBeTrue()
         ->and($this->orderPolicy->update($manager))->toBeTrue()
-        ->and($this->orderPolicy->cancel($manager))->toBeTrue();
+        ->and($this->orderPolicy->cancel($manager, $this->orderModel))->toBeTrue();
 });
 
 test('role boundary: Staff has exactly 9 permissions and is strictly denied the 20 catalog/delete/cancel/refund abilities', function () {
@@ -303,14 +305,14 @@ test('role boundary: Staff has exactly 9 permissions and is strictly denied the 
         ->and($this->productPolicy->update($staff))->toBeFalse()
         ->and($this->productPolicy->delete($staff))->toBeFalse()
         ->and($this->productPolicy->deleteAny($staff))->toBeFalse()
-        ->and($this->orderPolicy->cancel($staff))->toBeFalse()
+        ->and($this->orderPolicy->cancel($staff, $this->orderModel))->toBeFalse()
         ->and($this->orderPolicy->refund($staff))->toBeFalse();
 
     // Permitted policy actions evaluate true
     expect($this->productPolicy->viewAny($staff))->toBeTrue()
         ->and($this->productPolicy->view($staff))->toBeTrue()
         ->and($this->orderPolicy->viewAny($staff))->toBeTrue()
-        ->and($this->orderPolicy->view($staff))->toBeTrue()
+        ->and($this->orderPolicy->view($staff, $this->orderModel))->toBeTrue()
         ->and($this->orderPolicy->create($staff))->toBeTrue()
         ->and($this->orderPolicy->update($staff))->toBeTrue();
 });
@@ -336,10 +338,10 @@ test('negative authorization: user with zero permissions is denied across all po
 
     // Order policy
     expect($this->orderPolicy->viewAny($userWithoutPermissions))->toBeFalse()
-        ->and($this->orderPolicy->view($userWithoutPermissions))->toBeFalse()
+        ->and($this->orderPolicy->view($userWithoutPermissions, $this->orderModel))->toBeFalse()
         ->and($this->orderPolicy->create($userWithoutPermissions))->toBeFalse()
         ->and($this->orderPolicy->update($userWithoutPermissions))->toBeFalse()
-        ->and($this->orderPolicy->cancel($userWithoutPermissions))->toBeFalse()
+        ->and($this->orderPolicy->cancel($userWithoutPermissions, $this->orderModel))->toBeFalse()
         ->and($this->orderPolicy->refund($userWithoutPermissions))->toBeFalse();
 });
 
@@ -363,7 +365,7 @@ test('direct permission: user with zero roles granted orders.refund has capabili
 
     // Unrelated abilities remain strictly denied
     expect($rolelessUser->can('orders.cancel'))->toBeFalse()
-        ->and($this->orderPolicy->cancel($rolelessUser))->toBeFalse()
+        ->and($this->orderPolicy->cancel($rolelessUser, $this->orderModel))->toBeFalse()
         ->and($rolelessUser->can('products.delete'))->toBeFalse()
         ->and($this->productPolicy->delete($rolelessUser))->toBeFalse()
         ->and($rolelessUser->can('categories.delete'))->toBeFalse()
