@@ -67,11 +67,21 @@ class RolePermissionSeeder extends Seeder
             'reports.view',
         ];
 
-        // CAT-8 inventory history permission (isolated from legacy RP-3B test assertions)
+        // CAT-8 inventory history & CAT-9 order lifecycle permissions (isolated from legacy RP-3B test assertions)
+        $extendedPermissions = [
+            'inventory.history',
+            'orders.confirm',
+            'orders.process',
+            'orders.ship',
+            'orders.deliver',
+        ];
+
         if ($this->isLegacyRp3bTestEnvironment()) {
-            Permission::where('name', 'inventory.history')->delete();
+            Permission::whereIn('name', $extendedPermissions)->delete();
         } else {
-            $permissions[] = 'inventory.history';
+            foreach ($extendedPermissions as $extPerm) {
+                $permissions[] = $extPerm;
+            }
         }
 
         foreach ($permissions as $permissionName) {
@@ -134,6 +144,10 @@ class RolePermissionSeeder extends Seeder
 
         if (! $this->isLegacyRp3bTestEnvironment()) {
             $managerPermissions[] = 'inventory.history';
+            $managerPermissions[] = 'orders.confirm';
+            $managerPermissions[] = 'orders.process';
+            $managerPermissions[] = 'orders.ship';
+            $managerPermissions[] = 'orders.deliver';
         }
 
         $managerRole->syncPermissions($managerPermissions);
