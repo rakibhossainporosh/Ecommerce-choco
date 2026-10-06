@@ -53,4 +53,20 @@ class InventoryException extends DomainException
     {
         return new self('Cannot perform inventory mutations on an unsaved inventory record.');
     }
+
+    /**
+     * Exception for insufficient stock during order confirmation.
+     */
+    public static function insufficientStockForOrder(string $sku, int $requested, int $available): self
+    {
+        return new self("Insufficient stock for SKU {$sku}. Available: {$available}. Requested: {$requested}.");
+    }
+
+    /**
+     * Exception when inventory record is not initialized for an order item variant.
+     */
+    public static function notInitializedForOrder(string $sku): self
+    {
+        return new self("Inventory record not initialized for SKU {$sku}.");
+    }
 }

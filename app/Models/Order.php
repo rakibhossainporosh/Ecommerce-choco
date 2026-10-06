@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\InventoryMovementType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Exceptions\InvalidOrderTransitionException;
+use App\Exceptions\InventoryException;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -206,6 +209,81 @@ class Order extends Model
 
             $fromStatus = $lockedOrder->status;
             $actor = $cancelledBy ?? auth()->user();
+
+            // Deduct stock and record sale movements when transitioning to Confirmed
+            if ($targetStatus === OrderStatus::Confirmed) {
+                $orderItems = $lockedOrder->items()->get();
+
+                if ($orderItems->isNotEmpty()) {
+                    /** @var array<int, int> $requiredQuantities */
+                    $requiredQuantities = [];
+                    /** @var array<int, string> $variantSkus */
+                    $variantSkus = [];
+
+                    foreach ($orderItems as $item) {
+                        $variantId = $item->product_variant_id;
+                        $requiredQuantities[$variantId] = ($requiredQuantities[$variantId] ?? 0) + $item->quantity;
+                        if (! isset($variantSkus[$variantId])) {
+                            $variantSkus[$variantId] = $item->sku ?? "Variant #{$variantId}";
+                        }
+                    }
+
+                    $variantIds = array_keys($requiredQuantities);
+                    sort($variantIds, SORT_NUMERIC);
+
+                    /** @var Collection<int, Inventory> $lockedInventories */
+                    $lockedInventories = Inventory::query()
+                        ->whereIn('product_variant_id', $variantIds)
+                        ->orderBy('product_variant_id', 'asc')
+                        ->lockForUpdate()
+                        ->get()
+                        ->keyBy('product_variant_id');
+
+                    // Check all variants have initialized inventory records
+                    foreach ($variantIds as $variantId) {
+                        if (! $lockedInventories->has($variantId)) {
+                            $sku = $variantSkus[$variantId] ?? "Variant #{$variantId}";
+                            throw InventoryException::notInitializedForOrder($sku);
+                        }
+                    }
+
+                    // Validate stock availability for all variants before mutating
+                    foreach ($variantIds as $variantId) {
+                        /** @var Inventory $inventory */
+                        $inventory = $lockedInventories->get($variantId);
+                        $required = $requiredQuantities[$variantId];
+
+                        if ($inventory->quantity < $required) {
+                            $sku = $variantSkus[$variantId] ?? "Variant #{$variantId}";
+                            throw InventoryException::insufficientStockForOrder($sku, $required, $inventory->quantity);
+                        }
+                    }
+
+                    // Deduct stock and create sale movements
+                    foreach ($orderItems as $item) {
+                        /** @var Inventory $inventory */
+                        $inventory = $lockedInventories->get($item->product_variant_id);
+                        $quantityBefore = $inventory->quantity;
+                        $quantityAfter = $quantityBefore - $item->quantity;
+
+                        $inventory->quantity = $quantityAfter;
+                        $inventory->save();
+
+                        $inventory->movements()->create([
+                            'product_variant_id' => $inventory->product_variant_id,
+                            'type' => InventoryMovementType::Sale,
+                            'quantity' => $item->quantity,
+                            'quantity_before' => $quantityBefore,
+                            'quantity_after' => $quantityAfter,
+                            'reference_type' => Order::class,
+                            'reference_id' => $lockedOrder->id,
+                            'reason' => 'Sale',
+                            'note' => "Order #{$lockedOrder->order_number}",
+                            'created_by' => $actor?->getKey(),
+                        ]);
+                    }
+                }
+            }
 
             // Cancellation requires a non-empty reason and records metadata
             if ($targetStatus === OrderStatus::Cancelled) {

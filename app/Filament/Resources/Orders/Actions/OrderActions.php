@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Actions;
 
 use App\Enums\OrderStatus;
 use App\Exceptions\InvalidOrderTransitionException;
+use App\Exceptions\InventoryException;
 use App\Models\Order;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -43,7 +44,7 @@ class OrderActions
                         ->body("Order #{$record->order_number} has been confirmed.")
                         ->success()
                         ->send();
-                } catch (InvalidOrderTransitionException $e) {
+                } catch (InvalidOrderTransitionException|InventoryException $e) {
                     Notification::make()
                         ->title('Transition Failed')
                         ->body($e->getMessage())

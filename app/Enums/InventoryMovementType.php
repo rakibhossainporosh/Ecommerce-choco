@@ -7,6 +7,7 @@ enum InventoryMovementType: string
     case Opening = 'opening';
     case AdjustmentIn = 'adjustment_in';
     case AdjustmentOut = 'adjustment_out';
+    case Sale = 'sale';
 
     /**
      * Get all values of the enum.

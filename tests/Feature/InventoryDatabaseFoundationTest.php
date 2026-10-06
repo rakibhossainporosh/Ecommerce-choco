@@ -218,15 +218,16 @@ test('10. InventoryMovement supports nullable polymorphic reference fields', fun
         ->and($movementWithRef->reference->id)->toBe($dummyTarget->id);
 });
 
-test('11. Movement types are restricted to opening, adjustment_in, adjustment_out', function () {
+test('11. Movement types are restricted to opening, adjustment_in, adjustment_out, sale', function () {
     $expectedCases = [
         'opening',
         'adjustment_in',
         'adjustment_out',
+        'sale',
     ];
 
     expect(InventoryMovementType::values())->toBe($expectedCases)
-        ->and(count(InventoryMovementType::cases()))->toBe(3);
+        ->and(count(InventoryMovementType::cases()))->toBe(4);
 
     // Invalid enum value assignment throws ValueError
     expect(function () {
@@ -234,7 +235,7 @@ test('11. Movement types are restricted to opening, adjustment_in, adjustment_ou
         InventoryMovement::create([
             'inventory_id' => $inventory->id,
             'product_variant_id' => $inventory->product_variant_id,
-            'type' => 'sale',
+            'type' => 'invalid_movement_type',
             'quantity' => 10,
             'quantity_before' => 20,
             'quantity_after' => 10,
