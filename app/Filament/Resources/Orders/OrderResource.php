@@ -53,7 +53,7 @@ class OrderResource extends Resource
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['items']);
+            ->with(['items', 'statusHistories.changedBy']);
     }
 
     /**

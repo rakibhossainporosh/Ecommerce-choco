@@ -17,6 +17,7 @@ beforeEach(function () {
     $this->app['config']->set('database.connections.mysql.database', 'ecommerce_choco_test');
 
     Schema::disableForeignKeyConstraints();
+    DB::table('order_status_histories')->truncate();
     DB::table('order_items')->truncate();
     DB::table('orders')->truncate();
     Schema::enableForeignKeyConstraints();
@@ -24,6 +25,7 @@ beforeEach(function () {
 
 afterEach(function () {
     Schema::disableForeignKeyConstraints();
+    DB::table('order_status_histories')->truncate();
     DB::table('order_items')->truncate();
     DB::table('orders')->truncate();
     Schema::enableForeignKeyConstraints();

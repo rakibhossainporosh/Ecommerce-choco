@@ -237,6 +237,69 @@ class OrderInfolist
                             ->weight('bold')
                             ->formatStateUsing($currencyFormat),
                     ]),
+
+                Section::make('Status History')
+                    ->schema([
+                        RepeatableEntry::make('statusHistories')
+                            ->label('Audit Trail')
+                            ->placeholder('No status transitions recorded.')
+                            ->schema([
+                                TextEntry::make('created_at')
+                                    ->label('Date & Time')
+                                    ->dateTime(),
+
+                                TextEntry::make('from_status')
+                                    ->label('From Status')
+                                    ->badge()
+                                    ->formatStateUsing(fn (?OrderStatus $state): ?string => $state?->label()
+                                        ?? (is_string($state) ? OrderStatus::tryFrom($state)?->label() : null)
+                                        ?? $state?->value
+                                        ?? (string) $state
+                                    )
+                                    ->color(fn ($state): string => match ($state instanceof OrderStatus ? $state : OrderStatus::tryFrom((string) $state)) {
+                                        OrderStatus::Pending => 'warning',
+                                        OrderStatus::Confirmed => 'info',
+                                        OrderStatus::Processing => 'primary',
+                                        OrderStatus::Shipped => 'purple',
+                                        OrderStatus::Delivered => 'success',
+                                        OrderStatus::Cancelled => 'danger',
+                                        OrderStatus::Returned, OrderStatus::Refunded => 'gray',
+                                        default => 'gray',
+                                    }),
+
+                                TextEntry::make('to_status')
+                                    ->label('To Status')
+                                    ->badge()
+                                    ->formatStateUsing(fn (?OrderStatus $state): ?string => $state?->label()
+                                        ?? (is_string($state) ? OrderStatus::tryFrom($state)?->label() : null)
+                                        ?? $state?->value
+                                        ?? (string) $state
+                                    )
+                                    ->color(fn ($state): string => match ($state instanceof OrderStatus ? $state : OrderStatus::tryFrom((string) $state)) {
+                                        OrderStatus::Pending => 'warning',
+                                        OrderStatus::Confirmed => 'info',
+                                        OrderStatus::Processing => 'primary',
+                                        OrderStatus::Shipped => 'purple',
+                                        OrderStatus::Delivered => 'success',
+                                        OrderStatus::Cancelled => 'danger',
+                                        OrderStatus::Returned, OrderStatus::Refunded => 'gray',
+                                        default => 'gray',
+                                    }),
+
+                                TextEntry::make('changedBy.name')
+                                    ->label('Changed By')
+                                    ->placeholder('System'),
+
+                                TextEntry::make('reason')
+                                    ->label('Reason')
+                                    ->placeholder('—'),
+                            ])
+                            ->columns([
+                                'default' => 1,
+                                'sm' => 2,
+                                'md' => 5,
+                            ]),
+                    ]),
             ]);
     }
 }

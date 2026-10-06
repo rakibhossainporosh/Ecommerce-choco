@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
 #[Fillable([
@@ -130,6 +131,29 @@ class Order extends Model
     }
 
     /**
+     * Get all status history records for this order.
+     *
+     * @return HasMany<OrderStatusHistory, $this>
+     */
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'order_id')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
+    }
+
+    /**
+     * Get the latest status history record for this order.
+     *
+     * @return HasOne<OrderStatusHistory, $this>
+     */
+    public function latestStatusHistory(): HasOne
+    {
+        return $this->hasOne(OrderStatusHistory::class, 'order_id')
+            ->latestOfMany('created_at');
+    }
+
+    /**
      * Check if the order can transition to the given status.
      */
     public function canTransitionTo(OrderStatus $target): bool
@@ -180,6 +204,9 @@ class Order extends Model
                 throw InvalidOrderTransitionException::cannotTransition($lockedOrder->status, $targetStatus);
             }
 
+            $fromStatus = $lockedOrder->status;
+            $actor = $cancelledBy ?? auth()->user();
+
             // Cancellation requires a non-empty reason and records metadata
             if ($targetStatus === OrderStatus::Cancelled) {
                 $trimmedReason = trim((string) $cancellationReason);
@@ -190,7 +217,7 @@ class Order extends Model
 
                 $lockedOrder->status = OrderStatus::Cancelled;
                 $lockedOrder->cancelled_at = now();
-                $lockedOrder->cancelled_by = $cancelledBy?->getKey();
+                $lockedOrder->cancelled_by = $actor?->getKey();
                 $lockedOrder->cancellation_reason = $trimmedReason;
             } else {
                 $lockedOrder->status = $targetStatus;
@@ -198,9 +225,19 @@ class Order extends Model
 
             $lockedOrder->save();
 
+            // Create immutable status history entry within the same atomic transaction
+            $lockedOrder->statusHistories()->create([
+                'from_status' => $fromStatus,
+                'to_status' => $targetStatus,
+                'changed_by' => $actor?->getKey(),
+                'reason' => $targetStatus === OrderStatus::Cancelled ? $trimmedReason : null,
+            ]);
+
             // Synchronize in-memory model state and clear relation cache
             $this->setRawAttributes($lockedOrder->getAttributes(), true);
             $this->unsetRelation('cancelledBy');
+            $this->unsetRelation('statusHistories');
+            $this->unsetRelation('latestStatusHistory');
 
             return $this;
         });
