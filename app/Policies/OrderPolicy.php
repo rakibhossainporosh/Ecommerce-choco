@@ -73,20 +73,16 @@ class OrderPolicy
 
     /**
      * Determine whether the user can update the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function update(User $user, mixed $order = null): bool
+    public function update(User $user, Order $order): bool
     {
         return $user->can('orders.update');
     }
 
     /**
      * Determine whether the user can refund the order.
-     *
-     * @param  Order|mixed|null  $order
      */
-    public function refund(User $user, mixed $order = null): bool
+    public function refund(User $user, Order $order): bool
     {
         return $user->can('orders.refund');
     }

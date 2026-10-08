@@ -293,6 +293,10 @@ class Order extends Model
                     throw InvalidOrderTransitionException::missingCancellationReason($lockedOrder->status);
                 }
 
+                if (mb_strlen($trimmedReason) > 255) {
+                    throw InvalidOrderTransitionException::cancellationReasonTooLong(255, $lockedOrder->status);
+                }
+
                 $lockedOrder->status = OrderStatus::Cancelled;
                 $lockedOrder->cancelled_at = now();
                 $lockedOrder->cancelled_by = $actor?->getKey();

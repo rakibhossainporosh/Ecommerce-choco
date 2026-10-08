@@ -52,6 +52,18 @@ class InvalidOrderTransitionException extends DomainException
     }
 
     /**
+     * Exception when cancellation reason exceeds the maximum allowed length.
+     */
+    public static function cancellationReasonTooLong(int $maxLength, ?OrderStatus $from = null): self
+    {
+        return new self(
+            message: "Cancellation reason cannot exceed {$maxLength} characters.",
+            fromStatus: $from,
+            toStatus: OrderStatus::Cancelled,
+        );
+    }
+
+    /**
      * Exception when attempting a transition on an unsaved order.
      */
     public static function unsavedOrder(): self
