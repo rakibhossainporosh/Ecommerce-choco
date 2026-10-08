@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 #[Fillable([
     'order_number',
+    'customer_id',
     'user_id',
     'customer_name',
     'customer_phone',
@@ -78,6 +79,7 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'customer_id' => 'integer',
             'user_id' => 'integer',
             'status' => OrderStatus::class,
             'payment_status' => PaymentStatus::class,
@@ -91,6 +93,16 @@ class Order extends Model
             'cancelled_at' => 'datetime',
             'cancelled_by' => 'integer',
         ];
+    }
+
+    /**
+     * Get the customer CRM profile associated with this order.
+     *
+     * @return BelongsTo<Customer, $this>
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     /**
