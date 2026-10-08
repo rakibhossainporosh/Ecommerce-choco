@@ -23,6 +23,7 @@ class SettingResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static \UnitEnum|string|null $navigationGroup = 'System';
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {

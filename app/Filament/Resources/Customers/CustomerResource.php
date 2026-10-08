@@ -22,8 +22,16 @@ use Illuminate\Database\Eloquent\Model;
 class CustomerResource extends Resource
 {
     protected static ?string $model = Customer::class;
+    
+    protected static ?string $recordTitleAttribute = 'email';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['first_name', 'last_name', 'email', 'phone'];
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static \UnitEnum|string|null $navigationGroup = 'Customers & Marketing';
 
     protected static ?string $navigationLabel = 'Customers';
 
@@ -31,7 +39,7 @@ class CustomerResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Customers';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {

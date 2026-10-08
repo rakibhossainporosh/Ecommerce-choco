@@ -20,8 +20,17 @@ use Illuminate\Database\Eloquent\Model;
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
+    
+    protected static ?string $recordTitleAttribute = 'order_number';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['order_number', 'customer.first_name', 'customer.last_name', 'customer.email'];
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
+    protected static \UnitEnum|string|null $navigationGroup = 'Sales';
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $navigationLabel = 'Orders';
 

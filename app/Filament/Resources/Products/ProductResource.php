@@ -21,8 +21,17 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
+    
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'sku', 'barcode'];
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
+    protected static \UnitEnum|string|null $navigationGroup = 'Catalog';
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $navigationLabel = 'Products';
 

@@ -21,6 +21,8 @@ class UnitResource extends Resource
     protected static ?string $model = Unit::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedScale;
+    protected static \UnitEnum|string|null $navigationGroup = 'Catalog';
+    protected static ?int $navigationSort = 50;
 
     protected static ?string $navigationLabel = 'Units';
 

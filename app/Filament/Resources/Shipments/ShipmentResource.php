@@ -22,6 +22,7 @@ class ShipmentResource extends Resource
     protected static ?string $model = Shipment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
+    protected static \UnitEnum|string|null $navigationGroup = 'Shipping';
 
     protected static ?string $navigationLabel = 'Shipments';
 
@@ -29,7 +30,7 @@ class ShipmentResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Shipments';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {

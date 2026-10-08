@@ -24,7 +24,7 @@ class CourierShipmentResource extends Resource
 
     protected static \UnitEnum|string|null $navigationGroup = 'Shipping';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
     {

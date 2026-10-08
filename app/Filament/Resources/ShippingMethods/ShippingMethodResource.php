@@ -17,6 +17,7 @@ class ShippingMethodResource extends Resource
     protected static ?string $model = ShippingMethod::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
+    protected static \UnitEnum|string|null $navigationGroup = 'Shipping';
 
     protected static ?string $navigationLabel = 'Shipping Methods';
 
@@ -24,7 +25,7 @@ class ShippingMethodResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Shipping Methods';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 40;
 
     public static function form(Schema $schema): Schema
     {
