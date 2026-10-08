@@ -77,9 +77,9 @@ test('4. Unauthenticated guest is redirected to admin login', function () {
 test('5. Shipment editing is disabled in resource', function () {
     $admin = User::factory()->create(['can_access_admin_panel' => true]);
     $admin->assignRole('Admin');
-    
+
     $shipment = Shipment::factory()->create();
-    
+
     $this->actingAs($admin);
     expect(ShipmentResource::canEdit($shipment))->toBeFalse();
 });
@@ -88,14 +88,14 @@ test('6. Shipments can only be deleted if pending or cancelled', function () {
     $admin = User::factory()->create(['can_access_admin_panel' => true]);
     $admin->assignRole('Admin');
     $this->actingAs($admin);
-    
+
     $pendingShipment = Shipment::factory()->create(['status' => ShipmentStatus::Pending]);
     $cancelledShipment = Shipment::factory()->create(['status' => ShipmentStatus::Cancelled]);
     $inTransitShipment = Shipment::factory()->create(['status' => ShipmentStatus::InTransit]);
-    
+
     expect(ShipmentResource::canDelete($pendingShipment))->toBeTrue()
         ->and(ShipmentResource::canDelete($cancelledShipment))->toBeTrue()
         ->and(ShipmentResource::canDelete($inTransitShipment))->toBeFalse();
-        
+
     expect(ShipmentResource::canDeleteAny())->toBeFalse();
 });

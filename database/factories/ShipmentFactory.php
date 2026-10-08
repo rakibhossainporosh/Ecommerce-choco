@@ -7,7 +7,6 @@ use App\Enums\ShippingProvider;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Shipment;
-use App\Models\ShippingMethod;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

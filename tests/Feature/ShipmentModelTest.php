@@ -7,13 +7,14 @@ use App\Models\Order;
 use App\Models\Shipment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(LazilyRefreshDatabase::class);
 
 beforeEach(function () {
     $this->app['config']->set('database.default', 'mysql');
     $this->app['config']->set('database.connections.mysql.database', 'ecommerce_choco_test');
-    \Illuminate\Support\Facades\DB::purge('mysql');
+    DB::purge('mysql');
 });
 
 test('shipment can transition to packed and update order', function () {
@@ -63,7 +64,7 @@ test('shipment can transition to out for delivery', function () {
 
     expect($shipment->status)->toBe(ShipmentStatus::OutForDelivery)
         ->and($shipment->dispatched_by)->toBe($user->id);
-    
+
     // Order status should remain Shipped
     expect($order->fresh()->status)->toBe(OrderStatus::Shipped);
 });

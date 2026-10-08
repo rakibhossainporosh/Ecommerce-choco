@@ -83,6 +83,14 @@ class RolePermissionSeeder extends Seeder
             'shipping.update',
             'shipping.ship',
             'shipping.deliver',
+            'couriers.view',
+            'couriers.create',
+            'couriers.update',
+            'couriers.delete',
+            'courier-shipments.view',
+            'courier-shipments.create',
+            'courier-shipments.update',
+            'courier-shipments.delete',
         ];
 
         if ($this->isLegacyRp3bTestEnvironment()) {
@@ -166,6 +174,12 @@ class RolePermissionSeeder extends Seeder
             $managerPermissions[] = 'shipping.update';
             $managerPermissions[] = 'shipping.ship';
             $managerPermissions[] = 'shipping.deliver';
+            $managerPermissions[] = 'couriers.view';
+            $managerPermissions[] = 'couriers.create';
+            $managerPermissions[] = 'couriers.update';
+            $managerPermissions[] = 'courier-shipments.view';
+            $managerPermissions[] = 'courier-shipments.create';
+            $managerPermissions[] = 'courier-shipments.update';
         }
 
         $managerRole->syncPermissions($managerPermissions);
@@ -193,6 +207,8 @@ class RolePermissionSeeder extends Seeder
             $staffPermissions[] = 'shipping.view';
             $staffPermissions[] = 'shipping.create';
             $staffPermissions[] = 'shipping.update';
+            $staffPermissions[] = 'couriers.view';
+            $staffPermissions[] = 'courier-shipments.view';
         }
 
         $staffRole->syncPermissions($staffPermissions);

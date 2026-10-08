@@ -179,6 +179,18 @@ class Order extends Model
     }
 
     /**
+     * Get the courier shipments associated with this order.
+     *
+     * @return HasMany<CourierShipment, $this>
+     */
+    public function courierShipments(): HasMany
+    {
+        return $this->hasMany(CourierShipment::class, 'order_id')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
+    }
+
+    /**
      * Get the latest shipment for this order.
      *
      * @return HasOne<Shipment, $this>

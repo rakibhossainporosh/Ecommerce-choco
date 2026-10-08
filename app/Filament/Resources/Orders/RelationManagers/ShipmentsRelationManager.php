@@ -8,7 +8,6 @@ use App\Filament\Resources\Shipments\ShipmentResource;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Shipment;
-use App\Models\ShippingMethod;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ViewAction;
