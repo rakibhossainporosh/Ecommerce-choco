@@ -238,6 +238,34 @@ class OrderInfolist
                             ->formatStateUsing($currencyFormat),
                     ]),
 
+                Section::make('Payment Reconciliation')
+                    ->columns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'md' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('total_paid')
+                            ->label('Total Paid')
+                            ->state(fn (Order $record): float => $record->total_paid)
+                            ->formatStateUsing($currencyFormat)
+                            ->weight('bold')
+                            ->color('success'),
+
+                        TextEntry::make('due_amount')
+                            ->label('Remaining Due')
+                            ->state(fn (Order $record): float => $record->due_amount)
+                            ->formatStateUsing($currencyFormat)
+                            ->weight('bold')
+                            ->color(fn (Order $record): string => $record->due_amount > 0 ? 'danger' : 'gray'),
+
+                        TextEntry::make('payments_count')
+                            ->label('Payments Recorded')
+                            ->state(fn (Order $record): int => $record->payments()->count())
+                            ->badge()
+                            ->color('info'),
+                    ]),
+
                 Section::make('Status History')
                     ->schema([
                         RepeatableEntry::make('statusHistories')

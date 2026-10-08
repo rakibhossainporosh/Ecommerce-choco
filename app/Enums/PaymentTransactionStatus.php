@@ -2,15 +2,12 @@
 
 namespace App\Enums;
 
-enum PaymentStatus: string
+enum PaymentTransactionStatus: string
 {
-    case Unpaid = 'unpaid';
     case Pending = 'pending';
-    case Partial = 'partial';
-    case Paid = 'paid';
+    case Completed = 'completed';
     case Failed = 'failed';
     case Refunded = 'refunded';
-    case PartiallyRefunded = 'partially_refunded';
 
     /**
      * Get all values of the enum.
@@ -23,18 +20,15 @@ enum PaymentStatus: string
     }
 
     /**
-     * Get the human-readable label for the payment status.
+     * Get the human-readable label for the transaction status.
      */
     public function label(): string
     {
         return match ($this) {
-            self::Unpaid => 'Unpaid',
             self::Pending => 'Pending',
-            self::Partial => 'Partially Paid',
-            self::Paid => 'Paid',
+            self::Completed => 'Completed',
             self::Failed => 'Failed',
             self::Refunded => 'Refunded',
-            self::PartiallyRefunded => 'Partially Refunded',
         };
     }
 }

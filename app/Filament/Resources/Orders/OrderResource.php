@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders;
 
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
+use App\Filament\Resources\Orders\RelationManagers\PaymentsRelationManager;
 use App\Filament\Resources\Orders\Schemas\OrderInfolist;
 use App\Filament\Resources\Orders\Tables\OrdersTable;
 use App\Models\Order;
@@ -39,7 +40,9 @@ class OrderResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            PaymentsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
@@ -53,7 +56,7 @@ class OrderResource extends Resource
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['items', 'statusHistories.changedBy']);
+            ->with(['items', 'statusHistories.changedBy', 'payments']);
     }
 
     /**

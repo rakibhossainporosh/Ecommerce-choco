@@ -6,9 +6,12 @@ use App\Enums\InventoryMovementType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Enums\PaymentTransactionStatus;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Exceptions\InventoryException;
+use App\Exceptions\PaymentException;
 use Database\Factories\OrderFactory;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -130,9 +133,142 @@ class Order extends Model
      *
      * @return HasMany<OrderItem, $this>
      */
-    public function orderItems(): HasMany
+    /**
+     * Get all payment transactions recorded for this order.
+     *
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
     {
-        return $this->items();
+        return $this->hasMany(Payment::class, 'order_id')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
+    }
+
+    /**
+     * Get the total amount paid through completed payments.
+     */
+    public function getTotalPaidAttribute(): float
+    {
+        return (float) $this->payments()
+            ->where('status', PaymentTransactionStatus::Completed->value)
+            ->sum('amount');
+    }
+
+    /**
+     * Get the remaining balance due for this order.
+     */
+    public function getDueAmountAttribute(): float
+    {
+        return max(0.00, round((float) $this->grand_total - $this->total_paid, 2));
+    }
+
+    /**
+     * Record a payment transaction for this order atomically with row locking.
+     *
+     * @throws PaymentException
+     */
+    public function recordPayment(
+        float $amount,
+        PaymentMethod|string $method = PaymentMethod::Cod,
+        PaymentTransactionStatus|string $status = PaymentTransactionStatus::Completed,
+        ?string $transactionId = null,
+        ?string $accountNumber = null,
+        ?string $notes = null,
+        ?User $recordedBy = null,
+        ?DateTimeInterface $paidAt = null,
+    ): Payment {
+        if ($amount <= 0) {
+            throw PaymentException::invalidAmount($amount);
+        }
+
+        return DB::transaction(function () use (
+            $amount,
+            $method,
+            $status,
+            $transactionId,
+            $accountNumber,
+            $notes,
+            $recordedBy,
+            $paidAt
+        ): Payment {
+            /** @var self $lockedOrder */
+            $lockedOrder = static::query()
+                ->whereKey($this->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedOrder->status === OrderStatus::Cancelled) {
+                throw PaymentException::cannotRecordForCancelledOrder($lockedOrder->order_number);
+            }
+
+            $txStatus = $status instanceof PaymentTransactionStatus ? $status : PaymentTransactionStatus::from($status);
+            $payMethod = $method instanceof PaymentMethod ? $method : PaymentMethod::from($method);
+
+            /** @var Payment $payment */
+            $payment = $lockedOrder->payments()->create([
+                'customer_id' => $lockedOrder->customer_id,
+                'payment_method' => $payMethod,
+                'status' => $txStatus,
+                'amount' => $amount,
+                'currency' => $lockedOrder->currency ?? 'BDT',
+                'transaction_id' => $transactionId,
+                'account_number' => $accountNumber,
+                'paid_at' => $txStatus === PaymentTransactionStatus::Completed ? ($paidAt ?? now()) : null,
+                'recorded_by' => $recordedBy?->getKey() ?? auth()->id(),
+                'notes' => $notes,
+            ]);
+
+            // Synchronize overall order payment_status
+            $lockedOrder->synchronizePaymentStatus();
+
+            $this->setRawAttributes($lockedOrder->getAttributes(), true);
+
+            return $payment;
+        });
+    }
+
+    /**
+     * Synchronize the order's payment_status based on completed and refunded payments.
+     */
+    public function synchronizePaymentStatus(): void
+    {
+        DB::transaction(function (): void {
+            /** @var self $lockedOrder */
+            $lockedOrder = static::query()
+                ->whereKey($this->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $completedPaid = (float) $lockedOrder->payments()
+                ->where('status', PaymentTransactionStatus::Completed->value)
+                ->sum('amount');
+
+            $refundedTotal = (float) $lockedOrder->payments()
+                ->where('status', PaymentTransactionStatus::Refunded->value)
+                ->sum('amount');
+
+            $grandTotal = (float) $lockedOrder->grand_total;
+
+            if ($completedPaid >= $grandTotal && $grandTotal > 0) {
+                $lockedOrder->payment_status = PaymentStatus::Paid;
+            } elseif ($completedPaid > 0) {
+                $lockedOrder->payment_status = PaymentStatus::Partial;
+            } elseif ($refundedTotal > 0 && $completedPaid === 0.0) {
+                $lockedOrder->payment_status = PaymentStatus::Refunded;
+            } else {
+                $hasPending = $lockedOrder->payments()
+                    ->where('status', PaymentTransactionStatus::Pending->value)
+                    ->exists();
+
+                $lockedOrder->payment_status = $hasPending
+                    ? PaymentStatus::Pending
+                    : PaymentStatus::Unpaid;
+            }
+
+            $lockedOrder->save();
+            $this->setRawAttributes($lockedOrder->getAttributes(), true);
+        });
     }
 
     /**

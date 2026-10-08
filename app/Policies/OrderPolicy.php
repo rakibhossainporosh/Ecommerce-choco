@@ -18,7 +18,7 @@ class OrderPolicy
     /**
      * Determine whether the user can view the order.
      */
-    public function view(User $user, ?Order $order = null): bool
+    public function view(User $user, Order $order): bool
     {
         return $user->can('orders.view');
     }
@@ -26,7 +26,7 @@ class OrderPolicy
     /**
      * Determine whether the user can confirm the order.
      */
-    public function confirm(User $user, ?Order $order = null): bool
+    public function confirm(User $user, Order $order): bool
     {
         return $user->can('orders.confirm');
     }
@@ -34,7 +34,7 @@ class OrderPolicy
     /**
      * Determine whether the user can process the order.
      */
-    public function process(User $user, ?Order $order = null): bool
+    public function process(User $user, Order $order): bool
     {
         return $user->can('orders.process');
     }
@@ -42,7 +42,7 @@ class OrderPolicy
     /**
      * Determine whether the user can ship the order.
      */
-    public function ship(User $user, ?Order $order = null): bool
+    public function ship(User $user, Order $order): bool
     {
         return $user->can('orders.ship');
     }
@@ -50,7 +50,7 @@ class OrderPolicy
     /**
      * Determine whether the user can deliver the order.
      */
-    public function deliver(User $user, ?Order $order = null): bool
+    public function deliver(User $user, Order $order): bool
     {
         return $user->can('orders.deliver');
     }
@@ -58,7 +58,7 @@ class OrderPolicy
     /**
      * Determine whether the user can cancel the order.
      */
-    public function cancel(User $user, ?Order $order = null): bool
+    public function cancel(User $user, Order $order): bool
     {
         return $user->can('orders.cancel');
     }
@@ -74,7 +74,7 @@ class OrderPolicy
     /**
      * Determine whether the user can update the order.
      */
-    public function update(User $user, ?Order $order = null): bool
+    public function update(User $user, Order $order): bool
     {
         return $user->can('orders.update');
     }
@@ -82,7 +82,7 @@ class OrderPolicy
     /**
      * Determine whether the user can refund the order.
      */
-    public function refund(User $user, ?Order $order = null): bool
+    public function refund(User $user, Order $order): bool
     {
         return $user->can('orders.refund');
     }
