@@ -636,4 +636,14 @@ class Order extends Model
     {
         return $this->status === OrderStatus::Cancelled;
     }
+
+    public function couponUsage(): HasOne
+    {
+        return $this->hasOne(CouponUsage::class);
+    }
+
+    public function returnRequests(): HasMany
+    {
+        return $this->hasMany(ReturnRequest::class);
+    }
 }

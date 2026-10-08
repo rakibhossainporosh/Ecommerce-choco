@@ -91,6 +91,23 @@ class RolePermissionSeeder extends Seeder
             'courier-shipments.create',
             'courier-shipments.update',
             'courier-shipments.delete',
+            'coupons.view',
+            'coupons.create',
+            'coupons.update',
+            'coupons.delete',
+            'coupon-usages.view',
+            'reviews.view',
+            'reviews.create',
+            'reviews.update',
+            'reviews.delete',
+            'returns.view',
+            'returns.create',
+            'returns.update',
+            'returns.delete',
+            'settings.view',
+            'settings.create',
+            'settings.update',
+            'settings.delete',
         ];
 
         if ($this->isLegacyRp3bTestEnvironment()) {
@@ -180,6 +197,16 @@ class RolePermissionSeeder extends Seeder
             $managerPermissions[] = 'courier-shipments.view';
             $managerPermissions[] = 'courier-shipments.create';
             $managerPermissions[] = 'courier-shipments.update';
+            $managerPermissions[] = 'coupons.view';
+            $managerPermissions[] = 'coupons.create';
+            $managerPermissions[] = 'coupons.update';
+            $managerPermissions[] = 'coupon-usages.view';
+            $managerPermissions[] = 'reviews.view';
+            $managerPermissions[] = 'reviews.update';
+            $managerPermissions[] = 'reviews.delete';
+            $managerPermissions[] = 'returns.view';
+            $managerPermissions[] = 'returns.update';
+            $managerPermissions[] = 'returns.delete';
         }
 
         $managerRole->syncPermissions($managerPermissions);
@@ -209,6 +236,10 @@ class RolePermissionSeeder extends Seeder
             $staffPermissions[] = 'shipping.update';
             $staffPermissions[] = 'couriers.view';
             $staffPermissions[] = 'courier-shipments.view';
+            $staffPermissions[] = 'coupons.view';
+            $staffPermissions[] = 'coupon-usages.view';
+            $staffPermissions[] = 'reviews.view';
+            $staffPermissions[] = 'returns.view';
         }
 
         $staffRole->syncPermissions($staffPermissions);

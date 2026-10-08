@@ -979,4 +979,9 @@ class Product extends Model
             'brand_id' => 'integer',
         ];
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
 }
