@@ -7,9 +7,12 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentTransactionStatus;
+use App\Enums\ShipmentStatus;
+use App\Enums\ShippingProvider;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Exceptions\InventoryException;
 use App\Exceptions\PaymentException;
+use App\Exceptions\ShippingException;
 use Database\Factories\OrderFactory;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -161,6 +164,69 @@ class Order extends Model
     public function getDueAmountAttribute(): float
     {
         return max(0.00, round((float) $this->grand_total - $this->total_paid, 2));
+    }
+
+    /**
+     * Get the shipments associated with this order.
+     *
+     * @return HasMany<Shipment, $this>
+     */
+    public function shipments(): HasMany
+    {
+        return $this->hasMany(Shipment::class, 'order_id')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
+    }
+
+    /**
+     * Get the latest shipment for this order.
+     *
+     * @return HasOne<Shipment, $this>
+     */
+    public function latestShipment(): HasOne
+    {
+        return $this->hasOne(Shipment::class, 'order_id')
+            ->latestOfMany('created_at');
+    }
+
+    /**
+     * Create a shipment for this order with address snapshot.
+     *
+     * @throws ShippingException
+     */
+    public function createShipment(
+        ShippingProvider|string $provider = ShippingProvider::InHouse,
+        ?ShippingMethod $shippingMethod = null,
+        ?string $trackingCode = null,
+        ?float $weightKg = null,
+        ?float $shippingCharge = null,
+        ?string $notes = null,
+        ?User $actor = null,
+    ): Shipment {
+        if ($this->isCancelled()) {
+            throw ShippingException::cannotShipCancelledOrder($this->order_number);
+        }
+
+        $prov = $provider instanceof ShippingProvider ? $provider : (ShippingProvider::tryFrom($provider) ?? ShippingProvider::InHouse);
+
+        return $this->shipments()->create([
+            'customer_id' => $this->customer_id,
+            'shipping_method_id' => $shippingMethod?->id,
+            'provider' => $prov,
+            'status' => ShipmentStatus::Pending,
+            'tracking_code' => $trackingCode,
+            'shipping_charge' => $shippingCharge ?? (float) $this->shipping_amount,
+            'weight_kg' => $weightKg,
+            'recipient_name' => $this->customer_name,
+            'recipient_phone' => $this->customer_phone,
+            'shipping_address_line' => $this->shipping_address_line,
+            'shipping_area' => $this->shipping_area,
+            'shipping_city' => $this->shipping_city ?? 'Dhaka',
+            'shipping_postcode' => $this->shipping_postcode,
+            'shipping_country' => $this->shipping_country ?? 'Bangladesh',
+            'dispatched_by' => $actor?->id ?? auth()->id(),
+            'notes' => $notes,
+        ]);
     }
 
     /**

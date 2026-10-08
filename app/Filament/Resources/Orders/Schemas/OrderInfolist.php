@@ -266,6 +266,32 @@ class OrderInfolist
                             ->color('info'),
                     ]),
 
+                Section::make('Shipment & Fulfillment Status')
+                    ->columns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'md' => 3,
+                    ])
+                    ->schema([
+                        TextEntry::make('fulfillment_status')
+                            ->label('Delivery Progress')
+                            ->state(fn (Order $record): string => $record->latestShipment?->status?->label() ?? 'Awaiting Fulfillment')
+                            ->badge()
+                            ->color(fn (Order $record): string => $record->latestShipment ? $record->latestShipment->status->badgeColor() : 'gray'),
+
+                        TextEntry::make('courier_partner')
+                            ->label('Carrier Partner')
+                            ->state(fn (Order $record): string => $record->latestShipment?->provider?->label() ?? 'Not Dispatched')
+                            ->badge(),
+
+                        TextEntry::make('tracking_number')
+                            ->label('Consignment Tracking')
+                            ->state(fn (Order $record): string => $record->latestShipment?->tracking_code ?? 'No tracking code')
+                            ->url(fn (Order $record): ?string => $record->latestShipment?->getTrackingUrl(), shouldOpenInNewTab: true)
+                            ->color(fn (Order $record): ?string => $record->latestShipment?->tracking_code ? 'primary' : null)
+                            ->copyable(fn (Order $record): bool => filled($record->latestShipment?->tracking_code)),
+                    ]),
+
                 Section::make('Status History')
                     ->schema([
                         RepeatableEntry::make('statusHistories')

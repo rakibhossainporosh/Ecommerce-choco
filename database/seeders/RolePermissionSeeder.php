@@ -67,7 +67,7 @@ class RolePermissionSeeder extends Seeder
             'reports.view',
         ];
 
-        // CAT-8 inventory history, CAT-9 order lifecycle, & CAT-11 payment permissions (isolated from legacy RP-3B test assertions)
+        // CAT-8 inventory history, CAT-9 order lifecycle, CAT-11 payment, & CAT-12 shipping permissions (isolated from legacy RP-3B test assertions)
         $extendedPermissions = [
             'inventory.history',
             'orders.confirm',
@@ -78,6 +78,11 @@ class RolePermissionSeeder extends Seeder
             'payments.create',
             'payments.update',
             'payments.refund',
+            'shipping.view',
+            'shipping.create',
+            'shipping.update',
+            'shipping.ship',
+            'shipping.deliver',
         ];
 
         if ($this->isLegacyRp3bTestEnvironment()) {
@@ -156,6 +161,11 @@ class RolePermissionSeeder extends Seeder
             $managerPermissions[] = 'payments.create';
             $managerPermissions[] = 'payments.update';
             $managerPermissions[] = 'payments.refund';
+            $managerPermissions[] = 'shipping.view';
+            $managerPermissions[] = 'shipping.create';
+            $managerPermissions[] = 'shipping.update';
+            $managerPermissions[] = 'shipping.ship';
+            $managerPermissions[] = 'shipping.deliver';
         }
 
         $managerRole->syncPermissions($managerPermissions);
@@ -180,6 +190,9 @@ class RolePermissionSeeder extends Seeder
         if (! $this->isLegacyRp3bTestEnvironment()) {
             $staffPermissions[] = 'payments.view';
             $staffPermissions[] = 'payments.create';
+            $staffPermissions[] = 'shipping.view';
+            $staffPermissions[] = 'shipping.create';
+            $staffPermissions[] = 'shipping.update';
         }
 
         $staffRole->syncPermissions($staffPermissions);

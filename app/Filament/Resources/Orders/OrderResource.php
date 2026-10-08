@@ -42,6 +42,7 @@ class OrderResource extends Resource
     {
         return [
             PaymentsRelationManager::class,
+            \App\Filament\Resources\Orders\RelationManagers\ShipmentsRelationManager::class,
         ];
     }
 
@@ -56,7 +57,7 @@ class OrderResource extends Resource
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['items', 'statusHistories.changedBy', 'payments']);
+            ->with(['items', 'statusHistories.changedBy', 'payments', 'shipments']);
     }
 
     /**
