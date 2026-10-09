@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password', 'can_access_admin_panel'])]
@@ -20,7 +22,15 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, LogsActivity, Notifiable;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * Determine whether the user can access the given Filament panel.

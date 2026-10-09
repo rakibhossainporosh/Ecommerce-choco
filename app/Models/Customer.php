@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 #[Fillable([
     'user_id',
@@ -24,6 +26,16 @@ class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
+
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * The model's default attribute values.

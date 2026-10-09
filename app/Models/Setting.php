@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 #[Fillable([
     'key',
@@ -23,6 +25,16 @@ class Setting extends Model
 {
     /** @use HasFactory<SettingFactory> */
     use HasFactory;
+
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $casts = [
         'type' => SettingType::class,

@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 #[Fillable([
     'product_id',
@@ -35,6 +37,16 @@ class ProductVariant extends Model
 {
     /** @use HasFactory<ProductVariantFactory> */
     use HasFactory, SoftDeletes;
+
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * The model's default attribute values.

@@ -17,12 +17,24 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 #[Fillable(['name', 'slug', 'short_description', 'description', 'meta_title', 'meta_description', 'is_active', 'is_featured', 'brand_id'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory, SoftDeletes;
+
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * The model's default attribute values.

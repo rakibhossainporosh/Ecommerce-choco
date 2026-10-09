@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Order;
+use App\Models\ReturnRequest;
 use App\Models\User;
+use App\Observers\OrderObserver;
+use App\Observers\ReturnRequestObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,5 +32,8 @@ class AppServiceProvider extends ServiceProvider
 
             return null;
         });
+
+        Order::observe(OrderObserver::class);
+        ReturnRequest::observe(ReturnRequestObserver::class);
     }
 }

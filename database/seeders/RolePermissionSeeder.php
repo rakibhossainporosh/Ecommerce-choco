@@ -108,6 +108,7 @@ class RolePermissionSeeder extends Seeder
             'settings.create',
             'settings.update',
             'settings.delete',
+            'activities.view',
         ];
 
         if ($this->isLegacyRp3bTestEnvironment()) {
@@ -207,6 +208,7 @@ class RolePermissionSeeder extends Seeder
             $managerPermissions[] = 'returns.view';
             $managerPermissions[] = 'returns.update';
             $managerPermissions[] = 'returns.delete';
+            $managerPermissions[] = 'activities.view';
         }
 
         $managerRole->syncPermissions($managerPermissions);
