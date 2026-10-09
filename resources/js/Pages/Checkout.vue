@@ -18,7 +18,7 @@ const form = useForm({
     shipping_amount: shippingCharge.value,
     cart_items: cartItems.value.map(item => ({
         id: item.id,
-        variant_id: item.variant_id,
+        variant_id: item.variant_id || item.id,
         quantity: item.quantity
     }))
 });
@@ -103,6 +103,9 @@ const updateShipping = () => {
                         </div>
 
                         <div class="pt-6 border-t border-[#F0EAE1]">
+                            <div v-if="Object.keys(form.errors).length > 0" class="mb-4 p-3 bg-red-50 text-red-500 rounded-xl text-sm font-semibold">
+                                কিছু তথ্য ভুল বা অসম্পূর্ণ আছে। দয়া করে ফর্মটি সঠিকভাবে পূরণ করুন।
+                            </div>
                             <button type="submit" :disabled="form.processing" class="w-full py-4 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70">
                                 <span>অর্ডার কনফার্ম করুন</span>
                                 <ArrowRight class="w-5 h-5" />

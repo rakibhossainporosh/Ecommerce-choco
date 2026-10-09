@@ -221,19 +221,27 @@ class StorefrontController extends Controller
         return DB::transaction(function () use ($validated) {
             $orderNumber = 'ORD-' . strtoupper(uniqid());
 
+            $subtotal = 0;
+            foreach ($validated['cart_items'] as $item) {
+                $variant = ProductVariant::find($item['variant_id']);
+                $subtotal += $variant->selling_price * $item['quantity'];
+            }
+
             $order = Order::create([
                 'order_number' => $orderNumber,
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
                 'shipping_address_line' => $validated['shipping_address_line'],
                 'shipping_city' => $validated['shipping_city'],
+                'shipping_area' => $validated['shipping_city'], // fallback for area
                 'shipping_amount' => $validated['shipping_amount'],
+                'subtotal' => $subtotal,
+                'grand_total' => $subtotal + $validated['shipping_amount'],
                 'status' => \App\Enums\OrderStatus::Pending,
                 'payment_status' => \App\Enums\PaymentStatus::Unpaid,
                 'payment_method' => \App\Enums\PaymentMethod::Cod,
             ]);
 
-            $subtotal = 0;
             foreach ($validated['cart_items'] as $item) {
                 $product = Product::find($item['id']);
                 $variant = ProductVariant::find($item['variant_id']);
@@ -253,11 +261,88 @@ class StorefrontController extends Controller
                 ]);
             }
 
-            $order->subtotal = $subtotal;
-            $order->grand_total = $subtotal + $validated['shipping_amount'];
-            $order->save();
-
-            return redirect()->route('home')->with('success', 'আপনার অর্ডারটি সফলভাবে প্লেস করা হয়েছে! অর্ডার নম্বর: ' . $orderNumber);
+            return redirect()->route('checkout.success', ['order_number' => $orderNumber]);
         });
+    }
+
+    /**
+     * Display checkout success page.
+     */
+    public function checkoutSuccess(Request $request): Response
+    {
+        $orderNumber = $request->query('order_number');
+        
+        return Inertia::render('CheckoutSuccess', [
+            'order_number' => $orderNumber
+        ]);
+    }
+
+    /**
+     * Display order tracking page.
+     */
+    public function trackOrder(Request $request): Response
+    {
+        $orderNumber = $request->query('order_number');
+        $phone = $request->query('phone');
+        
+        $orderData = null;
+        $error = null;
+
+        if ($orderNumber) {
+            $query = Order::query()
+                ->where('order_number', $orderNumber)
+                ->with([
+                    'items',
+                    'statusHistories' => function($q) {
+                        $q->orderBy('created_at', 'asc');
+                    }
+                ]);
+            
+            if ($phone) {
+                $query->where('customer_phone', $phone);
+            }
+
+            $order = $query->first();
+
+            if ($order) {
+                $orderData = [
+                    'order_number' => $order->order_number,
+                    'status' => $order->status->value,
+                    'payment_status' => $order->payment_status->value,
+                    'payment_method' => $order->payment_method->value,
+                    'grand_total' => (float) $order->grand_total,
+                    'subtotal' => (float) $order->subtotal,
+                    'shipping_amount' => (float) $order->shipping_amount,
+                    'placed_at' => $order->created_at->format('d M Y, h:i A'),
+                    'customer_name' => $order->customer_name,
+                    'customer_phone' => $order->customer_phone,
+                    'shipping_address' => $order->shipping_address_line . ', ' . $order->shipping_city,
+                    'items' => $order->items->map(function($item) {
+                        return [
+                            'name' => $item->variant_name ?? $item->product_name,
+                            'quantity' => $item->quantity,
+                            'price' => (float) $item->unit_price,
+                            'total' => (float) $item->line_total,
+                        ];
+                    }),
+                    'histories' => $order->statusHistories->map(function($history) {
+                        return [
+                            'status' => $history->to_status->value,
+                            'date' => $history->created_at->format('d M Y, h:i A'),
+                            'reason' => $history->reason
+                        ];
+                    })
+                ];
+            } else {
+                $error = "এই অর্ডার নম্বর দিয়ে কোনো অর্ডার পাওয়া যায়নি। দয়া করে সঠিক নম্বর দিন।";
+            }
+        }
+
+        return Inertia::render('OrderTrack', [
+            'order' => $orderData,
+            'searched_order_number' => $orderNumber,
+            'searched_phone' => $phone,
+            'error' => $error
+        ]);
     }
 }

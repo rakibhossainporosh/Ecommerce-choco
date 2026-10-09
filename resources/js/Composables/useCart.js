@@ -6,6 +6,7 @@ const isWishlistOpen = ref(false);
 const initialCart = [
     {
         id: 1,
+        variant_id: 1,
         name: 'কটন শার্ট',
         price: 1250,
         quantity: 1,
@@ -13,6 +14,7 @@ const initialCart = [
     },
     {
         id: 2,
+        variant_id: 2,
         name: 'ক্লাসিক ঘড়ি',
         price: 2450,
         quantity: 1,
@@ -20,6 +22,7 @@ const initialCart = [
     },
     {
         id: 3,
+        variant_id: 3,
         name: 'সিরামিক মগ',
         price: 450,
         quantity: 1,

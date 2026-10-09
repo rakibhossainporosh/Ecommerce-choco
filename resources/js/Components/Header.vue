@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { Search, Heart, ShoppingBag } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
 import { useCart } from '../Composables/useCart';
 
 const props = defineProps({
@@ -61,10 +62,10 @@ const handleSearch = () => {
                 <div class="flex items-center gap-6 sm:gap-8">
                     <!-- Nav Links -->
                     <nav class="hidden lg:flex items-center gap-6 text-[15px] font-medium text-[#475569]">
-                        <a href="/" class="text-[#1E293B] hover:text-[#E86A28] transition-colors">হোম</a>
-                        <a href="#categories" class="hover:text-[#E86A28] transition-colors">ক্যাটাগরি</a>
-                        <a href="#featured" class="hover:text-[#E86A28] transition-colors">নতুন</a>
-                        <a href="#featured" class="hover:text-[#E86A28] transition-colors">অফার</a>
+                        <Link href="/" class="text-[#1E293B] hover:text-[#E86A28] transition-colors">হোম</Link>
+                        <a href="/#categories" class="hover:text-[#E86A28] transition-colors">ক্যাটাগরি</a>
+                        <a href="/#featured" class="hover:text-[#E86A28] transition-colors">অফার</a>
+                        <Link href="/track-order" class="hover:text-[#E86A28] transition-colors font-bold text-[#E86A28]">ট্র্যাক অর্ডার</Link>
                     </nav>
 
                     <!-- Icons: Wishlist & Cart -->
