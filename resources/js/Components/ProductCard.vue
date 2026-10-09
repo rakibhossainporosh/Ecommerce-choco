@@ -1,5 +1,6 @@
 <script setup>
 import { Heart, ShoppingBag, Eye } from 'lucide-vue-next';
+import { router } from '@inertiajs/vue3';
 import { useCart } from '../Composables/useCart';
 
 const props = defineProps({
@@ -9,7 +10,9 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['quickView']);
+const navigateToProduct = () => {
+    router.visit('/product/' + props.product.slug);
+};
 
 const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
@@ -20,7 +23,10 @@ const formatPrice = (val) => {
 </script>
 
 <template>
-    <div class="group bg-white rounded-2xl border border-[#EAE3D6] p-3 sm:p-3.5 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-[#DCCFC0]">
+    <div 
+        @click="navigateToProduct"
+        class="group bg-white rounded-2xl border border-[#EAE3D6] p-3 sm:p-3.5 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-[#DCCFC0] cursor-pointer"
+    >
         <!-- Product Image & Wishlist Button -->
         <div class="relative w-full aspect-square bg-[#F7F3EC] rounded-xl overflow-hidden mb-3.5 flex items-center justify-center">
             <img
@@ -78,7 +84,7 @@ const formatPrice = (val) => {
             <!-- Action Buttons matching screenshot -->
             <div class="mt-3.5 pt-2 border-t border-[#F1EBE1] flex items-center gap-2">
                 <button
-                    @click="addToCart(product)"
+                    @click.stop="addToCart(product)"
                     type="button"
                     class="flex-1 py-2 px-3 bg-[#FAF7F2] hover:bg-[#E86A28] text-[#1E293B] hover:text-white border border-[#EAE3D6] hover:border-[#E86A28] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-2xs"
                 >
@@ -87,10 +93,10 @@ const formatPrice = (val) => {
                 </button>
 
                 <button
-                    @click="$emit('quickView', product)"
+                    @click.stop="navigateToProduct"
                     type="button"
                     class="py-2 px-2.5 bg-white hover:bg-[#FAF7F2] text-[#64748B] hover:text-[#1E293B] border border-[#EAE3D6] rounded-lg text-xs font-medium transition-colors"
-                    title="দ্রুত দেখুন"
+                    title="বিস্তারিত দেখুন"
                 >
                     <Eye class="w-3.5 h-3.5" />
                 </button>

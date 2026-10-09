@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import Header from '../Components/Header.vue';
 import HeroSection from '../Components/HeroSection.vue';
