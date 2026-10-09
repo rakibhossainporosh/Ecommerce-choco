@@ -12,7 +12,7 @@ const props = defineProps({
 
 const emit = defineEmits(['search']);
 
-const { totalCount, wishlistCount, openCart } = useCart();
+const { totalCount, wishlistCount, openCart, openWishlist } = useCart();
 const searchInput = ref(props.searchQuery);
 
 const handleSearch = () => {
@@ -71,6 +71,7 @@ const handleSearch = () => {
                     <div class="flex items-center gap-4">
                         <!-- Wishlist -->
                         <button
+                            @click="openWishlist"
                             type="button"
                             class="relative p-2 text-[#475569] hover:text-[#E86A28] transition-colors"
                             title="উইশলিস্ট"

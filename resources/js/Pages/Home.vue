@@ -5,6 +5,7 @@ import HeroSection from '../Components/HeroSection.vue';
 import CategoryFilter from '../Components/CategoryFilter.vue';
 import ProductCard from '../Components/ProductCard.vue';
 import CartDrawer from '../Components/CartDrawer.vue';
+import WishlistDrawer from '../Components/WishlistDrawer.vue';
 import Footer from '../Components/Footer.vue';
 
 const props = defineProps({
@@ -98,6 +99,9 @@ const handleSelectSort = (sortOption) => {
 
         <!-- Footer -->
         <Footer />
+
+        <!-- Wishlist Drawer -->
+        <WishlistDrawer />
 
         <!-- Cart Drawer -->
         <CartDrawer />

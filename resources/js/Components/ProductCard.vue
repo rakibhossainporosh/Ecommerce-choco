@@ -31,7 +31,7 @@ const formatPrice = (val) => {
 
             <!-- Wishlist Heart Button -->
             <button
-                @click.stop="toggleWishlist(product.id)"
+                @click.stop="toggleWishlist(product)"
                 type="button"
                 :class="[
                     'absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center transition-all shadow-sm',

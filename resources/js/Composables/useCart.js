@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue';
 
 const isCartOpen = ref(false);
+const isWishlistOpen = ref(false);
 
 const initialCart = [
     {
@@ -32,7 +33,11 @@ const cartItems = ref(savedCart ? JSON.parse(savedCart) : initialCart);
 
 // Wishlist
 const savedWishlist = typeof window !== 'undefined' ? localStorage.getItem('nobo_wishlist') : null;
-const wishlistItems = ref(savedWishlist ? JSON.parse(savedWishlist) : [1, 2]);
+let parsedWishlist = savedWishlist ? JSON.parse(savedWishlist) : [];
+if (parsedWishlist.length > 0 && typeof parsedWishlist[0] === 'number') {
+    parsedWishlist = []; // Clear old format
+}
+const wishlistItems = ref(parsedWishlist);
 
 const saveCart = () => {
     if (typeof window !== 'undefined') {
@@ -81,17 +86,25 @@ export function useCart() {
         saveCart();
     };
 
-    const toggleWishlist = (productId) => {
-        if (wishlistItems.value.includes(productId)) {
-            wishlistItems.value = wishlistItems.value.filter((id) => id !== productId);
+    const toggleWishlist = (product) => {
+        const index = wishlistItems.value.findIndex((item) => item.id === product.id);
+        if (index > -1) {
+            wishlistItems.value.splice(index, 1);
         } else {
-            wishlistItems.value.push(productId);
+            wishlistItems.value.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.image,
+                category_name: product.category_name,
+                compare_at_price: product.compare_at_price
+            });
         }
         saveWishlist();
     };
 
     const isInWishlist = (productId) => {
-        return wishlistItems.value.includes(productId);
+        return wishlistItems.value.some((item) => item.id === productId);
     };
 
     const totalAmount = computed(() => {
@@ -106,6 +119,7 @@ export function useCart() {
 
     return {
         isCartOpen,
+        isWishlistOpen,
         cartItems,
         wishlistItems,
         addToCart,
@@ -118,5 +132,7 @@ export function useCart() {
         wishlistCount,
         openCart: () => (isCartOpen.value = true),
         closeCart: () => (isCartOpen.value = false),
+        openWishlist: () => (isWishlistOpen.value = true),
+        closeWishlist: () => (isWishlistOpen.value = false),
     };
 }
