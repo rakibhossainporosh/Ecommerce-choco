@@ -4,9 +4,9 @@ namespace App\Filament\Resources\Coupons\Schemas;
 
 use App\Enums\CouponType;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\IconEntry;
+use Filament\Infolists\Components\IconEntry;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\TextEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
 class CouponInfolist

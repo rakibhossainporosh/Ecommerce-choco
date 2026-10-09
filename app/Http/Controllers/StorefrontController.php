@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -25,11 +26,12 @@ class StorefrontController extends Controller
 
         $categories = Category::query()
             ->where('is_active', true)
+            ->whereNull('parent_id')
             ->orderBy('sort_order')
             ->get(['id', 'name', 'slug']);
 
         $productsQuery = Product::query()
-            ->where('is_active', true)
+            ->where('products.is_active', true)
             ->with([
                 'categories:id,name,slug',
                 'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
@@ -227,6 +229,30 @@ class StorefrontController extends Controller
                 $subtotal += $variant->selling_price * $item['quantity'];
             }
 
+            $discountAmount = 0;
+            if ($request->filled('coupon_code')) {
+                $coupon = Coupon::where('code', $request->coupon_code)
+                    ->where('is_active', true)
+                    ->where(function($q) {
+                        $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+                    })
+                    ->first();
+                
+                if ($coupon && $subtotal >= $coupon->minimum_order_amount) {
+                    if ($coupon->type === 'percent') {
+                        $discountAmount = ($subtotal * $coupon->value) / 100;
+                        if ($coupon->maximum_discount_amount) {
+                            $discountAmount = min($discountAmount, $coupon->maximum_discount_amount);
+                        }
+                    } else {
+                        $discountAmount = $coupon->value;
+                    }
+                    
+                    // Update usage count
+                    $coupon->increment('used_count');
+                }
+            }
+
             $order = Order::create([
                 'order_number' => $orderNumber,
                 'customer_name' => $validated['customer_name'],
@@ -236,7 +262,8 @@ class StorefrontController extends Controller
                 'shipping_area' => $validated['shipping_city'], // fallback for area
                 'shipping_amount' => $validated['shipping_amount'],
                 'subtotal' => $subtotal,
-                'grand_total' => $subtotal + $validated['shipping_amount'],
+                'discount_amount' => $discountAmount,
+                'grand_total' => $subtotal - $discountAmount + $validated['shipping_amount'],
                 'status' => \App\Enums\OrderStatus::Pending,
                 'payment_status' => \App\Enums\PaymentStatus::Unpaid,
                 'payment_method' => \App\Enums\PaymentMethod::Cod,
@@ -274,6 +301,55 @@ class StorefrontController extends Controller
         
         return Inertia::render('CheckoutSuccess', [
             'order_number' => $orderNumber
+        ]);
+    }
+
+    /**
+     * Apply coupon code.
+     */
+    public function applyCoupon(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+            'subtotal' => 'required|numeric'
+        ]);
+
+        $coupon = Coupon::where('code', $request->code)
+            ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
+            ->where(function($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+            })
+            ->first();
+
+        if (!$coupon) {
+            return response()->json(['message' => 'কুপন কোডটি সঠিক নয় বা মেয়াদোত্তীর্ণ।'], 400);
+        }
+
+        if ($coupon->usage_limit && $coupon->used_count >= $coupon->usage_limit) {
+            return response()->json(['message' => 'এই কুপনের ব্যবহারের সীমা শেষ হয়ে গেছে।'], 400);
+        }
+
+        if ($request->subtotal < $coupon->minimum_order_amount) {
+            return response()->json(['message' => 'এই কুপনটি ব্যবহার করতে নূন্যতম ' . $coupon->minimum_order_amount . ' টাকার অর্ডার করতে হবে।'], 400);
+        }
+
+        $discount = 0;
+        if ($coupon->type === 'percent') {
+            $discount = ($request->subtotal * $coupon->value) / 100;
+            if ($coupon->maximum_discount_amount && $discount > $coupon->maximum_discount_amount) {
+                $discount = $coupon->maximum_discount_amount;
+            }
+        } else {
+            $discount = $coupon->value;
+        }
+
+        return response()->json([
+            'message' => 'কুপন সফলভাবে অ্যাপ্লাই করা হয়েছে!',
+            'discount' => $discount,
+            'code' => $coupon->code
         ]);
     }
 

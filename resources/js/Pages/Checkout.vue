@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ChevronRight, ArrowRight, ShoppingBag, Truck } from 'lucide-vue-next';
+import axios from 'axios';
+import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import { useCart } from '../Composables/useCart';
@@ -16,6 +17,7 @@ const form = useForm({
     shipping_city: 'Dhaka',
     shipping_address_line: '',
     shipping_amount: shippingCharge.value,
+    coupon_code: null,
     cart_items: cartItems.value.map(item => ({
         id: item.id,
         variant_id: item.variant_id || item.id,
@@ -23,12 +25,51 @@ const form = useForm({
     }))
 });
 
+const couponCode = ref('');
+const appliedCoupon = ref(null);
+const discountAmount = ref(0);
+const couponError = ref('');
+const applyingCoupon = ref(false);
+
+const applyCoupon = async () => {
+    if (!couponCode.value.trim()) return;
+    
+    applyingCoupon.value = true;
+    couponError.value = '';
+    
+    try {
+        const response = await axios.post('/checkout/apply-coupon', {
+            code: couponCode.value,
+            subtotal: totalAmount.value
+        });
+        
+        appliedCoupon.value = response.data.code;
+        discountAmount.value = response.data.discount;
+        form.coupon_code = response.data.code;
+        couponCode.value = ''; 
+    } catch (error) {
+        couponError.value = error.response?.data?.message || 'কুপন অ্যাপ্লাই করতে সমস্যা হচ্ছে।';
+        appliedCoupon.value = null;
+        discountAmount.value = 0;
+        form.coupon_code = null;
+    } finally {
+        applyingCoupon.value = false;
+    }
+};
+
+const removeCoupon = () => {
+    appliedCoupon.value = null;
+    discountAmount.value = 0;
+    form.coupon_code = null;
+    couponError.value = '';
+};
+
 const formatPrice = (val) => {
     return '৳ ' + Number(val).toLocaleString('en-US');
 };
 
 const grandTotal = computed(() => {
-    return totalAmount.value + shippingCharge.value;
+    return totalAmount.value - discountAmount.value + shippingCharge.value;
 });
 
 const submitOrder = () => {
@@ -130,6 +171,49 @@ const updateShipping = () => {
                             </div>
                         </div>
 
+                        <div class="mt-4 mb-6">
+                            <div v-if="!appliedCoupon">
+                                <label class="block text-sm font-medium text-[#475569] mb-2">কুপন কোড</label>
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Tag class="w-4 h-4 text-[#94A3B8]" />
+                                        </div>
+                                        <input 
+                                            v-model="couponCode" 
+                                            type="text" 
+                                            class="block w-full pl-9 pr-3 py-2.5 bg-[#F6F1E9] border border-transparent rounded-xl text-sm uppercase placeholder:normal-case placeholder-[#94A3B8] focus:bg-white focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-none transition-all"
+                                            placeholder="কুপন কোড লিখুন"
+                                            @keyup.enter="applyCoupon"
+                                        />
+                                    </div>
+                                    <button 
+                                        @click="applyCoupon"
+                                        type="button"
+                                        :disabled="applyingCoupon || !couponCode.trim()"
+                                        class="px-4 py-2.5 bg-[#1E293B] text-white text-sm font-semibold rounded-xl hover:bg-[#334155] transition-colors disabled:opacity-50"
+                                    >
+                                        {{ applyingCoupon ? 'হচ্ছে...' : 'অ্যাপ্লাই' }}
+                                    </button>
+                                </div>
+                                <p v-if="couponError" class="mt-2 text-[13px] text-red-500">{{ couponError }}</p>
+                            </div>
+                            <div v-else class="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl p-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                        <Tag class="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[13px] font-medium text-green-800 uppercase">{{ appliedCoupon }}</p>
+                                        <p class="text-[12px] text-green-600">কুপন সফলভাবে অ্যাপ্লাই হয়েছে</p>
+                                    </div>
+                                </div>
+                                <button @click="removeCoupon" type="button" class="p-1.5 text-green-600 hover:bg-green-100 rounded-full transition-colors">
+                                    <X class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="border-t border-[#F0EAE1] pt-4 space-y-3">
                             <div class="flex justify-between text-sm font-medium text-[#64748B]">
                                 <span>সাবটোটাল ({{ totalCount }} আইটেম)</span>
@@ -138,6 +222,10 @@ const updateShipping = () => {
                             <div class="flex justify-between text-sm font-medium text-[#64748B]">
                                 <span>ডেলিভারি চার্জ</span>
                                 <span>{{ formatPrice(shippingCharge) }}</span>
+                            </div>
+                            <div v-if="discountAmount > 0" class="flex justify-between text-sm font-medium text-green-600">
+                                <span>ডিসকাউন্ট ({{ appliedCoupon }})</span>
+                                <span>- {{ formatPrice(discountAmount) }}</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold text-[#1E293B] pt-3 border-t border-[#F0EAE1]">
                                 <span>সর্বমোট</span>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { Search, Heart, ShoppingBag } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
+import { Search, Heart, ShoppingBag, ChevronDown, ChevronRight } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
 import { useCart } from '../Composables/useCart';
 
 const props = defineProps({
@@ -15,6 +15,10 @@ const emit = defineEmits(['search']);
 
 const { totalCount, wishlistCount, openCart, openWishlist } = useCart();
 const searchInput = ref(props.searchQuery);
+const page = usePage();
+const categories = page.props.global_categories || [];
+
+const showCategoryMenu = ref(false);
 
 const handleSearch = () => {
     emit('search', searchInput.value);
@@ -63,7 +67,72 @@ const handleSearch = () => {
                     <!-- Nav Links -->
                     <nav class="hidden lg:flex items-center gap-6 text-[15px] font-medium text-[#475569]">
                         <Link href="/" class="text-[#1E293B] hover:text-[#E86A28] transition-colors">হোম</Link>
-                        <a href="/#categories" class="hover:text-[#E86A28] transition-colors">ক্যাটাগরি</a>
+                        
+                        <!-- Category Dropdown -->
+                        <div class="relative group" @mouseenter="showCategoryMenu = true" @mouseleave="showCategoryMenu = false">
+                            <button class="flex items-center gap-1 hover:text-[#E86A28] transition-colors py-2 outline-none">
+                                <span>ক্যাটাগরি</span>
+                                <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{'rotate-180': showCategoryMenu}" />
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <div 
+                                class="absolute top-full left-0 w-[240px] bg-white rounded-2xl shadow-xl border border-[#EAE3D6] py-3 mt-1 transform opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-50"
+                            >
+                                <div 
+                                    v-for="cat in categories" 
+                                    :key="cat.id"
+                                    class="relative group/sub"
+                                >
+                                    <Link 
+                                        :href="'/?category=' + cat.slug"
+                                        class="flex items-center justify-between px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
+                                    >
+                                        <span>{{ cat.name }}</span>
+                                        <ChevronRight v-if="cat.children && cat.children.length > 0" class="w-4 h-4 text-[#94A3B8]" />
+                                    </Link>
+
+                                    <!-- Sub-menu -->
+                                    <div 
+                                        v-if="cat.children && cat.children.length > 0"
+                                        class="absolute top-0 left-full ml-1 w-[240px] bg-white rounded-2xl shadow-xl border border-[#EAE3D6] py-3 transform opacity-0 -translate-x-2 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-all duration-300 pointer-events-none group-hover/sub:pointer-events-auto z-50"
+                                    >
+                                        <div 
+                                            v-for="subCat in cat.children" 
+                                            :key="subCat.id"
+                                            class="relative group/subsub"
+                                        >
+                                            <Link 
+                                                :href="'/?category=' + subCat.slug"
+                                                class="flex items-center justify-between px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
+                                            >
+                                                <span>{{ subCat.name }}</span>
+                                                <ChevronRight v-if="subCat.children && subCat.children.length > 0" class="w-4 h-4 text-[#94A3B8]" />
+                                            </Link>
+                                            
+                                            <!-- Sub-sub-menu -->
+                                            <div 
+                                                v-if="subCat.children && subCat.children.length > 0"
+                                                class="absolute top-0 left-full ml-1 w-[240px] bg-white rounded-2xl shadow-xl border border-[#EAE3D6] py-3 transform opacity-0 -translate-x-2 group-hover/subsub:opacity-100 group-hover/subsub:translate-x-0 transition-all duration-300 pointer-events-none group-hover/subsub:pointer-events-auto z-50"
+                                            >
+                                                <Link 
+                                                    v-for="subSubCat in subCat.children" 
+                                                    :key="subSubCat.id"
+                                                    :href="'/?category=' + subSubCat.slug"
+                                                    class="block px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
+                                                >
+                                                    {{ subSubCat.name }}
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="categories.length === 0" class="px-5 py-2 text-sm text-[#94A3B8]">
+                                    কোনো ক্যাটাগরি নেই
+                                </div>
+                            </div>
+                        </div>
+
                         <a href="/#featured" class="hover:text-[#E86A28] transition-colors">অফার</a>
                         <Link href="/track-order" class="hover:text-[#E86A28] transition-colors font-bold text-[#E86A28]">ট্র্যাক অর্ডার</Link>
                     </nav>

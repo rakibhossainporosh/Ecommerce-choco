@@ -8,6 +8,7 @@ import {
     Phone,
     MapPin
 } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
@@ -51,10 +52,10 @@ import {
                 <div>
                     <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">প্রয়োজনীয় লিংক</h3>
                     <ul class="flex flex-col gap-3">
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">আমাদের সম্পর্কে</a></li>
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">যোগাযোগ</a></li>
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">ব্লগ</a></li>
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">অফার সমূহ</a></li>
+                        <li><Link href="/about-us" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">আমাদের সম্পর্কে</Link></li>
+                        <li><Link href="/contact" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">যোগাযোগ</Link></li>
+                        <li><a href="/#featured" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">ব্লগ</a></li>
+                        <li><a href="/#featured" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">অফার সমূহ</a></li>
                     </ul>
                 </div>
 
@@ -62,10 +63,10 @@ import {
                 <div>
                     <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">গ্রাহক সেবা</h3>
                     <ul class="flex flex-col gap-3">
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">রিটার্ন পলিসি</a></li>
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">প্রাইভেসি পলিসি</a></li>
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">শর্তাবলী</a></li>
-                        <li><a href="#" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">সাধারণ জিজ্ঞাসা (FAQ)</a></li>
+                        <li><Link href="/return-policy" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">রিটার্ন পলিসি</Link></li>
+                        <li><Link href="/privacy-policy" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">প্রাইভেসি পলিসি</Link></li>
+                        <li><Link href="/terms-conditions" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">শর্তাবলী</Link></li>
+                        <li><Link href="/faq" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">সাধারণ জিজ্ঞাসা (FAQ)</Link></li>
                     </ul>
                 </div>
 

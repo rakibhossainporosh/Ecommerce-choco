@@ -37,7 +37,17 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            'global_categories' => function () {
+                return \App\Models\Category::with(['children' => function ($q) {
+                        $q->where('is_active', true)->orderBy('sort_order')->select('id', 'parent_id', 'name', 'slug')->with(['children' => function ($q2) {
+                            $q2->where('is_active', true)->orderBy('sort_order')->select('id', 'parent_id', 'name', 'slug');
+                        }]);
+                    }])
+                    ->whereNull('parent_id')
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get(['id', 'name', 'slug']);
+            },
         ];
     }
 }
