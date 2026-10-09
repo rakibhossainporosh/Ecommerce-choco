@@ -52,15 +52,29 @@ const saveWishlist = () => {
 };
 
 export function useCart() {
-    const addToCart = (product, quantity = 1) => {
-        const existing = cartItems.value.find((item) => item.id === product.id);
+    const addToCart = (product, quantity = 1, variant = null) => {
+        // Find default variant id if none is provided
+        const defaultVariantId = product.default_variant_id || product.id;
+        const variantId = variant ? variant.id : defaultVariantId;
+        
+        const price = variant ? variant.price : product.price;
+        let name = product.name;
+        if (variant && variant.options && Object.keys(variant.options).length > 0) {
+            name = `${product.name} - ${Object.values(variant.options).join(' ')}`;
+        }
+        
+        const cartItemId = `${product.id}-${variantId}`;
+
+        const existing = cartItems.value.find((item) => item.cartItemId === cartItemId);
         if (existing) {
             existing.quantity += quantity;
         } else {
             cartItems.value.push({
+                cartItemId: cartItemId,
                 id: product.id,
-                name: product.name,
-                price: product.price,
+                variant_id: variantId,
+                name: name,
+                price: price,
                 quantity: quantity,
                 image: product.image,
             });
@@ -69,8 +83,8 @@ export function useCart() {
         isCartOpen.value = true;
     };
 
-    const updateQuantity = (id, delta) => {
-        const item = cartItems.value.find((i) => i.id === id);
+    const updateQuantity = (cartItemId, delta) => {
+        const item = cartItems.value.find((i) => (i.cartItemId || i.id) === cartItemId);
         if (item) {
             item.quantity += delta;
             if (item.quantity <= 0) {
@@ -81,8 +95,13 @@ export function useCart() {
         }
     };
 
-    const removeFromCart = (id) => {
-        cartItems.value = cartItems.value.filter((i) => i.id !== id);
+    const removeFromCart = (cartItemId) => {
+        cartItems.value = cartItems.value.filter((i) => (i.cartItemId || i.id) !== cartItemId);
+        saveCart();
+    };
+
+    const clearCart = () => {
+        cartItems.value = [];
         saveCart();
     };
 
@@ -125,6 +144,7 @@ export function useCart() {
         addToCart,
         updateQuantity,
         removeFromCart,
+        clearCart,
         toggleWishlist,
         isInWishlist,
         totalAmount,

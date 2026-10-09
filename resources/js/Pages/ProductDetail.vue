@@ -47,7 +47,7 @@ const formatPrice = (val) => {
 
 const handleAddToCart = () => {
     if (props.product) {
-        addToCart(props.product, quantity.value);
+        addToCart(props.product, quantity.value, currentVariant.value);
     }
 };
 </script>

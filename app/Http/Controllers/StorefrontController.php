@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -77,6 +81,7 @@ class StorefrontController extends Controller
 
             return [
                 'id' => $product->id,
+                'default_variant_id' => $variant?->id,
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'category_name' => $product->categories->first()?->name ?? 'ফ্যাশন',
@@ -168,6 +173,7 @@ class StorefrontController extends Controller
 
         $formattedProduct = [
             'id' => $product->id,
+            'default_variant_id' => $variant?->id,
             'name' => $product->name,
             'slug' => $product->slug,
             'category_name' => $product->categories->first()?->name ?? 'ফ্যাশন',
@@ -185,5 +191,73 @@ class StorefrontController extends Controller
         return Inertia::render('ProductDetail', [
             'product' => $formattedProduct,
         ]);
+    }
+
+    /**
+     * Display checkout page.
+     */
+    public function checkout(): Response
+    {
+        return Inertia::render('Checkout');
+    }
+
+    /**
+     * Process checkout.
+     */
+    public function processCheckout(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'shipping_address_line' => 'required|string',
+            'shipping_city' => 'required|string',
+            'shipping_amount' => 'required|numeric',
+            'cart_items' => 'required|array|min:1',
+            'cart_items.*.id' => 'required|exists:products,id',
+            'cart_items.*.variant_id' => 'required|exists:product_variants,id',
+            'cart_items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        return DB::transaction(function () use ($validated) {
+            $orderNumber = 'ORD-' . strtoupper(uniqid());
+
+            $order = Order::create([
+                'order_number' => $orderNumber,
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'shipping_address_line' => $validated['shipping_address_line'],
+                'shipping_city' => $validated['shipping_city'],
+                'shipping_amount' => $validated['shipping_amount'],
+                'status' => \App\Enums\OrderStatus::Pending,
+                'payment_status' => \App\Enums\PaymentStatus::Unpaid,
+                'payment_method' => \App\Enums\PaymentMethod::Cod,
+            ]);
+
+            $subtotal = 0;
+            foreach ($validated['cart_items'] as $item) {
+                $product = Product::find($item['id']);
+                $variant = ProductVariant::find($item['variant_id']);
+                
+                $price = $variant->selling_price;
+                $lineTotal = $price * $item['quantity'];
+                $subtotal += $lineTotal;
+
+                $order->items()->create([
+                    'product_variant_id' => $variant->id,
+                    'product_name' => $product->name,
+                    'variant_name' => $variant->name ?? $product->name,
+                    'sku' => $variant->sku,
+                    'unit_price' => $price,
+                    'quantity' => $item['quantity'],
+                    'line_total' => $lineTotal,
+                ]);
+            }
+
+            $order->subtotal = $subtotal;
+            $order->grand_total = $subtotal + $validated['shipping_amount'];
+            $order->save();
+
+            return redirect()->route('home')->with('success', 'আপনার অর্ডারটি সফলভাবে প্লেস করা হয়েছে! অর্ডার নম্বর: ' . $orderNumber);
+        });
     }
 }

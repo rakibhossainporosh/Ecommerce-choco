@@ -16,9 +16,7 @@ const formatPrice = (val) => {
     return '৳ ' + Number(val).toLocaleString('en-US');
 };
 
-const handleCheckout = () => {
-    alert('চেকআউট ফিচারটি শীঘ্রই সংযুক্ত করা হচ্ছে! এটি একটি ডেমো UI।');
-};
+import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
@@ -81,7 +79,7 @@ const handleCheckout = () => {
 
                 <div
                     v-for="item in cartItems"
-                    :key="item.id"
+                    :key="item.cartItemId || item.id"
                     class="py-4 flex items-center gap-4 first:pt-0 last:pb-0"
                 >
                     <!-- Thumbnail -->
@@ -104,7 +102,7 @@ const handleCheckout = () => {
                         <div class="flex items-center gap-3 mt-2">
                             <div class="inline-flex items-center border border-[#E2D9CD] rounded-lg bg-[#FAF7F2]">
                                 <button
-                                    @click="updateQuantity(item.id, -1)"
+                                    @click="updateQuantity(item.cartItemId || item.id, -1)"
                                     type="button"
                                     class="p-1 px-2 text-[#64748B] hover:text-[#1E293B] hover:bg-white rounded-l-lg transition-colors"
                                 >
@@ -114,7 +112,7 @@ const handleCheckout = () => {
                                     {{ item.quantity }}
                                 </span>
                                 <button
-                                    @click="updateQuantity(item.id, 1)"
+                                    @click="updateQuantity(item.cartItemId || item.id, 1)"
                                     type="button"
                                     class="p-1 px-2 text-[#64748B] hover:text-[#1E293B] hover:bg-white rounded-r-lg transition-colors"
                                 >
@@ -123,7 +121,7 @@ const handleCheckout = () => {
                             </div>
 
                             <button
-                                @click="removeFromCart(item.id)"
+                                @click="removeFromCart(item.cartItemId || item.id)"
                                 type="button"
                                 class="text-[#94A3B8] hover:text-rose-500 p-1 transition-colors"
                                 title="মুছে ফেলুন"
@@ -152,13 +150,13 @@ const handleCheckout = () => {
                 </div>
 
                 <!-- Checkout Button -->
-                <button
-                    @click="handleCheckout"
-                    type="button"
+                <Link
+                    href="/checkout"
+                    @click="closeCart"
                     class="w-full py-3.5 px-6 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-base rounded-full shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
                 >
                     <span>চেকআউট</span>
-                </button>
+                </Link>
             </div>
         </div>
     </Transition>
