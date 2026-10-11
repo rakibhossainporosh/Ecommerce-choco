@@ -193,3 +193,32 @@ test('10. Admin can refund completed payment on ViewPayment page', function () {
 test('11. PaymentsRelationManager is registered in OrderResource relations', function () {
     expect(OrderResource::getRelations())->toContain(PaymentsRelationManager::class);
 });
+
+test('12. PaymentResource displays navigation badge for pending payments count', function () {
+    expect(PaymentResource::getNavigationBadge())->toBeNull();
+
+    Payment::factory()->pending()->create();
+    Payment::factory()->pending()->create();
+    Payment::factory()->create(['status' => PaymentTransactionStatus::Completed]);
+
+    expect(PaymentResource::getNavigationBadge())->toBe('2')
+        ->and(PaymentResource::getNavigationBadgeColor())->toBe('warning')
+        ->and(PaymentResource::getNavigationBadgeTooltip())->toBe('Pending payment verifications');
+});
+
+test('13. ListPayments renders status filter tabs with badges', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    Payment::factory()->pending()->create();
+    Payment::factory()->create(['status' => PaymentTransactionStatus::Completed]);
+
+    $component = Livewire::test(ListPayments::class);
+    $tabs = $component->instance()->getTabs();
+
+    expect($tabs)->toHaveKeys(['all', 'pending', 'completed', 'failed', 'refunded'])
+        ->and((string) $tabs['pending']->getBadge())->toBe('1')
+        ->and((string) $tabs['completed']->getBadge())->toBe('1')
+        ->and((string) $tabs['all']->getBadge())->toBe('2');
+});

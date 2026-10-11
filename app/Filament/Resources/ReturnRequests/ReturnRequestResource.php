@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ReturnRequests;
 
-use App\Filament\Resources\ReturnRequests\Pages\CreateReturnRequest;
+use App\Enums\ReturnRequestStatus;
 use App\Filament\Resources\ReturnRequests\Pages\EditReturnRequest;
 use App\Filament\Resources\ReturnRequests\Pages\ListReturnRequests;
 use App\Filament\Resources\ReturnRequests\Pages\ViewReturnRequest;
@@ -30,6 +30,23 @@ class ReturnRequestResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'id';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::where('status', ReturnRequestStatus::Pending)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending return requests';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ReturnRequestForm::configure($schema);
@@ -56,7 +73,6 @@ class ReturnRequestResource extends Resource
     {
         return [
             'index' => ListReturnRequests::route('/'),
-            'create' => CreateReturnRequest::route('/create'),
             'view' => ViewReturnRequest::route('/{record}'),
             'edit' => EditReturnRequest::route('/{record}/edit'),
         ];

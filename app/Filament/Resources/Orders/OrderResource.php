@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Orders\RelationManagers\PaymentsRelationManager;
+use App\Filament\Resources\Orders\RelationManagers\ReturnRequestsRelationManager;
 use App\Filament\Resources\Orders\RelationManagers\ShipmentsRelationManager;
 use App\Filament\Resources\Orders\Schemas\OrderInfolist;
 use App\Filament\Resources\Orders\Tables\OrdersTable;
@@ -68,6 +69,7 @@ class OrderResource extends Resource
         return [
             PaymentsRelationManager::class,
             ShipmentsRelationManager::class,
+            ReturnRequestsRelationManager::class,
         ];
     }
 
@@ -82,7 +84,7 @@ class OrderResource extends Resource
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['items', 'statusHistories.changedBy', 'payments', 'shipments', 'latestShipment']);
+            ->with(['items', 'statusHistories.changedBy', 'payments', 'shipments', 'latestShipment', 'returnRequests']);
     }
 
     /**

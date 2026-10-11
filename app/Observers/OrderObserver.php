@@ -14,19 +14,21 @@ class OrderObserver
      */
     public function created(Order $order): void
     {
-        $users = User::permission('orders.view')->get();
+        $users = rescue(fn () => User::permission('orders.view')->get(), collect());
 
-        Notification::make()
-            ->title('New Order Received')
-            ->body("Order #{$order->order_number} has been placed for ".number_format($order->grand_total, 2).' ৳.')
-            ->success()
-            ->icon('heroicon-o-shopping-bag')
-            ->actions([
-                Action::make('view')
-                    ->button()
-                    ->url(route('filament.admin.resources.orders.view', $order)),
-            ])
-            ->sendToDatabase($users);
+        if ($users && $users->isNotEmpty()) {
+            Notification::make()
+                ->title('New Order Received')
+                ->body("Order #{$order->order_number} has been placed for ".number_format($order->grand_total, 2).' ৳.')
+                ->success()
+                ->icon('heroicon-o-shopping-bag')
+                ->actions([
+                    Action::make('view')
+                        ->button()
+                        ->url(route('filament.admin.resources.orders.view', $order)),
+                ])
+                ->sendToDatabase($users);
+        }
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Payments;
 
+use App\Enums\PaymentTransactionStatus;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Filament\Resources\Payments\Pages\ViewPayment;
 use App\Filament\Resources\Payments\Schemas\PaymentForm;
@@ -21,6 +22,7 @@ class PaymentResource extends Resource
     protected static ?string $model = Payment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Sales';
 
     protected static ?string $navigationLabel = 'Payments';
@@ -30,6 +32,23 @@ class PaymentResource extends Resource
     protected static ?string $pluralModelLabel = 'Payments';
 
     protected static ?int $navigationSort = 20;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::where('status', PaymentTransactionStatus::Pending)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending payment verifications';
+    }
 
     public static function form(Schema $schema): Schema
     {

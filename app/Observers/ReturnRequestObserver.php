@@ -14,19 +14,21 @@ class ReturnRequestObserver
      */
     public function created(ReturnRequest $returnRequest): void
     {
-        $users = User::permission('returns.view')->get();
+        $users = rescue(fn () => User::permission('returns.view')->get(), collect());
 
-        Notification::make()
-            ->title('New Return Request')
-            ->body("A return request has been submitted for Order #{$returnRequest->order->order_number}.")
-            ->warning()
-            ->icon('heroicon-o-arrow-path')
-            ->actions([
-                Action::make('view')
-                    ->button()
-                    ->url(route('filament.admin.resources.return-requests.view', $returnRequest)),
-            ])
-            ->sendToDatabase($users);
+        if ($users && $users->isNotEmpty()) {
+            Notification::make()
+                ->title('New Return Request')
+                ->body("A return request has been submitted for Order #{$returnRequest->order->order_number}.")
+                ->warning()
+                ->icon('heroicon-o-arrow-path')
+                ->actions([
+                    Action::make('view')
+                        ->button()
+                        ->url(route('filament.admin.resources.return-requests.view', $returnRequest)),
+                ])
+                ->sendToDatabase($users);
+        }
     }
 
     /**
