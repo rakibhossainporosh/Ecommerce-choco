@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -19,15 +21,17 @@ use Spatie\Activitylog\Support\LogOptions;
     'name',
     'phone',
     'email',
+    'password',
     'is_active',
     'notes',
 ])]
-class Customer extends Model
+class Customer extends Authenticatable
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
 
     use LogsActivity;
+    use Notifiable;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -47,6 +51,16 @@ class Customer extends Model
     ];
 
     /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -56,6 +70,7 @@ class Customer extends Model
         return [
             'user_id' => 'integer',
             'is_active' => 'boolean',
+            'password' => 'hashed',
         ];
     }
 

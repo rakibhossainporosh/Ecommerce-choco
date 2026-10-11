@@ -3,36 +3,9 @@ import { ref, computed } from 'vue';
 const isCartOpen = ref(false);
 const isWishlistOpen = ref(false);
 
-const initialCart = [
-    {
-        id: 1,
-        variant_id: 1,
-        name: 'কটন শার্ট',
-        price: 1250,
-        quantity: 1,
-        image: '/images/storefront/product-1.jpg',
-    },
-    {
-        id: 2,
-        variant_id: 2,
-        name: 'ক্লাসিক ঘড়ি',
-        price: 2450,
-        quantity: 1,
-        image: '/images/storefront/product-2.jpg',
-    },
-    {
-        id: 3,
-        variant_id: 3,
-        name: 'সিরামিক মগ',
-        price: 450,
-        quantity: 1,
-        image: '/images/storefront/product-3.jpg',
-    },
-];
-
-// Load from localStorage or use initialCart
+// Load from localStorage or start empty
 const savedCart = typeof window !== 'undefined' ? localStorage.getItem('nobo_cart') : null;
-const cartItems = ref(savedCart ? JSON.parse(savedCart) : initialCart);
+const cartItems = ref(savedCart ? JSON.parse(savedCart) : []);
 
 // Wishlist
 const savedWishlist = typeof window !== 'undefined' ? localStorage.getItem('nobo_wishlist') : null;
@@ -56,6 +29,10 @@ const saveWishlist = () => {
 
 export function useCart() {
     const addToCart = (product, quantity = 1, variant = null) => {
+        if (product.is_in_stock === false || (variant && variant.is_in_stock === false)) {
+            return;
+        }
+
         // Find default variant id if none is provided
         const defaultVariantId = product.default_variant_id || product.id;
         const variantId = variant ? variant.id : defaultVariantId;
@@ -91,7 +68,7 @@ export function useCart() {
         if (item) {
             item.quantity += delta;
             if (item.quantity <= 0) {
-                removeFromCart(id);
+                removeFromCart(cartItemId);
                 return;
             }
             saveCart();

@@ -4,33 +4,38 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
 defineEmits(['shopNow']);
 
-const slides = [
-    {
-        image: '/images/storefront/hero-banner.jpg',
-        title: 'প্রতিদিনের প্রয়োজন,<br /><span class="text-[#1E293B]">আপনার পছন্দ</span>',
-        subtitle: 'ফ্যাশন, এক্সেসরিজ, হোম ও ইলেকট্রনিক্স — সবকিছু একসাথে'
-    },
-    {
-        image: '/images/storefront/hero-2.jpg',
-        title: 'অসাধারণ স্টাইল,<br /><span class="text-[#1E293B]">আপনার হাতের মুঠোয়</span>',
-        subtitle: 'সেরা মানের গ্যাজেট ও লাইফস্টাইল পণ্য'
-    },
-    {
-        image: '/images/storefront/hero-3.jpg',
-        title: 'নতুন কালেকশন,<br /><span class="text-[#1E293B]">এসে গেছে!</span>',
-        subtitle: 'স্টাইলিশ পোশাক ও গ্যাজেট দিয়ে সাজিয়ে তুলুন নিজেকে'
+const props = defineProps({
+    slides: {
+        type: Array,
+        default: () => [
+            {
+                image: '/images/storefront/hero-banner.jpg',
+                title: 'প্রতিদিনের প্রয়োজন,<br /><span class="text-[#1E293B]">আপনার পছন্দ</span>',
+                subtitle: 'ফ্যাশন, এক্সেসরিজ, হোম ও ইলেকট্রনিক্স — সবকিছু একসাথে'
+            },
+            {
+                image: '/images/storefront/hero-2.jpg',
+                title: 'অসাধারণ স্টাইল,<br /><span class="text-[#1E293B]">আপনার হাতের মুঠোয়</span>',
+                subtitle: 'সেরা মানের গ্যাজেট ও লাইফস্টাইল পণ্য'
+            },
+            {
+                image: '/images/storefront/hero-3.jpg',
+                title: 'নতুন কালেকশন,<br /><span class="text-[#1E293B]">এসে গেছে!</span>',
+                subtitle: 'স্টাইলিশ পোশাক ও গ্যাজেট দিয়ে সাজিয়ে তুলুন নিজেকে'
+            }
+        ]
     }
-];
+});
 
 const currentSlide = ref(0);
 let autoPlayInterval = null;
 
 const nextSlide = () => {
-    currentSlide.value = (currentSlide.value + 1) % slides.length;
+    currentSlide.value = (currentSlide.value + 1) % props.slides.length;
 };
 
 const prevSlide = () => {
-    currentSlide.value = (currentSlide.value - 1 + slides.length) % slides.length;
+    currentSlide.value = (currentSlide.value - 1 + props.slides.length) % props.slides.length;
 };
 
 const goToSlide = (index) => {

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { 
     Facebook, 
     Twitter, 
@@ -8,7 +9,10 @@ import {
     Phone,
     MapPin
 } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const settings = computed(() => page.props.site_settings || {});
 </script>
 
 <template>
@@ -25,24 +29,24 @@ import { Link } from '@inertiajs/vue3';
                         </div>
                         <div class="flex flex-col">
                             <span class="text-xl font-bold tracking-tight text-[#1E293B] leading-tight">
-                                Nobo Shop
+                                {{ settings.site_name || 'Nobo Shop' }}
                             </span>
                         </div>
                     </a>
                     <p class="text-[15px] text-[#64748B] leading-relaxed mt-2">
-                        আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।
+                        {{ settings.site_tagline ? settings.site_tagline + ' — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান।' : 'আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।' }}
                     </p>
                     <div class="flex items-center gap-4 mt-2">
-                        <a href="#" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors">
+                        <a :href="settings.facebook_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="Facebook">
                             <Facebook class="w-4 h-4" />
                         </a>
-                        <a href="#" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors">
+                        <a :href="settings.twitter_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="Twitter">
                             <Twitter class="w-4 h-4" />
                         </a>
-                        <a href="#" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors">
+                        <a :href="settings.instagram_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="Instagram">
                             <Instagram class="w-4 h-4" />
                         </a>
-                        <a href="#" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors">
+                        <a :href="settings.youtube_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="YouTube">
                             <Youtube class="w-4 h-4" />
                         </a>
                     </div>
@@ -54,7 +58,7 @@ import { Link } from '@inertiajs/vue3';
                     <ul class="flex flex-col gap-3">
                         <li><Link href="/about-us" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">আমাদের সম্পর্কে</Link></li>
                         <li><Link href="/contact" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">যোগাযোগ</Link></li>
-                        <li><a href="/#featured" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">ব্লগ</a></li>
+                        <li><Link href="/track-order" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">অর্ডার ট্র্যাকিং</Link></li>
                         <li><a href="/#featured" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">অফার সমূহ</a></li>
                     </ul>
                 </div>
@@ -77,16 +81,20 @@ import { Link } from '@inertiajs/vue3';
                         <li class="flex items-start gap-3">
                             <MapPin class="w-5 h-5 text-[#E86A28] shrink-0 mt-0.5" />
                             <span class="text-[#64748B] text-[15px] leading-relaxed">
-                                ১২৩, নবো শপ টাওয়ার, ধানমন্ডি,<br>ঢাকা-১২০৫, বাংলাদেশ
+                                {{ settings.contact_address || '১২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ' }}
                             </span>
                         </li>
                         <li class="flex items-center gap-3">
                             <Phone class="w-5 h-5 text-[#E86A28] shrink-0" />
-                            <span class="text-[#64748B] text-[15px]">+৮৮০ ১২৩৪ ৫৬৭৮৯০</span>
+                            <a :href="'tel:' + (settings.contact_phone || '+8801234567890')" class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors">
+                                {{ settings.contact_phone || '+৮৮০ ১২৩৪ ৫৬৭৮৯০' }}
+                            </a>
                         </li>
                         <li class="flex items-center gap-3">
                             <Mail class="w-5 h-5 text-[#E86A28] shrink-0" />
-                            <span class="text-[#64748B] text-[15px]">support@noboshop.com</span>
+                            <a :href="'mailto:' + (settings.contact_email || 'support@noboshop.com')" class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors">
+                                {{ settings.contact_email || 'support@noboshop.com' }}
+                            </a>
                         </li>
                     </ul>
                 </div>

@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    'sms' => [
+        'enabled' => env('SMS_ENABLED', true),
+        'driver' => env('SMS_DRIVER', 'log'), // 'log', 'greenweb', 'bulksmsbd'
+    ],
+
+    'greenweb' => [
+        'token' => env('GREENWEB_SMS_TOKEN'),
+    ],
+
+    'bulksmsbd' => [
+        'api_key' => env('BULKSMSBD_API_KEY'),
+        'sender_id' => env('BULKSMSBD_SENDER_ID'),
+    ],
+
 ];

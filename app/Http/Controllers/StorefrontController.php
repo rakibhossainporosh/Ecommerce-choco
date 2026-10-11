@@ -7,12 +7,17 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Category;
 use App\Models\Coupon;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Review;
+use App\Models\User;
+use App\Services\SmsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,8 +43,11 @@ class StorefrontController extends Controller
             ->with([
                 'categories:id,name,slug',
                 'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
+                'defaultVariant.inventory',
                 'media',
-            ]);
+            ])
+            ->withAvg(['reviews' => fn ($q) => $q->where('is_approved', true)], 'rating')
+            ->withCount(['reviews' => fn ($q) => $q->where('is_approved', true)]);
 
         if ($selectedCategory && $selectedCategory !== 'all') {
             $productsQuery->whereHas('categories', function ($q) use ($selectedCategory) {
@@ -78,21 +86,30 @@ class StorefrontController extends Controller
             $variant = $product->defaultVariant;
             $primaryMedia = $product->media->firstWhere('is_primary', true) ?? $product->media->first();
 
-            $image = $imageMap[$product->slug]
-                ?? ($primaryMedia ? asset('storage/'.ltrim($primaryMedia->path, '/')) : '/images/storefront/product-1.jpg');
+            $image = $primaryMedia
+                ? asset('storage/'.ltrim($primaryMedia->path, '/'))
+                : ($imageMap[$product->slug] ?? '/images/storefront/product-1.jpg');
+
+            $inventory = $variant?->inventory;
+            $stockQuantity = $inventory ? (int) $inventory->quantity : null;
+            $isInStock = $inventory ? $inventory->quantity > 0 : true;
 
             return [
                 'id' => $product->id,
                 'default_variant_id' => $variant?->id,
                 'name' => $product->name,
                 'slug' => $product->slug,
-                'category_name' => $product->categories->first()?->name ?? 'ফ্যাশন',
-                'category_slug' => $product->categories->first()?->slug ?? 'fashion',
+                'category_name' => $product->categories->first()?->name ?? 'সাধারণ',
+                'category_slug' => $product->categories->first()?->slug ?? 'general',
                 'price' => (float) ($variant?->selling_price ?? 0),
                 'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
                 'image' => $image,
                 'short_description' => $product->short_description,
                 'is_featured' => (bool) $product->is_featured,
+                'rating' => round((float) ($product->reviews_avg_rating ?? 5.0), 1),
+                'reviews_count' => (int) ($product->reviews_count ?? 0),
+                'stock_quantity' => $stockQuantity,
+                'is_in_stock' => $isInStock,
             ];
         });
 
@@ -190,15 +207,21 @@ class StorefrontController extends Controller
             ->where('is_active', true)
             ->with([
                 'categories:id,name,slug',
+                'brand:id,name,slug',
                 'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
+                'defaultVariant.inventory',
                 'variants' => function ($q) {
                     $q->where('is_active', true)
                         ->with([
+                            'inventory',
                             'variantAttributeValues.attribute:id,name,type',
                             'variantAttributeValues.attributeValue:id,name',
                         ]);
                 },
                 'media',
+                'reviews' => function ($q) {
+                    $q->where('is_approved', true)->with('user:id,name')->latest();
+                },
             ])
             ->firstOrFail();
 
@@ -214,8 +237,16 @@ class StorefrontController extends Controller
         $variant = $product->defaultVariant;
         $primaryMedia = $product->media->firstWhere('is_primary', true) ?? $product->media->first();
 
-        $image = $imageMap[$product->slug]
-            ?? ($primaryMedia ? asset('storage/'.ltrim($primaryMedia->path, '/')) : '/images/storefront/product-1.jpg');
+        $mainImage = $primaryMedia
+            ? asset('storage/'.ltrim($primaryMedia->path, '/'))
+            : ($imageMap[$product->slug] ?? '/images/storefront/product-1.jpg');
+
+        $mediaImages = $product->media->map(fn ($m) => asset('storage/'.ltrim($m->path, '/')))->all();
+        if (empty($mediaImages)) {
+            $mediaImages = [$mainImage];
+        } elseif (! in_array($mainImage, $mediaImages)) {
+            array_unshift($mediaImages, $mainImage);
+        }
 
         $variants = $product->variants->map(function ($variant) {
             $options = $variant->variantAttributeValues->mapWithKeys(function ($vav) {
@@ -228,6 +259,8 @@ class StorefrontController extends Controller
                 'id' => $variant->id,
                 'price' => (float) $variant->selling_price,
                 'compare_at_price' => $variant->compare_at_price ? (float) $variant->compare_at_price : null,
+                'stock_quantity' => $variant->inventory?->quantity ?? 0,
+                'is_in_stock' => $variant->inventory ? $variant->inventory->quantity > 0 : true,
                 'options' => $options,
             ];
         })->values()->toArray();
@@ -247,19 +280,44 @@ class StorefrontController extends Controller
             }
         }
 
+        $reviews = $product->reviews->map(function (Review $review) {
+            return [
+                'id' => $review->id,
+                'rating' => (int) $review->rating,
+                'title' => $review->title,
+                'body' => $review->body,
+                'reviewer_name' => $review->user?->name ?? 'সন্তুষ্ট গ্রাহক',
+                'created_at' => $review->created_at->format('d M Y'),
+            ];
+        });
+
+        $reviewsCount = $reviews->count();
+        $avgRating = $reviewsCount > 0 ? round($reviews->avg('rating'), 1) : 5.0;
+
+        $inventory = $variant?->inventory;
+        $stockQuantity = $inventory ? (int) $inventory->quantity : null;
+        $isInStock = $inventory ? $inventory->quantity > 0 : true;
+
         $formattedProduct = [
             'id' => $product->id,
             'default_variant_id' => $variant?->id,
             'name' => $product->name,
             'slug' => $product->slug,
-            'category_name' => $product->categories->first()?->name ?? 'ফ্যাশন',
-            'category_slug' => $product->categories->first()?->slug ?? 'fashion',
+            'category_name' => $product->categories->first()?->name ?? 'সাধারণ পণ্য',
+            'category_slug' => $product->categories->first()?->slug ?? 'general',
+            'brand_name' => $product->brand?->name,
             'price' => (float) ($variant?->selling_price ?? 0),
             'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
-            'image' => $image,
+            'image' => $mainImage,
+            'images' => $mediaImages,
             'short_description' => $product->short_description,
             'description' => $product->description,
             'is_featured' => (bool) $product->is_featured,
+            'stock_quantity' => $stockQuantity,
+            'is_in_stock' => $isInStock,
+            'rating' => $avgRating,
+            'reviews_count' => $reviewsCount,
+            'reviews' => $reviews,
             'variants' => $variants,
             'available_options' => $availableOptions,
         ];
@@ -282,6 +340,12 @@ class StorefrontController extends Controller
      */
     public function processCheckout(Request $request)
     {
+        $request->merge([
+            'shipping_address_line' => $request->input('shipping_address_line', $request->input('shipping_address')),
+            'shipping_amount' => $request->input('shipping_amount', 60),
+            'cart_items' => $request->input('cart_items', $request->input('items')),
+        ]);
+
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
@@ -294,8 +358,32 @@ class StorefrontController extends Controller
             'cart_items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        return DB::transaction(function () use ($validated) {
+        // Stock availability verification before order placement
+        foreach ($validated['cart_items'] as $item) {
+            $variant = ProductVariant::with('inventory', 'product')->find($item['variant_id']);
+            if ($variant && $variant->inventory && $variant->inventory->quantity < $item['quantity']) {
+                $pName = $variant->product?->name ?? 'পণ্য';
+
+                return back()->withErrors([
+                    'stock' => "দুঃখিত, \"{$pName}\" পণ্যের জন্য পর্যাপ্ত স্টক নেই (বর্তমান স্টক: {$variant->inventory->quantity} টি)।",
+                ]);
+            }
+        }
+
+        return DB::transaction(function () use ($validated, $request) {
             $orderNumber = 'ORD-'.strtoupper(uniqid());
+
+            // Link authenticated customer or create/find by phone
+            $customer = auth('customer')->user();
+            if (! $customer) {
+                $customer = Customer::firstOrCreate(
+                    ['phone' => $validated['customer_phone']],
+                    [
+                        'name' => $validated['customer_name'],
+                        'is_active' => true,
+                    ]
+                );
+            }
 
             $subtotal = 0;
             foreach ($validated['cart_items'] as $item) {
@@ -329,6 +417,7 @@ class StorefrontController extends Controller
 
             $order = Order::create([
                 'order_number' => $orderNumber,
+                'customer_id' => $customer->id,
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
                 'shipping_address_line' => $validated['shipping_address_line'],
@@ -349,7 +438,6 @@ class StorefrontController extends Controller
 
                 $price = $variant->selling_price;
                 $lineTotal = $price * $item['quantity'];
-                $subtotal += $lineTotal;
 
                 $order->items()->create([
                     'product_variant_id' => $variant->id,
@@ -360,6 +448,13 @@ class StorefrontController extends Controller
                     'quantity' => $item['quantity'],
                     'line_total' => $lineTotal,
                 ]);
+            }
+
+            // Send order placement confirmation SMS
+            try {
+                app(SmsService::class)->sendOrderPlacedSms($order);
+            } catch (\Throwable $e) {
+                Log::error('Order SMS notification error: '.$e->getMessage());
             }
 
             return redirect()->route('checkout.success', ['order_number' => $orderNumber]);
@@ -376,6 +471,74 @@ class StorefrontController extends Controller
         return Inertia::render('CheckoutSuccess', [
             'order_number' => $orderNumber,
         ]);
+    }
+
+    /**
+     * Handle contact form submission.
+     */
+    public function submitContact(Request $request)
+    {
+        $contactIdentifier = $request->input('email_or_phone') ?: ($request->input('email') ?: $request->input('phone'));
+        $request->merge([
+            'email_or_phone' => $contactIdentifier,
+        ]);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email_or_phone' => 'required|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        if (function_exists('activity')) {
+            activity()
+                ->withProperties($validated)
+                ->log('Storefront contact form message received');
+        }
+
+        return back()->with('success', 'আপনার বার্তাটি সফলভাবে পাঠানো হয়েছে। আমরা শীঘ্রই যোগাযোগ করবো।');
+    }
+
+    /**
+     * Submit a customer review for a product.
+     */
+    public function submitReview(Request $request, string $slug)
+    {
+        $product = Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
+
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'title' => 'nullable|string|max:255',
+            'body' => 'required|string|max:2000',
+            'reviewer_name' => 'nullable|string|max:255',
+        ]);
+
+        $user = auth()->user();
+        if (! $user) {
+            $reviewerName = ! empty($validated['reviewer_name']) ? $validated['reviewer_name'] : 'সন্তুষ্ট গ্রাহক';
+            $user = User::firstOrCreate(
+                ['email' => 'guest_review_'.md5(strtolower($reviewerName)).'@noboshop.com'],
+                [
+                    'name' => $reviewerName,
+                    'password' => bcrypt(str()->random(16)),
+                ]
+            );
+        }
+
+        Review::updateOrCreate(
+            [
+                'product_id' => $product->id,
+                'user_id' => $user->id,
+            ],
+            [
+                'rating' => $validated['rating'],
+                'title' => $validated['title'] ?: ($validated['reviewer_name'] ? "রিভিউ করেছেন: {$validated['reviewer_name']}" : 'কাস্টমার রিভিউ'),
+                'body' => $validated['body'],
+                'is_approved' => true,
+            ]
+        );
+
+        return back()->with('success', 'আপনার রিভিউ সফলভাবে যুক্ত হয়েছে! ধন্যবাদ।');
     }
 
     /**

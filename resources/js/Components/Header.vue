@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, useAttrs, onMounted, onUnmounted } from 'vue';
-import { Search, Heart, ShoppingBag, ChevronDown, ChevronRight, X, Loader2 } from 'lucide-vue-next';
+import { Search, Heart, ShoppingBag, ChevronDown, ChevronRight, X, Loader2, User } from 'lucide-vue-next';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { useCart } from '../Composables/useCart';
 
@@ -200,10 +200,10 @@ onUnmounted(() => {
                     </div>
                     <div class="flex flex-col">
                         <span class="text-xl font-bold tracking-tight text-[#1E293B] group-hover:text-[#E86A28] transition-colors leading-tight">
-                            Nobo Shop
+                            {{ page.props.site_settings?.site_name || 'Nobo Shop' }}
                         </span>
                         <span class="text-[12px] text-[#64748B] font-medium leading-none mt-0.5">
-                            আপনার প্রতিদিনের পছন্দ
+                            {{ page.props.site_settings?.site_tagline || 'আপনার প্রতিদিনের পছন্দ' }}
                         </span>
                     </div>
                 </a>
@@ -387,8 +387,28 @@ onUnmounted(() => {
                         <Link href="/track-order" class="hover:text-[#E86A28] transition-colors font-bold text-[#E86A28]">ট্র্যাক অর্ডার</Link>
                     </nav>
 
-                    <!-- Icons: Wishlist & Cart -->
-                    <div class="flex items-center gap-4">
+                    <!-- Icons: Account, Wishlist & Cart -->
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <!-- Customer Account / Login -->
+                        <Link
+                            v-if="page.props.customer"
+                            href="/account"
+                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
+                            title="আমার অ্যাকাউন্ট"
+                        >
+                            <User class="w-4 h-4 text-[#E86A28]" />
+                            <span class="hidden sm:inline max-w-[90px] truncate">{{ page.props.customer.name }}</span>
+                        </Link>
+                        <Link
+                            v-else
+                            href="/login"
+                            class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
+                            title="লগইন করুন"
+                        >
+                            <User class="w-4 h-4 text-[#E86A28]" />
+                            <span class="hidden sm:inline">লগইন</span>
+                        </Link>
+
                         <!-- Wishlist -->
                         <button
                             @click="openWishlist"

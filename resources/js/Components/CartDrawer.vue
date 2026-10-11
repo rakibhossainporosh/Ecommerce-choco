@@ -1,5 +1,5 @@
 <script setup>
-import { X, Plus, Minus, Trash2, Info, ShoppingBag } from 'lucide-vue-next';
+import { X, Plus, Minus, Trash2, ShieldCheck, ShoppingBag } from 'lucide-vue-next';
 import { useCart } from '../Composables/useCart';
 
 const { 
@@ -143,10 +143,10 @@ import { Link } from '@inertiajs/vue3';
                     </span>
                 </div>
 
-                <!-- Demo UI Notice Box matching screenshot -->
-                <div class="mb-5 p-3 rounded-xl bg-[#F4EFE6] border border-[#E5DDD0] flex items-start gap-2.5 text-[12px] text-[#64748B] leading-relaxed">
-                    <Info class="w-4 h-4 text-[#E86A28] shrink-0 mt-0.5" />
-                    <span>এটি একটি ডেমো UI। চেকআউট এবং পেমেন্ট সংযুক্ত নয়।</span>
+                <!-- Secure Checkout Notice Box -->
+                <div class="mb-5 p-3 rounded-xl bg-[#F4EFE6] border border-[#E5DDD0] flex items-center gap-2.5 text-[12px] text-[#475569] leading-relaxed">
+                    <ShieldCheck class="w-4 h-4 text-[#E86A28] shrink-0" />
+                    <span>১০০% নিরাপদ চেকআউট ও ক্যাশ অন ডেলিভারি সুবিধা।</span>
                 </div>
 
                 <!-- Checkout Button -->

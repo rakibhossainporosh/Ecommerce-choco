@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { CheckCircle, ShoppingBag, ArrowRight } from 'lucide-vue-next';
+import { CheckCircle, ShoppingBag, ArrowRight, Truck } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 
@@ -41,6 +41,15 @@ defineProps({
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <Link 
+                        v-if="order_number"
+                        :href="'/track-order?order_number=' + order_number"
+                        class="w-full sm:w-auto px-8 py-3.5 bg-white border-2 border-[#E86A28] text-[#E86A28] hover:bg-[#FAF7F2] font-bold text-base rounded-full shadow-sm transition-all flex items-center justify-center gap-2"
+                    >
+                        <Truck class="w-4 h-4" />
+                        <span>অর্ডার ট্র্যাক করুন</span>
+                    </Link>
+
                     <Link 
                         href="/" 
                         class="w-full sm:w-auto px-8 py-3.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-base rounded-full shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"

@@ -1,19 +1,25 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X } from 'lucide-vue-next';
+import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X, AlertCircle } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import { useCart } from '../Composables/useCart';
 
+const page = usePage();
 const { cartItems, totalAmount, totalCount, clearCart } = useCart();
 
-const shippingCharge = ref(60);
+const shippingDhaka = computed(() => Number(page.props.site_settings?.shipping_inside_dhaka || 60));
+const shippingOutside = computed(() => Number(page.props.site_settings?.shipping_outside_dhaka || 120));
+
+const shippingCharge = ref(shippingDhaka.value);
+
+const loggedInCustomer = page.props.customer;
 
 const form = useForm({
-    customer_name: '',
-    customer_phone: '',
+    customer_name: loggedInCustomer ? loggedInCustomer.name : '',
+    customer_phone: loggedInCustomer ? loggedInCustomer.phone : '',
     shipping_city: 'Dhaka',
     shipping_address_line: '',
     shipping_amount: shippingCharge.value,
@@ -82,7 +88,7 @@ const submitOrder = () => {
 };
 
 const updateShipping = () => {
-    shippingCharge.value = form.shipping_city === 'Dhaka' ? 60 : 120;
+    shippingCharge.value = form.shipping_city === 'Dhaka' ? shippingDhaka.value : shippingOutside.value;
     form.shipping_amount = shippingCharge.value;
 };
 </script>
@@ -131,8 +137,8 @@ const updateShipping = () => {
                         <div>
                             <label class="block text-sm font-semibold text-[#475569] mb-2">শহর *</label>
                             <select v-model="form.shipping_city" @change="updateShipping" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all">
-                                <option value="Dhaka">ঢাকা</option>
-                                <option value="Outside Dhaka">ঢাকার বাইরে</option>
+                                <option value="Dhaka">ঢাকা (চার্জ: ৳ {{ shippingDhaka }})</option>
+                                <option value="Outside Dhaka">ঢাকার বাইরে (চার্জ: ৳ {{ shippingOutside }})</option>
                             </select>
                             <span v-if="form.errors.shipping_city" class="text-red-500 text-xs mt-1">{{ form.errors.shipping_city }}</span>
                         </div>
@@ -144,10 +150,14 @@ const updateShipping = () => {
                         </div>
 
                         <div class="pt-6 border-t border-[#F0EAE1]">
-                            <div v-if="Object.keys(form.errors).length > 0" class="mb-4 p-3 bg-red-50 text-red-500 rounded-xl text-sm font-semibold">
+                            <div v-if="form.errors.stock" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-semibold flex items-center gap-2">
+                                <AlertCircle class="w-5 h-5 shrink-0" />
+                                <span>{{ form.errors.stock }}</span>
+                            </div>
+                            <div v-else-if="Object.keys(form.errors).length > 0" class="mb-4 p-3 bg-red-50 text-red-500 rounded-xl text-sm font-semibold">
                                 কিছু তথ্য ভুল বা অসম্পূর্ণ আছে। দয়া করে ফর্মটি সঠিকভাবে পূরণ করুন।
                             </div>
-                            <button type="submit" :disabled="form.processing" class="w-full py-4 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70">
+                            <button type="submit" :disabled="form.processing" class="w-full py-4 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer">
                                 <span>অর্ডার কনফার্ম করুন</span>
                                 <ArrowRight class="w-5 h-5" />
                             </button>
