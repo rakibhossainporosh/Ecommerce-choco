@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { Search, X } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import HeroSection from '../Components/HeroSection.vue';
 import CategoryFilter from '../Components/CategoryFilter.vue';
@@ -35,15 +36,22 @@ const updateFilters = (newFilters) => {
         }
     });
 
+    const isSearchChange = newFilters.search !== undefined;
+
     router.get(
         '/',
         currentFilters,
-        { preserveState: true, preserveScroll: true, replace: true }
+        { preserveState: true, preserveScroll: !isSearchChange, replace: true }
     );
 };
 
 const handleSearch = (searchQuery) => {
-    updateFilters({ search: searchQuery });
+    // Reset category to 'all' on new search so search checks across all categories
+    updateFilters({ search: searchQuery, category: 'all' });
+};
+
+const handleClearAllFilters = () => {
+    updateFilters({ search: '', category: 'all', sort: 'newest' });
 };
 
 const handleSelectCategory = (categorySlug) => {
@@ -78,11 +86,32 @@ const handleSelectSort = (sortOption) => {
 
             <!-- Product Grid -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-                <div v-if="products.length === 0" class="text-center py-20 bg-white rounded-2xl border border-[#EAE3D6] shadow-sm">
-                    <p class="text-lg text-[#64748B] font-medium">দুঃখিত, এই ক্যাটাগরিতে কোনো পণ্য পাওয়া যায়নি।</p>
+                <!-- Search Result Indicator -->
+                <div v-if="filters.search" class="mb-6 flex flex-wrap items-center justify-between gap-3 bg-white px-5 py-3.5 rounded-2xl border border-[#EAE3D6] shadow-sm">
+                    <div class="flex items-center gap-2 text-[#475569] text-sm">
+                        <Search class="w-4 h-4 text-[#E86A28]" />
+                        <span>"<strong>{{ filters.search }}</strong>" এর অনুসন্ধান ফলাফল</span>
+                        <span class="text-xs bg-[#F6F1E9] text-[#64748B] px-2.5 py-0.5 rounded-full font-semibold">
+                            {{ products.length }} টি পণ্য
+                        </span>
+                    </div>
                     <button 
-                        @click="handleSelectCategory('all')" 
-                        class="mt-4 px-6 py-2 bg-[#E86A28] text-white rounded-full font-medium hover:bg-[#D95F22] transition-colors shadow-sm"
+                        @click="handleSearch('')" 
+                        type="button"
+                        class="text-xs font-semibold text-[#E86A28] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                        <span>অনুসন্ধান মুছুন</span>
+                        <X class="w-3.5 h-3.5" />
+                    </button>
+                </div>
+
+                <div v-if="products.length === 0" class="text-center py-20 bg-white rounded-2xl border border-[#EAE3D6] shadow-sm">
+                    <p class="text-lg text-[#64748B] font-medium">
+                        {{ filters.search ? `দুঃখিত, "${filters.search}" এর সাথে মিলে এমন কোনো পণ্য পাওয়া যায়নি।` : 'দুঃখিত, এই ক্যাটাগরিতে কোনো পণ্য পাওয়া যায়নি।' }}
+                    </p>
+                    <button 
+                        @click="handleClearAllFilters" 
+                        class="mt-4 px-6 py-2 bg-[#E86A28] text-white rounded-full font-medium hover:bg-[#D95F22] transition-colors shadow-sm cursor-pointer"
                     >
                         সব পণ্য দেখুন
                     </button>

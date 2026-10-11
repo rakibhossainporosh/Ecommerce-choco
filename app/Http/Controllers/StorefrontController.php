@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Category;
-use App\Models\Product;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\ProductVariant;
 use App\Models\Coupon;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -45,10 +48,7 @@ class StorefrontController extends Controller
         }
 
         if (! empty($search)) {
-            $productsQuery->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('short_description', 'like', "%{$search}%");
-            });
+            $this->applySearchCondition($productsQuery, $search);
         }
 
         if ($sort === 'price_asc') {
@@ -62,7 +62,7 @@ class StorefrontController extends Controller
                 ->orderBy('product_variants.selling_price', 'desc')
                 ->select('products.*');
         } else {
-            $productsQuery->latest('id');
+            $productsQuery->latest('products.id');
         }
 
         $imageMap = [
@@ -108,6 +108,79 @@ class StorefrontController extends Controller
     }
 
     /**
+     * Search product suggestions for live dropdown.
+     */
+    public function suggestions(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+
+        if ($search === '') {
+            return response()->json([]);
+        }
+
+        $productsQuery = Product::query()
+            ->where('products.is_active', true)
+            ->with([
+                'categories:id,name,slug',
+                'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
+                'media',
+            ]);
+
+        $this->applySearchCondition($productsQuery, $search);
+
+        $imageMap = [
+            'cotton-shirt' => '/images/storefront/product-1.jpg',
+            'classic-watch' => '/images/storefront/product-2.jpg',
+            'ceramic-home-decor' => '/images/storefront/product-3.jpg',
+            'sneakers-shoes' => '/images/storefront/product-4.jpg',
+            'headphones-camera' => '/images/storefront/product-5.jpg',
+            'casual-backpack' => '/images/storefront/product-1.jpg',
+        ];
+
+        $results = $productsQuery->limit(6)->get()->map(function (Product $product) use ($imageMap) {
+            $variant = $product->defaultVariant;
+            $primaryMedia = $product->media->firstWhere('is_primary', true) ?? $product->media->first();
+
+            $image = $imageMap[$product->slug]
+                ?? ($primaryMedia ? asset('storage/'.ltrim($primaryMedia->path, '/')) : '/images/storefront/product-1.jpg');
+
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'category_name' => $product->categories->first()?->name ?? 'ফ্যাশন',
+                'price' => (float) ($variant?->selling_price ?? 0),
+                'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
+                'image' => $image,
+                'url' => route('product.show', ['slug' => $product->slug]),
+            ];
+        });
+
+        return response()->json($results);
+    }
+
+    /**
+     * Apply storefront search conditions to products query.
+     */
+    protected function applySearchCondition($query, string $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('products.name', 'like', "%{$search}%")
+                ->orWhere('products.slug', 'like', "%{$search}%")
+                ->orWhere('products.short_description', 'like', "%{$search}%")
+                ->orWhere('products.description', 'like', "%{$search}%")
+                ->orWhereHas('categories', function ($catQuery) use ($search) {
+                    $catQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%");
+                })
+                ->orWhereHas('variants', function ($varQuery) use ($search) {
+                    $varQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%");
+                });
+        });
+    }
+
+    /**
      * Display product detail page.
      */
     public function show(string $slug): Response
@@ -120,10 +193,10 @@ class StorefrontController extends Controller
                 'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
                 'variants' => function ($q) {
                     $q->where('is_active', true)
-                      ->with([
-                          'variantAttributeValues.attribute:id,name,type',
-                          'variantAttributeValues.attributeValue:id,name'
-                      ]);
+                        ->with([
+                            'variantAttributeValues.attribute:id,name,type',
+                            'variantAttributeValues.attributeValue:id,name',
+                        ]);
                 },
                 'media',
             ])
@@ -140,13 +213,14 @@ class StorefrontController extends Controller
 
         $variant = $product->defaultVariant;
         $primaryMedia = $product->media->firstWhere('is_primary', true) ?? $product->media->first();
-        
+
         $image = $imageMap[$product->slug]
             ?? ($primaryMedia ? asset('storage/'.ltrim($primaryMedia->path, '/')) : '/images/storefront/product-1.jpg');
 
         $variants = $product->variants->map(function ($variant) {
             $options = $variant->variantAttributeValues->mapWithKeys(function ($vav) {
                 $val = $vav->attributeValue ? $vav->attributeValue->name : ($vav->text_value ?? $vav->number_value);
+
                 return [$vav->attribute->name => $val];
             })->toArray();
 
@@ -163,11 +237,11 @@ class StorefrontController extends Controller
             foreach ($variant->variantAttributeValues as $vav) {
                 $attrName = $vav->attribute->name;
                 $valName = $vav->attributeValue ? $vav->attributeValue->name : ($vav->text_value ?? $vav->number_value);
-                
-                if (!isset($availableOptions[$attrName])) {
+
+                if (! isset($availableOptions[$attrName])) {
                     $availableOptions[$attrName] = [];
                 }
-                if (!in_array($valName, $availableOptions[$attrName])) {
+                if (! in_array($valName, $availableOptions[$attrName])) {
                     $availableOptions[$attrName][] = $valName;
                 }
             }
@@ -221,7 +295,7 @@ class StorefrontController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated) {
-            $orderNumber = 'ORD-' . strtoupper(uniqid());
+            $orderNumber = 'ORD-'.strtoupper(uniqid());
 
             $subtotal = 0;
             foreach ($validated['cart_items'] as $item) {
@@ -233,11 +307,11 @@ class StorefrontController extends Controller
             if ($request->filled('coupon_code')) {
                 $coupon = Coupon::where('code', $request->coupon_code)
                     ->where('is_active', true)
-                    ->where(function($q) {
+                    ->where(function ($q) {
                         $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
                     })
                     ->first();
-                
+
                 if ($coupon && $subtotal >= $coupon->minimum_order_amount) {
                     if ($coupon->type === 'percent') {
                         $discountAmount = ($subtotal * $coupon->value) / 100;
@@ -247,7 +321,7 @@ class StorefrontController extends Controller
                     } else {
                         $discountAmount = $coupon->value;
                     }
-                    
+
                     // Update usage count
                     $coupon->increment('used_count');
                 }
@@ -264,15 +338,15 @@ class StorefrontController extends Controller
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
                 'grand_total' => $subtotal - $discountAmount + $validated['shipping_amount'],
-                'status' => \App\Enums\OrderStatus::Pending,
-                'payment_status' => \App\Enums\PaymentStatus::Unpaid,
-                'payment_method' => \App\Enums\PaymentMethod::Cod,
+                'status' => OrderStatus::Pending,
+                'payment_status' => PaymentStatus::Unpaid,
+                'payment_method' => PaymentMethod::Cod,
             ]);
 
             foreach ($validated['cart_items'] as $item) {
                 $product = Product::find($item['id']);
                 $variant = ProductVariant::find($item['variant_id']);
-                
+
                 $price = $variant->selling_price;
                 $lineTotal = $price * $item['quantity'];
                 $subtotal += $lineTotal;
@@ -298,9 +372,9 @@ class StorefrontController extends Controller
     public function checkoutSuccess(Request $request): Response
     {
         $orderNumber = $request->query('order_number');
-        
+
         return Inertia::render('CheckoutSuccess', [
-            'order_number' => $orderNumber
+            'order_number' => $orderNumber,
         ]);
     }
 
@@ -311,20 +385,20 @@ class StorefrontController extends Controller
     {
         $request->validate([
             'code' => 'required|string',
-            'subtotal' => 'required|numeric'
+            'subtotal' => 'required|numeric',
         ]);
 
         $coupon = Coupon::where('code', $request->code)
             ->where('is_active', true)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
             })
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
             })
             ->first();
 
-        if (!$coupon) {
+        if (! $coupon) {
             return response()->json(['message' => 'কুপন কোডটি সঠিক নয় বা মেয়াদোত্তীর্ণ।'], 400);
         }
 
@@ -333,7 +407,7 @@ class StorefrontController extends Controller
         }
 
         if ($request->subtotal < $coupon->minimum_order_amount) {
-            return response()->json(['message' => 'এই কুপনটি ব্যবহার করতে নূন্যতম ' . $coupon->minimum_order_amount . ' টাকার অর্ডার করতে হবে।'], 400);
+            return response()->json(['message' => 'এই কুপনটি ব্যবহার করতে নূন্যতম '.$coupon->minimum_order_amount.' টাকার অর্ডার করতে হবে।'], 400);
         }
 
         $discount = 0;
@@ -349,7 +423,7 @@ class StorefrontController extends Controller
         return response()->json([
             'message' => 'কুপন সফলভাবে অ্যাপ্লাই করা হয়েছে!',
             'discount' => $discount,
-            'code' => $coupon->code
+            'code' => $coupon->code,
         ]);
     }
 
@@ -360,7 +434,7 @@ class StorefrontController extends Controller
     {
         $orderNumber = $request->query('order_number');
         $phone = $request->query('phone');
-        
+
         $orderData = null;
         $error = null;
 
@@ -369,11 +443,11 @@ class StorefrontController extends Controller
                 ->where('order_number', $orderNumber)
                 ->with([
                     'items',
-                    'statusHistories' => function($q) {
+                    'statusHistories' => function ($q) {
                         $q->orderBy('created_at', 'asc');
-                    }
+                    },
                 ]);
-            
+
             if ($phone) {
                 $query->where('customer_phone', $phone);
             }
@@ -392,8 +466,8 @@ class StorefrontController extends Controller
                     'placed_at' => $order->created_at->format('d M Y, h:i A'),
                     'customer_name' => $order->customer_name,
                     'customer_phone' => $order->customer_phone,
-                    'shipping_address' => $order->shipping_address_line . ', ' . $order->shipping_city,
-                    'items' => $order->items->map(function($item) {
+                    'shipping_address' => $order->shipping_address_line.', '.$order->shipping_city,
+                    'items' => $order->items->map(function ($item) {
                         return [
                             'name' => $item->variant_name ?? $item->product_name,
                             'quantity' => $item->quantity,
@@ -401,16 +475,16 @@ class StorefrontController extends Controller
                             'total' => (float) $item->line_total,
                         ];
                     }),
-                    'histories' => $order->statusHistories->map(function($history) {
+                    'histories' => $order->statusHistories->map(function ($history) {
                         return [
                             'status' => $history->to_status->value,
                             'date' => $history->created_at->format('d M Y, h:i A'),
-                            'reason' => $history->reason
+                            'reason' => $history->reason,
                         ];
-                    })
+                    }),
                 ];
             } else {
-                $error = "এই অর্ডার নম্বর দিয়ে কোনো অর্ডার পাওয়া যায়নি। দয়া করে সঠিক নম্বর দিন।";
+                $error = 'এই অর্ডার নম্বর দিয়ে কোনো অর্ডার পাওয়া যায়নি। দয়া করে সঠিক নম্বর দিন।';
             }
         }
 
@@ -418,7 +492,7 @@ class StorefrontController extends Controller
             'order' => $orderData,
             'searched_order_number' => $orderNumber,
             'searched_phone' => $phone,
-            'error' => $error
+            'error' => $error,
         ]);
     }
 }
