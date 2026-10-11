@@ -128,3 +128,16 @@ test('search suggestions excludes inactive products', function () {
     $response->assertSuccessful();
     $response->assertExactJson([]);
 });
+
+test('storefront offer filter returns only products with active offers', function () {
+    $response = $this->get('/?offer=1');
+
+    $response->assertSuccessful();
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('Home', false)
+        ->where('filters.offer', true)
+        ->has('products', 2)
+        ->where('products.0.slug', 'headphones-camera')
+        ->where('products.1.slug', 'cotton-shirt')
+    );
+});

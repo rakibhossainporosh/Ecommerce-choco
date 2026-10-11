@@ -13,6 +13,16 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const settings = computed(() => page.props.site_settings || {});
+
+const copyrightText = computed(() => {
+    const text = settings.value.footer_copyright || '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।';
+    return text.replace('{year}', new Date().getFullYear());
+});
+
+const isInternalLink = (url) => {
+    if (!url) return false;
+    return url.startsWith('/') && !url.includes('#');
+};
 </script>
 
 <template>
@@ -33,61 +43,119 @@ const settings = computed(() => page.props.site_settings || {});
                             </span>
                         </div>
                     </a>
-                    <p class="text-[15px] text-[#64748B] leading-relaxed mt-2">
-                        {{ settings.site_tagline ? settings.site_tagline + ' — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান।' : 'আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।' }}
+                    <p class="text-[15px] text-[#64748B] leading-relaxed mt-2 whitespace-pre-line">
+                        {{ settings.footer_about || (settings.site_tagline ? settings.site_tagline + ' — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান।' : 'আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।') }}
                     </p>
                     <div class="flex items-center gap-4 mt-2">
-                        <a :href="settings.facebook_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="Facebook">
+                        <a 
+                            v-if="settings.facebook_url && settings.facebook_url !== '#'" 
+                            :href="settings.facebook_url" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
+                            title="Facebook"
+                        >
                             <Facebook class="w-4 h-4" />
                         </a>
-                        <a :href="settings.twitter_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="Twitter">
+                        <a 
+                            v-if="settings.twitter_url && settings.twitter_url !== '#'" 
+                            :href="settings.twitter_url" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
+                            title="Twitter / X"
+                        >
                             <Twitter class="w-4 h-4" />
                         </a>
-                        <a :href="settings.instagram_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="Instagram">
+                        <a 
+                            v-if="settings.instagram_url && settings.instagram_url !== '#'" 
+                            :href="settings.instagram_url" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
+                            title="Instagram"
+                        >
                             <Instagram class="w-4 h-4" />
                         </a>
-                        <a :href="settings.youtube_url || '#'" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" title="YouTube">
+                        <a 
+                            v-if="settings.youtube_url && settings.youtube_url !== '#'" 
+                            :href="settings.youtube_url" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
+                            title="YouTube"
+                        >
                             <Youtube class="w-4 h-4" />
                         </a>
                     </div>
                 </div>
 
-                <!-- Quick Links -->
+                <!-- Column 2: Useful Links -->
                 <div>
-                    <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">প্রয়োজনীয় লিংক</h3>
+                    <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">
+                        {{ settings.footer_col2_title || 'প্রয়োজনীয় লিংক' }}
+                    </h3>
                     <ul class="flex flex-col gap-3">
-                        <li><Link href="/about-us" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">আমাদের সম্পর্কে</Link></li>
-                        <li><Link href="/contact" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">যোগাযোগ</Link></li>
-                        <li><Link href="/track-order" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">অর্ডার ট্র্যাকিং</Link></li>
-                        <li><a href="/#featured" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">অফার সমূহ</a></li>
+                        <li v-for="(link, idx) in (settings.footer_col2_links || [])" :key="idx">
+                            <Link 
+                                v-if="isInternalLink(link.url)" 
+                                :href="link.url" 
+                                class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]"
+                            >
+                                {{ link.label }}
+                            </Link>
+                            <a 
+                                v-else 
+                                :href="link.url" 
+                                class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]"
+                            >
+                                {{ link.label }}
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
-                <!-- Customer Service -->
+                <!-- Column 3: Customer Service -->
                 <div>
-                    <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">গ্রাহক সেবা</h3>
+                    <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">
+                        {{ settings.footer_col3_title || 'গ্রাহক সেবা' }}
+                    </h3>
                     <ul class="flex flex-col gap-3">
-                        <li><Link href="/return-policy" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">রিটার্ন পলিসি</Link></li>
-                        <li><Link href="/privacy-policy" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">প্রাইভেসি পলিসি</Link></li>
-                        <li><Link href="/terms-conditions" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">শর্তাবলী</Link></li>
-                        <li><Link href="/faq" class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]">সাধারণ জিজ্ঞাসা (FAQ)</Link></li>
+                        <li v-for="(link, idx) in (settings.footer_col3_links || [])" :key="idx">
+                            <Link 
+                                v-if="isInternalLink(link.url)" 
+                                :href="link.url" 
+                                class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]"
+                            >
+                                {{ link.label }}
+                            </Link>
+                            <a 
+                                v-else 
+                                :href="link.url" 
+                                class="text-[#64748B] hover:text-[#E86A28] transition-colors text-[15px]"
+                            >
+                                {{ link.label }}
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
-                <!-- Contact Info -->
+                <!-- Column 4: Contact Info -->
                 <div>
-                    <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">যোগাযোগ</h3>
+                    <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">
+                        {{ settings.footer_col4_title || 'যোগাযোগ' }}
+                    </h3>
                     <ul class="flex flex-col gap-4">
                         <li class="flex items-start gap-3">
                             <MapPin class="w-5 h-5 text-[#E86A28] shrink-0 mt-0.5" />
                             <span class="text-[#64748B] text-[15px] leading-relaxed">
-                                {{ settings.contact_address || '১২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ' }}
+                                {{ settings.contact_address || '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ' }}
                             </span>
                         </li>
                         <li class="flex items-center gap-3">
                             <Phone class="w-5 h-5 text-[#E86A28] shrink-0" />
-                            <a :href="'tel:' + (settings.contact_phone || '+8801234567890')" class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors">
-                                {{ settings.contact_phone || '+৮৮০ ১২৩৪ ৫৬৭৮৯০' }}
+                            <a :href="'tel:' + (settings.contact_phone || '+8805234567890')" class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors">
+                                {{ settings.contact_phone || '+৮৮০ ৫২৩৪ ৫৬৭৮৯০' }}
                             </a>
                         </li>
                         <li class="flex items-center gap-3">
@@ -100,14 +168,19 @@ const settings = computed(() => page.props.site_settings || {});
                 </div>
             </div>
 
+            <!-- Bottom Row: Copyright & Payment Badges -->
             <div class="border-t border-[#EAE3D6] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <p class="text-[#64748B] text-sm">
-                    © {{ new Date().getFullYear() }} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।
+                    {{ copyrightText }}
                 </p>
-                <div class="flex items-center gap-3 opacity-60">
-                    <div class="h-7 px-3 bg-[#F1F5F9] rounded flex items-center justify-center text-[10px] font-bold text-[#64748B] border border-[#E2E8F0]">bKash</div>
-                    <div class="h-7 px-3 bg-[#F1F5F9] rounded flex items-center justify-center text-[10px] font-bold text-[#64748B] border border-[#E2E8F0]">Nagad</div>
-                    <div class="h-7 px-3 bg-[#F1F5F9] rounded flex items-center justify-center text-[10px] font-bold text-[#64748B] border border-[#E2E8F0]">VISA</div>
+                <div v-if="settings.footer_payment_methods && settings.footer_payment_methods.length > 0" class="flex flex-wrap items-center gap-2 opacity-80">
+                    <div 
+                        v-for="(method, idx) in settings.footer_payment_methods" 
+                        :key="idx" 
+                        class="h-7 px-3 bg-[#F1F5F9] rounded flex items-center justify-center text-[10px] font-bold text-[#64748B] border border-[#E2E8F0]"
+                    >
+                        {{ method }}
+                    </div>
                 </div>
             </div>
         </div>

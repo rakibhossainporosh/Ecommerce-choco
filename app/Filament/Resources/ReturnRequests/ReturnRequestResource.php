@@ -20,9 +20,13 @@ class ReturnRequestResource extends Resource
 {
     protected static ?string $model = ReturnRequest::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowUturnLeft;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Sales';
+
     protected static ?int $navigationSort = 30;
+
+    protected static ?string $navigationLabel = 'Return Requests';
 
     protected static ?string $recordTitleAttribute = 'id';
 

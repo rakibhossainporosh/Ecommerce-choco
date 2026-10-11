@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders;
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Orders\RelationManagers\PaymentsRelationManager;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
-    
+
     protected static ?string $recordTitleAttribute = 'order_number';
 
     public static function getGloballySearchableAttributes(): array
@@ -29,7 +30,9 @@ class OrderResource extends Resource
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Sales';
+
     protected static ?int $navigationSort = 10;
 
     protected static ?string $navigationLabel = 'Orders';
@@ -37,6 +40,18 @@ class OrderResource extends Resource
     protected static ?string $modelLabel = 'Order';
 
     protected static ?string $pluralModelLabel = 'Orders';
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::where('status', OrderStatus::Pending)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'warning';
+    }
 
     public static function infolist(Schema $schema): Schema
     {
@@ -67,7 +82,7 @@ class OrderResource extends Resource
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['items', 'statusHistories.changedBy', 'payments', 'shipments']);
+            ->with(['items', 'statusHistories.changedBy', 'payments', 'shipments', 'latestShipment']);
     }
 
     /**

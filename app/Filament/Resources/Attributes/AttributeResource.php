@@ -16,7 +16,6 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use UnitEnum;
 
 class AttributeResource extends Resource
 {
@@ -25,7 +24,8 @@ class AttributeResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
 
     protected static \UnitEnum|string|null $navigationGroup = 'Catalog';
-    protected static ?int $navigationSort = 40;
+
+    protected static ?int $navigationSort = 50;
 
     protected static ?string $navigationLabel = 'Attributes';
 

@@ -23,6 +23,10 @@ const props = defineProps({
         type: String,
         default: 'newest',
     },
+    isOffer: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const emit = defineEmits(['selectCategory', 'selectSort']);
@@ -62,8 +66,9 @@ const currentSortLabel = computed(() => {
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <!-- Section Heading -->
             <div class="flex items-center gap-3">
-                <h2 class="text-2xl font-bold text-[#1E293B] tracking-tight">
-                    নির্বাচিত পণ্য
+                <h2 class="text-2xl font-bold text-[#1E293B] tracking-tight flex items-center gap-2.5">
+                    <span>{{ isOffer ? 'বিশেষ অফারসমূহ' : 'নির্বাচিত পণ্য' }}</span>
+                    <span v-if="isOffer" class="text-xs bg-[#E86A28] text-white px-2.5 py-0.5 rounded-full font-bold">অফার</span>
                 </h2>
             </div>
 

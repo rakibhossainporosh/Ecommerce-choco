@@ -20,9 +20,13 @@ class ReviewResource extends Resource
 {
     protected static ?string $model = Review::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedStar;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Customers & Marketing';
-    protected static ?int $navigationSort = 20;
+
+    protected static ?int $navigationSort = 30;
+
+    protected static ?string $navigationLabel = 'Reviews';
 
     protected static ?string $recordTitleAttribute = 'id';
 

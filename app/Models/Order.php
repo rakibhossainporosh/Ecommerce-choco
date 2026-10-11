@@ -148,6 +148,11 @@ class Order extends Model
      *
      * @return HasMany<OrderItem, $this>
      */
+    public function orderItems(): HasMany
+    {
+        return $this->items();
+    }
+
     /**
      * Get all payment transactions recorded for this order.
      *

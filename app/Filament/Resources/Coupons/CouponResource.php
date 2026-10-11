@@ -20,9 +20,13 @@ class CouponResource extends Resource
 {
     protected static ?string $model = Coupon::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Customers & Marketing';
-    protected static ?int $navigationSort = 30;
+
+    protected static ?int $navigationSort = 20;
+
+    protected static ?string $navigationLabel = 'Coupons';
 
     protected static ?string $recordTitleAttribute = 'name';
 

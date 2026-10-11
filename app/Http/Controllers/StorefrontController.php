@@ -31,6 +31,7 @@ class StorefrontController extends Controller
         $selectedCategory = $request->query('category', 'all');
         $search = $request->query('search', '');
         $sort = $request->query('sort', 'newest');
+        $offer = $request->boolean('offer');
 
         $categories = Category::query()
             ->where('is_active', true)
@@ -57,6 +58,13 @@ class StorefrontController extends Controller
 
         if (! empty($search)) {
             $this->applySearchCondition($productsQuery, $search);
+        }
+
+        if ($offer) {
+            $productsQuery->whereHas('defaultVariant', function ($q) {
+                $q->whereNotNull('compare_at_price')
+                    ->whereColumn('compare_at_price', '>', 'selling_price');
+            });
         }
 
         if ($sort === 'price_asc') {
@@ -120,6 +128,7 @@ class StorefrontController extends Controller
                 'category' => $selectedCategory,
                 'search' => $search,
                 'sort' => $sort,
+                'offer' => $offer,
             ],
         ]);
     }

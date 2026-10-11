@@ -5,42 +5,91 @@ namespace App\Filament\Widgets;
 use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Facades\DB;
 
 class OrdersChart extends ChartWidget
 {
-    protected ?string $heading = 'Orders per Month';
+    protected ?string $heading = 'Order & Sales Analytics';
 
     protected static ?int $sort = 2;
 
+    protected ?string $maxHeight = '275px';
+
+    public ?string $filter = '30days';
+
+    protected function getFilters(): ?array
+    {
+        return [
+            '7days' => 'Last 7 Days',
+            '30days' => 'Last 30 Days',
+            '12months' => 'Last 12 Months',
+        ];
+    }
+
     protected function getData(): array
     {
-        $data = Order::select(
-            DB::raw('count(id) as total_orders'),
-            DB::raw('date_format(created_at, "%Y-%m") as month')
-        )
-            ->where('created_at', '>=', Carbon::now()->subMonths(11)->startOfMonth())
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+        $activeFilter = $this->filter;
+
+        if ($activeFilter === '7days') {
+            $periods = collect(range(6, 0))->map(function ($daysAgo) {
+                $date = Carbon::today()->subDays($daysAgo);
+
+                return [
+                    'label' => $date->format('D, M d'),
+                    'start' => $date->copy()->startOfDay(),
+                    'end' => $date->copy()->endOfDay(),
+                ];
+            });
+        } elseif ($activeFilter === '12months') {
+            $periods = collect(range(11, 0))->map(function ($monthsAgo) {
+                $date = Carbon::now()->subMonths($monthsAgo);
+
+                return [
+                    'label' => $date->format('M Y'),
+                    'start' => $date->copy()->startOfMonth(),
+                    'end' => $date->copy()->endOfDay(),
+                ];
+            });
+        } else {
+            // Default 30 days
+            $periods = collect(range(29, 0))->map(function ($daysAgo) {
+                $date = Carbon::today()->subDays($daysAgo);
+
+                return [
+                    'label' => $date->format('M d'),
+                    'start' => $date->copy()->startOfDay(),
+                    'end' => $date->copy()->endOfDay(),
+                ];
+            });
+        }
+
+        $startDate = $periods->first()['start'];
+        $endDate = $periods->last()['end'];
+
+        $orders = Order::query()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get(['id', 'created_at', 'grand_total', 'status']);
 
         $labels = [];
-        $totals = [];
+        $ordersData = [];
 
-        // Fill in missing months
-        for ($i = 11; $i >= 0; $i--) {
-            $month = Carbon::now()->subMonths($i)->format('Y-m');
-            $labels[] = Carbon::now()->subMonths($i)->format('M Y');
+        foreach ($periods as $period) {
+            $labels[] = $period['label'];
+            $periodOrders = $orders->filter(function ($order) use ($period) {
+                return $order->created_at >= $period['start'] && $order->created_at <= $period['end'];
+            });
 
-            $monthData = $data->firstWhere('month', $month);
-            $totals[] = $monthData ? $monthData->total_orders : 0;
+            $ordersData[] = $periodOrders->count();
         }
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Orders',
-                    'data' => $totals,
+                    'label' => 'Orders Placed',
+                    'data' => $ordersData,
+                    'borderColor' => '#E86A28',
+                    'backgroundColor' => 'rgba(232, 106, 40, 0.15)',
+                    'fill' => 'start',
+                    'tension' => 0.35,
                 ],
             ],
             'labels' => $labels,

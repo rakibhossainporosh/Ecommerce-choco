@@ -39,6 +39,8 @@ class SettingForm
                     ->default('general')
                     ->datalist([
                         'general',
+                        'footer',
+                        'contact',
                         'payment',
                         'shipping',
                         'email',

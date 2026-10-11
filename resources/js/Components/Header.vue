@@ -383,7 +383,13 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <a href="/#featured" class="hover:text-[#E86A28] transition-colors">অফার</a>
+                        <Link
+                            href="/?offer=1#featured"
+                            class="transition-colors"
+                            :class="page.props.filters?.offer ? 'text-[#E86A28] font-bold' : 'hover:text-[#E86A28]'"
+                        >
+                            অফার
+                        </Link>
                         <Link href="/track-order" class="hover:text-[#E86A28] transition-colors font-bold text-[#E86A28]">ট্র্যাক অর্ডার</Link>
                     </nav>
 

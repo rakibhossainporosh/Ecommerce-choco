@@ -22,7 +22,9 @@ class ActivityResource extends Resource
 
     protected static \UnitEnum|string|null $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 30;
+
+    protected static ?string $navigationLabel = 'Activities';
 
     public static function form(Schema $schema): Schema
     {

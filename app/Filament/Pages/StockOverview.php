@@ -30,15 +30,15 @@ class StockOverview extends Page implements HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Inventory';
+    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
 
-    protected static ?string $navigationLabel = 'Stock Overview';
+    protected static ?string $navigationLabel = 'Inventory / Stock';
 
     protected static ?string $title = 'Stock Overview';
 
     protected static ?string $slug = 'inventory/stock-overview';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 40;
 
     protected string $view = 'filament.pages.stock-overview';
 

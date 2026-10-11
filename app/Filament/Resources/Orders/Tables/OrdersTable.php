@@ -8,8 +8,10 @@ use App\Enums\PaymentStatus;
 use App\Filament\Resources\Orders\Actions\OrderActions;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
+use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -26,6 +28,8 @@ class OrdersTable
                     ->label('Order Number')
                     ->searchable()
                     ->sortable()
+                    ->copyable()
+                    ->copyMessage('Order number copied!')
                     ->weight('bold'),
 
                 TextColumn::make('customer_name')
@@ -35,12 +39,22 @@ class OrdersTable
 
                 TextColumn::make('customer_phone')
                     ->label('Customer Phone')
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('Phone number copied!'),
 
                 TextColumn::make('customer_email')
                     ->label('Customer Email')
                     ->searchable()
+                    ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('items_count')
+                    ->counts('items')
+                    ->label('Items')
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
 
                 TextColumn::make('status')
                     ->label('Status')
@@ -99,13 +113,13 @@ class OrdersTable
 
                 TextColumn::make('placed_at')
                     ->label('Placed At')
-                    ->dateTime()
+                    ->dateTime('d M Y, h:i A')
                     ->sortable()
                     ->placeholder('—'),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
-                    ->dateTime()
+                    ->dateTime('d M Y, h:i A')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -142,6 +156,11 @@ class OrdersTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('printInvoice')
+                    ->label('Invoice')
+                    ->icon(Heroicon::OutlinedPrinter)
+                    ->color('gray')
+                    ->url(fn (Order $record): string => route('admin.orders.invoice', $record), shouldOpenInNewTab: true),
                 OrderActions::makeConfirmAction(),
                 OrderActions::makeProcessAction(),
                 OrderActions::makeShipAction(),

@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -20,11 +21,13 @@ class CourierResource extends Resource
 {
     protected static ?string $model = Courier::class;
 
-    protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-truck';
+    protected static \BackedEnum|string|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
     protected static \UnitEnum|string|null $navigationGroup = 'Shipping';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 30;
+
+    protected static ?string $navigationLabel = 'Couriers';
 
     public static function form(Schema $schema): Schema
     {

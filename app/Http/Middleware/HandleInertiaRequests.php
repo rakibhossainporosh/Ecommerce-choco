@@ -56,32 +56,79 @@ class HandleInertiaRequests extends Middleware
                     ->get(['id', 'name', 'slug']);
             },
             'site_settings' => function () {
+                $defaultCol2Links = [
+                    ['label' => 'আমাদের সম্পর্কে', 'url' => '/about-us'],
+                    ['label' => 'যোগাযোগ', 'url' => '/contact'],
+                    ['label' => 'অর্ডার ট্র্যাকিং', 'url' => '/track-order'],
+                    ['label' => 'অফার সমূহ', 'url' => '/?offer=1#featured'],
+                ];
+
+                $defaultCol3Links = [
+                    ['label' => 'রিটার্ন পলিসি', 'url' => '/return-policy'],
+                    ['label' => 'প্রাইভেসি পলিসি', 'url' => '/privacy-policy'],
+                    ['label' => 'শর্তাবলী', 'url' => '/terms-conditions'],
+                    ['label' => 'সাধারণ জিজ্ঞাসা (FAQ)', 'url' => '/faq'],
+                ];
+
+                $defaultPaymentMethods = ['bKash', 'Nagad', 'VISA'];
+
                 if (! Schema::hasTable('settings')) {
                     return [
                         'site_name' => 'Nobo Shop',
                         'site_tagline' => 'আপনার প্রতিদিনের পছন্দ',
-                        'contact_phone' => '+৮৮০ ১২৩৪ ৫৬৭৮৯০',
+                        'footer_about' => 'আপনার প্রতিদিনের পছন্দ — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।',
+                        'contact_phone' => '+৮৮০ ৫২৩৪ ৫৬৭৮৯০',
                         'contact_email' => 'support@noboshop.com',
-                        'contact_address' => '১২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ',
-                        'facebook_url' => '#',
-                        'twitter_url' => '#',
-                        'instagram_url' => '#',
-                        'youtube_url' => '#',
+                        'contact_address' => '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ',
+                        'facebook_url' => 'https://facebook.com',
+                        'twitter_url' => 'https://twitter.com',
+                        'instagram_url' => 'https://instagram.com',
+                        'youtube_url' => 'https://youtube.com',
+                        'footer_col2_title' => 'প্রয়োজনীয় লিংক',
+                        'footer_col2_links' => $defaultCol2Links,
+                        'footer_col3_title' => 'গ্রাহক সেবা',
+                        'footer_col3_links' => $defaultCol3Links,
+                        'footer_col4_title' => 'যোগাযোগ',
+                        'footer_copyright' => '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।',
+                        'footer_payment_methods' => $defaultPaymentMethods,
                         'shipping_inside_dhaka' => 60.0,
                         'shipping_outside_dhaka' => 120.0,
                     ];
                 }
 
+                $col2Links = Setting::get('footer_col2_links');
+                if (! is_array($col2Links)) {
+                    $col2Links = $defaultCol2Links;
+                }
+
+                $col3Links = Setting::get('footer_col3_links');
+                if (! is_array($col3Links)) {
+                    $col3Links = $defaultCol3Links;
+                }
+
+                $paymentMethods = Setting::get('footer_payment_methods');
+                if (! is_array($paymentMethods)) {
+                    $paymentMethods = $defaultPaymentMethods;
+                }
+
                 return [
                     'site_name' => Setting::get('site_name', 'Nobo Shop'),
                     'site_tagline' => Setting::get('site_tagline', 'আপনার প্রতিদিনের পছন্দ'),
-                    'contact_phone' => Setting::get('contact_phone', '+৮৮০ ১২৩৪ ৫৬৭৮৯০'),
+                    'footer_about' => Setting::get('footer_about', 'আপনার প্রতিদিনের পছন্দ — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।'),
+                    'contact_phone' => Setting::get('contact_phone', '+৮৮০ ৫২৩৪ ৫৬৭৮৯০'),
                     'contact_email' => Setting::get('contact_email', 'support@noboshop.com'),
-                    'contact_address' => Setting::get('contact_address', '১২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ'),
-                    'facebook_url' => Setting::get('facebook_url', '#'),
-                    'twitter_url' => Setting::get('twitter_url', '#'),
-                    'instagram_url' => Setting::get('instagram_url', '#'),
-                    'youtube_url' => Setting::get('youtube_url', '#'),
+                    'contact_address' => Setting::get('contact_address', '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ'),
+                    'facebook_url' => Setting::get('facebook_url', 'https://facebook.com'),
+                    'twitter_url' => Setting::get('twitter_url', 'https://twitter.com'),
+                    'instagram_url' => Setting::get('instagram_url', 'https://instagram.com'),
+                    'youtube_url' => Setting::get('youtube_url', 'https://youtube.com'),
+                    'footer_col2_title' => Setting::get('footer_col2_title', 'প্রয়োজনীয় লিংক'),
+                    'footer_col2_links' => $col2Links,
+                    'footer_col3_title' => Setting::get('footer_col3_title', 'গ্রাহক সেবা'),
+                    'footer_col3_links' => $col3Links,
+                    'footer_col4_title' => Setting::get('footer_col4_title', 'যোগাযোগ'),
+                    'footer_copyright' => Setting::get('footer_copyright', '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।'),
+                    'footer_payment_methods' => $paymentMethods,
                     'shipping_inside_dhaka' => (float) Setting::get('shipping_inside_dhaka', 60),
                     'shipping_outside_dhaka' => (float) Setting::get('shipping_outside_dhaka', 120),
                 ];

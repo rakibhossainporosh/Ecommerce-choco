@@ -116,24 +116,49 @@ class Setting extends Model
      */
     public static function get(string $key, mixed $default = null): mixed
     {
-        $setting = Cache::rememberForever("setting.{$key}", function () use ($key) {
-            return self::where('key', $key)->first();
+        $cached = Cache::rememberForever("setting.{$key}", function () use ($key) {
+            $setting = self::where('key', $key)->first();
+
+            if (! $setting) {
+                return ['exists' => false, 'value' => null, 'type' => null];
+            }
+
+            return [
+                'exists' => true,
+                'value' => $setting->value,
+                'type' => $setting->type instanceof SettingType ? $setting->type->value : $setting->type,
+            ];
         });
 
-        if (! $setting) {
+        if (! is_array($cached) || ! isset($cached['exists'])) {
+            Cache::forget("setting.{$key}");
+            $setting = self::where('key', $key)->first();
+
+            if (! $setting) {
+                return $default;
+            }
+
+            $cached = [
+                'exists' => true,
+                'value' => $setting->value,
+                'type' => $setting->type instanceof SettingType ? $setting->type->value : $setting->type,
+            ];
+
+            Cache::forever("setting.{$key}", $cached);
+        }
+
+        if (! $cached['exists'] || $cached['value'] === null) {
             return $default;
         }
 
-        if ($setting->value === null) {
-            return $default;
-        }
+        $type = SettingType::tryFrom($cached['type'] ?? '');
 
-        return match ($setting->type) {
-            SettingType::Boolean => filter_var($setting->value, FILTER_VALIDATE_BOOLEAN),
-            SettingType::Integer => (int) $setting->value,
-            SettingType::Float => (float) $setting->value,
-            SettingType::Json => json_decode($setting->value, true),
-            default => $setting->value,
+        return match ($type) {
+            SettingType::Boolean => filter_var($cached['value'], FILTER_VALIDATE_BOOLEAN),
+            SettingType::Integer => (int) $cached['value'],
+            SettingType::Float => (float) $cached['value'],
+            SettingType::Json => json_decode($cached['value'], true),
+            default => $cached['value'],
         };
     }
 }
