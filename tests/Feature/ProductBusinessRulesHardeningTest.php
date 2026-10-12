@@ -104,7 +104,7 @@ test('1.2. Activating product fails when it has only inactive categories', funct
 
 test('1.3. Activating product fails when it has only soft-deleted categories', function () {
     extract(createValidActiveProductStructure());
-    $category->delete();
+    $category->deleteQuietly();
 
     expect(function () use ($product) {
         $product->activate();
@@ -172,7 +172,7 @@ test('1.7. Activating product fails when assigned brand is inactive', function (
 
 test('1.8. Activating product fails when assigned brand is soft-deleted', function () {
     extract(createValidActiveProductStructure());
-    $brand->delete();
+    $brand->deleteQuietly();
 
     expect(function () use ($product) {
         $product->activate();

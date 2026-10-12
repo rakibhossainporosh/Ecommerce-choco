@@ -7,6 +7,7 @@ use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 
@@ -33,12 +34,29 @@ class Brand extends Model
     }
 
     /**
+     * Get the products associated with this brand.
+     *
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
+     * Check if this brand has any products assigned.
+     */
+    public function hasProducts(): bool
+    {
+        return $this->products()->exists();
+    }
+
+    /**
      * Determine whether this brand can be safely deleted according to business rules.
      */
     public function canBeDeleted(): bool
     {
-        // Deferred Product deletion rule will be added here: && ! $this->hasProducts()
-        return true;
+        return ! $this->hasProducts();
     }
 
     /**

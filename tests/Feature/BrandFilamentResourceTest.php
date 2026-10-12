@@ -5,6 +5,7 @@ use App\Filament\Resources\Brands\Pages\CreateBrand;
 use App\Filament\Resources\Brands\Pages\EditBrand;
 use App\Filament\Resources\Brands\Pages\ListBrands;
 use App\Models\Brand;
+use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -23,6 +24,7 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Schema::disableForeignKeyConstraints();
+    Product::truncate();
     Brand::truncate();
     Schema::enableForeignKeyConstraints();
 });
@@ -327,4 +329,98 @@ test('19. Table renders records, searches, and filters by active status and tras
         ->searchTable('Valrhona')
         ->assertCanSeeTableRecords([$activeBrand])
         ->assertCanNotSeeTableRecords([$inactiveBrand]);
+});
+
+test('20. Global search returns Brand by name and slug with details', function () {
+    $brand = Brand::factory()->create([
+        'name' => 'Ghirardelli Chocolate',
+        'slug' => 'ghirardelli-chocolate',
+        'is_active' => true,
+    ]);
+
+    expect(BrandResource::getGloballySearchableAttributes())->toBe(['name', 'slug']);
+
+    $details = BrandResource::getGlobalSearchResultDetails($brand);
+    expect($details)->toBeArray()
+        ->and($details['Status'])->toBe('Active')
+        ->and($details['Products'])->toBe('0 products');
+});
+
+test('21. BrandsTable displays products count column', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $brand = Brand::factory()->create(['name' => 'Toblerone', 'slug' => 'toblerone']);
+    Product::create([
+        'name' => 'Toblerone Honey Almond',
+        'slug' => 'toblerone-honey-almond',
+        'brand_id' => $brand->id,
+        'is_active' => false,
+    ]);
+
+    Livewire::test(ListBrands::class)
+        ->assertCanSeeTableRecords([$brand])
+        ->assertTableColumnExists('products_count');
+});
+
+test('22. Deleting a brand with associated products from EditBrand page is blocked', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $brand = Brand::factory()->create(['name' => 'Protected Chocolate Co']);
+    Product::create([
+        'name' => 'Artisan Bar',
+        'slug' => 'artisan-bar',
+        'brand_id' => $brand->id,
+        'is_active' => false,
+    ]);
+
+    Livewire::test(EditBrand::class, ['record' => $brand->getRouteKey()])
+        ->callAction('delete')
+        ->assertNotified('Cannot delete this brand because it has associated products.');
+
+    expect($brand->fresh()->trashed())->toBeFalse();
+});
+
+test('23. Status tabs filter brands by active status and product association', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $activeBrand = Brand::factory()->create(['name' => 'Active Brand', 'is_active' => true]);
+    $inactiveBrand = Brand::factory()->create(['name' => 'Inactive Brand', 'is_active' => false]);
+    $brandWithProduct = Brand::factory()->create(['name' => 'Carrying Products', 'is_active' => true]);
+
+    Product::create([
+        'name' => 'Linked Product',
+        'slug' => 'linked-product',
+        'brand_id' => $brandWithProduct->id,
+        'is_active' => false,
+    ]);
+
+    // Active tab
+    Livewire::test(ListBrands::class)
+        ->set('activeTab', 'active')
+        ->assertCanSeeTableRecords([$activeBrand, $brandWithProduct])
+        ->assertCanNotSeeTableRecords([$inactiveBrand]);
+
+    // Inactive tab
+    Livewire::test(ListBrands::class)
+        ->set('activeTab', 'inactive')
+        ->assertCanSeeTableRecords([$inactiveBrand])
+        ->assertCanNotSeeTableRecords([$activeBrand, $brandWithProduct]);
+
+    // With Products tab
+    Livewire::test(ListBrands::class)
+        ->set('activeTab', 'with_products')
+        ->assertCanSeeTableRecords([$brandWithProduct])
+        ->assertCanNotSeeTableRecords([$activeBrand, $inactiveBrand]);
+
+    // Without Products tab
+    Livewire::test(ListBrands::class)
+        ->set('activeTab', 'without_products')
+        ->assertCanSeeTableRecords([$activeBrand, $inactiveBrand])
+        ->assertCanNotSeeTableRecords([$brandWithProduct]);
 });

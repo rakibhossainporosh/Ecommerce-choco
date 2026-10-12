@@ -24,16 +24,28 @@ class BrandsTable
             ->columns([
                 ImageColumn::make('logo')
                     ->label('Logo')
-                    ->disk('public'),
+                    ->disk('public')
+                    ->circular(),
 
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Brand Name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold'),
 
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Slug copied')
+                    ->color('gray'),
+
+                TextColumn::make('products_count')
+                    ->counts('products')
+                    ->label('Products')
+                    ->badge()
+                    ->color('info')
                     ->sortable(),
 
                 IconColumn::make('is_active')

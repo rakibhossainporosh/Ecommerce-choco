@@ -2,8 +2,10 @@
 
 use App\Filament\Resources\Brands\Pages\EditBrand;
 use App\Models\Brand;
+use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use DomainException;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -21,6 +23,7 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Schema::disableForeignKeyConstraints();
+    Product::truncate();
     Brand::truncate();
     Schema::enableForeignKeyConstraints();
 });
@@ -301,12 +304,26 @@ test('19. Force delete works when no future Product dependency exists', function
     expect(Brand::withTrashed()->find($brand->id))->toBeNull();
 });
 
-test('20. Product-related delete protection is architected and deferred', function () {
+test('20. Product-related delete protection enforces that Brand with associated products cannot be deleted', function () {
     $brand = Brand::create([
-        'name' => 'Future Protected Brand',
-        'slug' => 'future-protected-brand',
+        'name' => 'Protected Brand',
+        'slug' => 'protected-brand',
     ]);
 
-    // Currently returns true because Product model does not exist yet
-    expect($brand->canBeDeleted())->toBeTrue();
+    expect($brand->canBeDeleted())->toBeTrue()
+        ->and($brand->hasProducts())->toBeFalse();
+
+    Product::create([
+        'name' => 'Chocolate Bar',
+        'slug' => 'chocolate-bar',
+        'brand_id' => $brand->id,
+        'is_active' => false,
+    ]);
+
+    expect($brand->fresh()->hasProducts())->toBeTrue()
+        ->and($brand->fresh()->canBeDeleted())->toBeFalse();
+
+    expect(function () use ($brand) {
+        $brand->delete();
+    })->toThrow(DomainException::class, 'Cannot delete this brand because it has associated products.');
 });
