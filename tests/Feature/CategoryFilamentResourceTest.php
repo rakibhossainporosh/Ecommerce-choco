@@ -5,9 +5,11 @@ use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Spatie\Permission\PermissionRegistrar;
@@ -23,6 +25,8 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Schema::disableForeignKeyConstraints();
+    DB::table('category_product')->truncate();
+    Product::truncate();
     Category::truncate();
     Schema::enableForeignKeyConstraints();
 });
@@ -336,4 +340,105 @@ test('19. Table renders records, searches, and filters by active status and tras
         ->searchTable('Ruby')
         ->assertCanSeeTableRecords([$activeCat])
         ->assertCanNotSeeTableRecords([$inactiveCat]);
+});
+
+test('20. Global search finds category by name and slug and displays details', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $parent = Category::factory()->create(['name' => 'Confectionery', 'slug' => 'confectionery']);
+    $child = Category::factory()->create([
+        'name' => 'Dark Chocolate',
+        'slug' => 'dark-chocolate',
+        'parent_id' => $parent->id,
+        'is_active' => true,
+    ]);
+
+    // Search by name
+    $results = CategoryResource::getGlobalSearchResults('Dark Chocolate');
+    expect($results)->not->toBeEmpty();
+
+    // Search by slug
+    $slugResults = CategoryResource::getGlobalSearchResults('dark-chocolate');
+    expect($slugResults)->not->toBeEmpty();
+
+    // Verify search details
+    $details = CategoryResource::getGlobalSearchResultDetails($child);
+    expect($details)->toBeArray()
+        ->and($details['Parent'])->toBe('Confectionery')
+        ->and($details['Status'])->toBe('Active');
+});
+
+test('21. ListCategories table displays products count and parent category filter works', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $parentCategory = Category::factory()->create(['name' => 'Main Sweets', 'slug' => 'main-sweets']);
+    $subCategory = Category::factory()->create(['name' => 'Hard Candies', 'slug' => 'hard-candies', 'parent_id' => $parentCategory->id]);
+
+    $product1 = Product::factory()->create();
+    $product2 = Product::factory()->create();
+    $parentCategory->products()->attach([$product1->id, $product2->id]);
+
+    expect($parentCategory->products()->count())->toBe(2);
+
+    Livewire::test(ListCategories::class)
+        ->assertCanSeeTableRecords([$parentCategory, $subCategory])
+        ->filterTable('parent_id', $parentCategory->id)
+        ->assertCanSeeTableRecords([$subCategory])
+        ->assertCanNotSeeTableRecords([$parentCategory]);
+});
+
+test('22. Deleting category with assigned products is halted with warning notification', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $category = Category::factory()->create(['name' => 'Protected Category', 'slug' => 'protected-category']);
+    $product = Product::factory()->create();
+    $category->products()->attach($product->id);
+
+    expect($category->hasProducts())->toBeTrue()
+        ->and($category->canBeDeleted())->toBeFalse();
+
+    Livewire::test(ListCategories::class)
+        ->callTableAction('delete', $category);
+
+    expect($category->fresh()->trashed())->toBeFalse();
+});
+
+test('23. ListCategories status tabs filter records properly', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $rootActive = Category::factory()->create(['name' => 'Root Active', 'slug' => 'root-active', 'parent_id' => null, 'is_active' => true]);
+    $rootInactive = Category::factory()->create(['name' => 'Root Inactive', 'slug' => 'root-inactive', 'parent_id' => null, 'is_active' => false]);
+    $subActive = Category::factory()->create(['name' => 'Sub Active', 'slug' => 'sub-active', 'parent_id' => $rootActive->id, 'is_active' => true]);
+
+    // Active tab
+    Livewire::test(ListCategories::class)
+        ->set('activeTab', 'active')
+        ->assertCanSeeTableRecords([$rootActive, $subActive])
+        ->assertCanNotSeeTableRecords([$rootInactive]);
+
+    // Inactive tab
+    Livewire::test(ListCategories::class)
+        ->set('activeTab', 'inactive')
+        ->assertCanSeeTableRecords([$rootInactive])
+        ->assertCanNotSeeTableRecords([$rootActive, $subActive]);
+
+    // Root Categories tab
+    Livewire::test(ListCategories::class)
+        ->set('activeTab', 'root')
+        ->assertCanSeeTableRecords([$rootActive, $rootInactive])
+        ->assertCanNotSeeTableRecords([$subActive]);
+
+    // Subcategories tab
+    Livewire::test(ListCategories::class)
+        ->set('activeTab', 'subcategories')
+        ->assertCanSeeTableRecords([$subActive])
+        ->assertCanNotSeeTableRecords([$rootActive, $rootInactive]);
 });

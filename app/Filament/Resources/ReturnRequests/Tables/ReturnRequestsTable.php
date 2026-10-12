@@ -34,11 +34,19 @@ class ReturnRequestsTable
                     ->weight('bold')
                     ->copyable(),
 
-                TextColumn::make('user.name')
+                TextColumn::make('customer_name')
                     ->label('Customer')
-                    ->sortable()
-                    ->searchable()
-                    ->placeholder('Guest / Walk-in'),
+                    ->state(fn (ReturnRequest $record): string => $record->user?->name
+                        ?? $record->order?->customer_name
+                        ?? $record->order?->customer?->name
+                        ?? 'Guest / Walk-in'
+                    )
+                    ->searchable(query: function ($query, string $search) {
+                        $query->where(function ($q) use ($search) {
+                            $q->whereHas('user', fn ($sub) => $sub->where('name', 'like', "%{$search}%"))
+                                ->orWhereHas('order', fn ($sub) => $sub->where('customer_name', 'like', "%{$search}%"));
+                        });
+                    }),
 
                 TextColumn::make('status')
                     ->label('Status')

@@ -8,8 +8,10 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -21,23 +23,34 @@ class CategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('parent'))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('parent')->withCount('products'))
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Category Name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight(FontWeight::Medium),
 
                 TextColumn::make('parent.name')
                     ->label('Parent Category')
-                    ->placeholder('—')
+                    ->placeholder('Root (Main Category)')
+                    ->badge()
+                    ->color(fn ($state): string => $state ? 'gray' : 'primary')
                     ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('products_count')
+                    ->label('Products')
+                    ->counts('products')
+                    ->badge()
+                    ->color('info')
                     ->sortable(),
 
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 IconColumn::make('is_active')
                     ->label('Active')
@@ -59,6 +72,10 @@ class CategoriesTable
                 TernaryFilter::make('is_active')
                     ->label('Active Status'),
 
+                SelectFilter::make('parent_id')
+                    ->label('Parent Category')
+                    ->relationship('parent', 'name'),
+
                 TrashedFilter::make(),
             ])
             ->recordActions([
@@ -66,9 +83,13 @@ class CategoriesTable
                 DeleteAction::make()
                     ->before(function (DeleteAction $action, Category $record): void {
                         if (! $record->canBeDeleted()) {
+                            $reason = $record->hasChildren()
+                                ? 'Cannot delete this category because it has child categories.'
+                                : 'Cannot delete this category because it has products assigned to it.';
+
                             Notification::make()
                                 ->danger()
-                                ->title('Cannot delete this category because it has child categories.')
+                                ->title($reason)
                                 ->send();
 
                             $action->halt();
@@ -81,9 +102,13 @@ class CategoriesTable
                         ->before(function (DeleteBulkAction $action, Collection $records): void {
                             foreach ($records as $record) {
                                 if (! $record->canBeDeleted()) {
+                                    $reason = $record->hasChildren()
+                                        ? 'Cannot delete this category because it has child categories.'
+                                        : 'Cannot delete this category because it has products assigned to it.';
+
                                     Notification::make()
                                         ->danger()
-                                        ->title('Cannot delete this category because it has child categories.')
+                                        ->title($reason)
                                         ->send();
 
                                     $action->halt();

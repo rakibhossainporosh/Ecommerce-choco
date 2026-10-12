@@ -352,9 +352,19 @@ class Media extends Model
             return '';
         }
 
+        if (filter_var($this->path, FILTER_VALIDATE_URL) !== false) {
+            return $this->path;
+        }
+
+        $cleanPath = ltrim($this->path, '/');
+
+        if (str_starts_with($cleanPath, 'images/') && file_exists(public_path($cleanPath))) {
+            return asset($cleanPath);
+        }
+
         $diskName = $this->disk ?: config('filesystems.default', 'public');
 
-        return Storage::disk($diskName)->url($this->path);
+        return Storage::disk($diskName)->url($cleanPath);
     }
 
     /**

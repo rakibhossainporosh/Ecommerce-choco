@@ -53,12 +53,78 @@ class ReturnRequest extends Model
             throw new DomainException('Refund amount cannot be negative.');
         }
 
-        if ($this->order && (float) $this->refund_amount > (float) $this->order->grand_total) {
-            throw new DomainException('Refund amount cannot exceed the order grand total.');
+        if ($this->order) {
+            if ($this->order->isCancelled()) {
+                throw new DomainException('Cannot create a return request for a cancelled order.');
+            }
+
+            if ((float) $this->refund_amount > (float) $this->order->grand_total) {
+                throw new DomainException('Refund amount cannot exceed the order grand total.');
+            }
+
+            $otherRefundsTotal = (float) static::query()
+                ->where('order_id', $this->order_id)
+                ->when($this->exists, fn ($q) => $q->where('id', '!=', $this->id))
+                ->whereIn('status', [
+                    ReturnRequestStatus::Pending,
+                    ReturnRequestStatus::Approved,
+                    ReturnRequestStatus::Completed,
+                ])
+                ->sum('refund_amount');
+
+            if (($otherRefundsTotal + (float) $this->refund_amount) > (float) $this->order->grand_total) {
+                throw new DomainException('Total refund amount across return requests cannot exceed the order grand total.');
+            }
+        }
+
+        if ($this->exists && $this->isDirty('status')) {
+            $originalStatus = $this->getOriginal('status');
+            $originalStatusEnum = $originalStatus instanceof ReturnRequestStatus
+                ? $originalStatus
+                : ReturnRequestStatus::tryFrom((string) $originalStatus);
+
+            if ($originalStatusEnum === ReturnRequestStatus::Completed && $this->status !== ReturnRequestStatus::Completed) {
+                throw new DomainException('Completed return requests cannot change status.');
+            }
+
+            if ($originalStatusEnum === ReturnRequestStatus::Rejected && $this->status !== ReturnRequestStatus::Rejected) {
+                throw new DomainException('Rejected return requests cannot change status.');
+            }
+        }
+
+        if ($this->exists && $this->isDirty('refund_amount')) {
+            $originalStatus = $this->getOriginal('status');
+            $originalStatusEnum = $originalStatus instanceof ReturnRequestStatus
+                ? $originalStatus
+                : ReturnRequestStatus::tryFrom((string) $originalStatus);
+
+            if ($originalStatusEnum === ReturnRequestStatus::Completed) {
+                throw new DomainException('Refund amount cannot be modified once the return request is completed.');
+            }
         }
 
         if ($this->reason !== null) {
             $this->reason = trim($this->reason);
         }
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === ReturnRequestStatus::Pending;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === ReturnRequestStatus::Approved;
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === ReturnRequestStatus::Completed;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === ReturnRequestStatus::Rejected;
     }
 }

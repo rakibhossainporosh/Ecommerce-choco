@@ -6,6 +6,7 @@ use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Unit;
@@ -28,6 +29,8 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Schema::disableForeignKeyConstraints();
+    DB::table('inventory_movements')->truncate();
+    Inventory::truncate();
     ProductVariant::truncate();
     Product::truncate();
     Brand::truncate();
@@ -527,4 +530,121 @@ test('29. Form rejects soft-deleted product slug on creation', function () {
         ])
         ->call('create')
         ->assertHasFormErrors(['slug']);
+});
+
+test('30. Global search finds product by name, variant SKU, and variant barcode without SQL exceptions', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $brand = Brand::factory()->create(['name' => 'Lindt']);
+    $category = Category::factory()->create(['is_active' => true]);
+
+    $product = Product::factory()->create([
+        'name' => 'Excellence 85% Cocoa',
+        'brand_id' => $brand->id,
+    ]);
+    $product->categories()->attach($category->id);
+
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'sku' => 'SKU-LINDT-85-COCOA',
+        'barcode' => '7610400012345',
+        'cost_price' => 200.00,
+        'selling_price' => 350.00,
+        'compare_at_price' => 400.00,
+        'is_default' => true,
+    ]);
+
+    // Search by product name
+    $nameResults = ProductResource::getGlobalSearchResults('Cocoa');
+    expect($nameResults)->not->toBeEmpty();
+
+    // Search by variant SKU
+    $skuResults = ProductResource::getGlobalSearchResults('LINDT-85');
+    expect($skuResults)->not->toBeEmpty();
+
+    // Search by variant barcode
+    $barcodeResults = ProductResource::getGlobalSearchResults('7610400012345');
+    expect($barcodeResults)->not->toBeEmpty();
+
+    // Check search result details
+    $details = ProductResource::getGlobalSearchResultDetails($product);
+    expect($details)->toBeArray()
+        ->and($details['Brand'])->toBe('Lindt')
+        ->and($details['SKU'])->toBe('SKU-LINDT-85-COCOA')
+        ->and($details['Price'])->toContain('350.00');
+});
+
+test('31. ListProducts table displays enriched columns and allows searching by SKU', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $category = Category::factory()->create(['name' => 'Dark Chocolate', 'is_active' => true]);
+    $product = Product::factory()->create(['name' => 'Truffle Signature']);
+    $product->categories()->attach($category->id);
+
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'sku' => 'SKU-TRUFFLE-SIG-01',
+        'cost_price' => 300.00,
+        'selling_price' => 500.00,
+        'compare_at_price' => 600.00,
+        'is_default' => true,
+    ]);
+
+    Inventory::createForVariant($variant, openingQuantity: 25, lowStockThreshold: 5);
+
+    Livewire::test(ListProducts::class)
+        ->assertCanSeeTableRecords([$product])
+        ->searchTable('TRUFFLE-SIG')
+        ->assertCanSeeTableRecords([$product]);
+});
+
+test('32. ListProducts status tabs correctly filter records', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $category = Category::factory()->create(['is_active' => true]);
+
+    $activeProduct = Product::factory()->create(['name' => 'Active Bar', 'is_active' => true, 'is_featured' => true]);
+    $activeProduct->categories()->attach($category->id);
+    $activeVariant = ProductVariant::factory()->create(['product_id' => $activeProduct->id, 'is_default' => true]);
+    Inventory::createForVariant($activeVariant, openingQuantity: 10);
+
+    $inactiveProduct = Product::factory()->create(['name' => 'Draft Bar', 'is_active' => false, 'is_featured' => false]);
+    $inactiveProduct->categories()->attach($category->id);
+    $inactiveVariant = ProductVariant::factory()->create(['product_id' => $inactiveProduct->id, 'is_default' => true]);
+    Inventory::createForVariant($inactiveVariant, openingQuantity: 10);
+
+    $outOfStockProduct = Product::factory()->create(['name' => 'OOS Bar', 'is_active' => true, 'is_featured' => false]);
+    $outOfStockProduct->categories()->attach($category->id);
+    $oosVariant = ProductVariant::factory()->create(['product_id' => $outOfStockProduct->id, 'is_default' => true]);
+    Inventory::createForVariant($oosVariant, openingQuantity: 0);
+
+    // Active tab
+    Livewire::test(ListProducts::class)
+        ->set('activeTab', 'active')
+        ->assertCanSeeTableRecords([$activeProduct, $outOfStockProduct])
+        ->assertCanNotSeeTableRecords([$inactiveProduct]);
+
+    // Inactive tab
+    Livewire::test(ListProducts::class)
+        ->set('activeTab', 'inactive')
+        ->assertCanSeeTableRecords([$inactiveProduct])
+        ->assertCanNotSeeTableRecords([$activeProduct, $outOfStockProduct]);
+
+    // Featured tab
+    Livewire::test(ListProducts::class)
+        ->set('activeTab', 'featured')
+        ->assertCanSeeTableRecords([$activeProduct])
+        ->assertCanNotSeeTableRecords([$inactiveProduct, $outOfStockProduct]);
+
+    // Out of Stock tab
+    Livewire::test(ListProducts::class)
+        ->set('activeTab', 'out_of_stock')
+        ->assertCanSeeTableRecords([$outOfStockProduct])
+        ->assertCanNotSeeTableRecords([$activeProduct, $inactiveProduct]);
 });

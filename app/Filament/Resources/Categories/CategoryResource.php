@@ -14,14 +14,40 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'slug'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        /** @var Category $record */
+        $record->loadMissing('parent');
+
+        $details = [];
+
+        if ($record->parent) {
+            $details['Parent'] = $record->parent->name;
+        }
+
+        $details['Status'] = $record->is_active ? 'Active' : 'Inactive';
+
+        return $details;
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Catalog';
+
     protected static ?int $navigationSort = 20;
 
     protected static ?string $navigationLabel = 'Categories';

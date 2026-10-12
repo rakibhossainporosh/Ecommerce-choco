@@ -17,10 +17,19 @@ class EditCategory extends EditRecord
         return [
             DeleteAction::make()
                 ->before(function (DeleteAction $action, Category $record): void {
-                    if (! $record->canBeDeleted()) {
+                    if ($record->hasChildren()) {
                         Notification::make()
                             ->danger()
-                            ->title('Cannot delete this category because it has child categories.')
+                            ->title('Cannot delete category because it has subcategories.')
+                            ->send();
+
+                        $action->halt();
+                    }
+
+                    if ($record->hasProducts()) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Cannot delete category because it has active products assigned to it.')
                             ->send();
 
                         $action->halt();

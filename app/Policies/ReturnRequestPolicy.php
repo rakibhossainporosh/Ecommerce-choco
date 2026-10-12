@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\ReturnRequestStatus;
 use App\Models\ReturnRequest;
 use App\Models\User;
 
@@ -29,6 +30,10 @@ class ReturnRequestPolicy
 
     public function delete(User $user, ReturnRequest $returnRequest): bool
     {
+        if ($returnRequest->status === ReturnRequestStatus::Completed) {
+            return false;
+        }
+
         return $user->can('returns.delete');
     }
 

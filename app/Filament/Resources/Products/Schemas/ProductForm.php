@@ -194,23 +194,23 @@ class ProductForm
                             ->unique(table: 'product_variants', column: 'barcode'),
 
                         TextInput::make('cost_price')
-                            ->label('Cost Price (BDT)')
+                            ->label('Cost Price')
                             ->numeric()
-                            ->prefix('BDT')
+                            ->prefix('৳')
                             ->required(fn (string $operation): bool => $operation === 'create')
                             ->minValue(0),
 
                         TextInput::make('selling_price')
-                            ->label('Selling Price (BDT)')
+                            ->label('Selling Price')
                             ->numeric()
-                            ->prefix('BDT')
+                            ->prefix('৳')
                             ->required(fn (string $operation): bool => $operation === 'create')
                             ->minValue(0),
 
                         TextInput::make('compare_at_price')
-                            ->label('Compare at Price (BDT)')
+                            ->label('Compare at Price')
                             ->numeric()
-                            ->prefix('BDT')
+                            ->prefix('৳')
                             ->nullable()
                             ->minValue(0)
                             ->rules([

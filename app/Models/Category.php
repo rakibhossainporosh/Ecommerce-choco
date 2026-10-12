@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
@@ -28,8 +29,12 @@ class Category extends Model
         });
 
         static::deleting(function (Category $category): void {
-            if (! $category->canBeDeleted()) {
+            if ($category->hasChildren()) {
                 throw new DomainException('Cannot delete this category because it has child categories.');
+            }
+
+            if ($category->hasProducts()) {
+                throw new DomainException('Cannot delete this category because it has products assigned to it.');
             }
         });
     }
@@ -55,6 +60,17 @@ class Category extends Model
     }
 
     /**
+     * Get the products assigned to this category.
+     *
+     * @return BelongsToMany<Product, $this>
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'category_product')
+            ->withTimestamps();
+    }
+
+    /**
      * Check if this category has any children.
      */
     public function hasChildren(): bool
@@ -71,12 +87,19 @@ class Category extends Model
     }
 
     /**
+     * Check if this category has any products assigned.
+     */
+    public function hasProducts(): bool
+    {
+        return $this->products()->exists();
+    }
+
+    /**
      * Determine whether this category can be safely deleted according to business rules.
      */
     public function canBeDeleted(): bool
     {
-        // Deferred Product deletion rule will be added here: && ! $this->hasProducts()
-        return ! $this->hasChildren();
+        return ! $this->hasChildren() && ! $this->hasProducts();
     }
 
     /**

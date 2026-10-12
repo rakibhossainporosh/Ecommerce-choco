@@ -17,9 +17,11 @@ class ReturnRequestObserver
         $users = rescue(fn () => User::permission('returns.view')->get(), collect());
 
         if ($users && $users->isNotEmpty()) {
+            $orderNumber = $returnRequest->order?->order_number ?? $returnRequest->order_id;
+
             Notification::make()
                 ->title('New Return Request')
-                ->body("A return request has been submitted for Order #{$returnRequest->order->order_number}.")
+                ->body("A return request has been submitted for Order #{$orderNumber}.")
                 ->warning()
                 ->icon('heroicon-o-arrow-path')
                 ->actions([
@@ -36,7 +38,17 @@ class ReturnRequestObserver
      */
     public function updated(ReturnRequest $returnRequest): void
     {
-        //
+        if ($returnRequest->wasChanged('status') && $returnRequest->user) {
+            $statusLabel = $returnRequest->status->label();
+            $orderNumber = $returnRequest->order?->order_number ?? $returnRequest->order_id;
+
+            Notification::make()
+                ->title("Return Request {$statusLabel}")
+                ->body("Your return request for Order #{$orderNumber} has been updated to {$statusLabel}.")
+                ->icon($returnRequest->status->getIcon())
+                ->color($returnRequest->status->getColor())
+                ->sendToDatabase($returnRequest->user);
+        }
     }
 
     /**

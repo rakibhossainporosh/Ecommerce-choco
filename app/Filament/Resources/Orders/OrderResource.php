@@ -27,7 +27,7 @@ class OrderResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['order_number', 'customer.first_name', 'customer.last_name', 'customer.email'];
+        return ['order_number', 'customer.name', 'customer.email', 'customer.phone'];
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;

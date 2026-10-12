@@ -22,15 +22,32 @@ use Illuminate\Database\Eloquent\Model;
 class CustomerResource extends Resource
 {
     protected static ?string $model = Customer::class;
-    
-    protected static ?string $recordTitleAttribute = 'email';
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['first_name', 'last_name', 'email', 'phone'];
+        return ['name', 'email', 'phone'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        /** @var Customer $record */
+        $details = [];
+
+        if ($record->email) {
+            $details['Email'] = $record->email;
+        }
+
+        if ($record->phone) {
+            $details['Phone'] = $record->phone;
+        }
+
+        return $details;
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Customers & Marketing';
 
     protected static ?string $navigationLabel = 'Customers';

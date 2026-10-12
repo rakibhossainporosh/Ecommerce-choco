@@ -16,21 +16,46 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
-    
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name', 'sku', 'barcode'];
+        return ['name', 'variants.sku', 'variants.barcode'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        /** @var Product $record */
+        $record->loadMissing(['defaultVariant', 'brand']);
+
+        $details = [];
+
+        if ($record->brand) {
+            $details['Brand'] = $record->brand->name;
+        }
+
+        if ($record->defaultVariant?->sku) {
+            $details['SKU'] = $record->defaultVariant->sku;
+        }
+
+        if ($record->defaultVariant?->selling_price !== null) {
+            $details['Price'] = '৳ '.number_format((float) $record->defaultVariant->selling_price, 2);
+        }
+
+        return $details;
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
+
     protected static \UnitEnum|string|null $navigationGroup = 'Catalog';
+
     protected static ?int $navigationSort = 10;
 
     protected static ?string $navigationLabel = 'Products';

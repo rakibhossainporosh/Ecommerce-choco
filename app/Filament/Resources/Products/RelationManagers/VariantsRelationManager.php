@@ -81,23 +81,23 @@ class VariantsRelationManager extends RelationManager
                     ->unique(table: 'product_variants', column: 'barcode', ignoreRecord: true),
 
                 TextInput::make('cost_price')
-                    ->label('Cost Price (BDT)')
+                    ->label('Cost Price')
                     ->numeric()
-                    ->prefix('BDT')
+                    ->prefix('৳')
                     ->required()
                     ->minValue(0),
 
                 TextInput::make('selling_price')
-                    ->label('Selling Price (BDT)')
+                    ->label('Selling Price')
                     ->numeric()
-                    ->prefix('BDT')
+                    ->prefix('৳')
                     ->required()
                     ->minValue(0),
 
                 TextInput::make('compare_at_price')
-                    ->label('Compare at Price (BDT)')
+                    ->label('Compare at Price')
                     ->numeric()
-                    ->prefix('BDT')
+                    ->prefix('৳')
                     ->nullable()
                     ->minValue(0)
                     ->rules([
@@ -136,8 +136,7 @@ class VariantsRelationManager extends RelationManager
             ->columns([
                 ImageColumn::make('primary_image')
                     ->label('Image')
-                    ->disk('public')
-                    ->state(fn (ProductVariant $record): ?string => $record->getResolvedPrimaryMedia()?->path)
+                    ->state(fn (ProductVariant $record): ?string => $record->getResolvedPrimaryMedia()?->url())
                     ->circular(),
 
                 TextColumn::make('sku')

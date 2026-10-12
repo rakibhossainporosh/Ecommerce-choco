@@ -15,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ReturnRequestResource extends Resource
 {
@@ -76,5 +78,21 @@ class ReturnRequestResource extends Resource
             'view' => ViewReturnRequest::route('/{record}'),
             'edit' => EditReturnRequest::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()
+            ->with(['order.customer', 'user']);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        /** @var ReturnRequest $record */
+        if ($record->status === ReturnRequestStatus::Completed) {
+            return false;
+        }
+
+        return parent::canDelete($record);
     }
 }

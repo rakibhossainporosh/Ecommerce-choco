@@ -28,10 +28,14 @@ class ReturnRequestInfolist
                         ->copyable()
                         ->url(fn (ReturnRequest $record): ?string => $record->order_id ? route('filament.admin.resources.orders.view', ['record' => $record->order_id]) : null),
 
-                    TextEntry::make('user.name')
+                    TextEntry::make('customer_name')
                         ->label('Customer')
                         ->weight('bold')
-                        ->placeholder('Guest / Walk-in'),
+                        ->state(fn (ReturnRequest $record): string => $record->user?->name
+                            ?? $record->order?->customer_name
+                            ?? $record->order?->customer?->name
+                            ?? 'Guest / Walk-in'
+                        ),
 
                     TextEntry::make('status')
                         ->label('Status')
@@ -54,7 +58,7 @@ class ReturnRequestInfolist
                         ->label('Customer Reason for Return'),
 
                     TextEntry::make('admin_note')
-                        ->label('Internal Admin Note')
+                        ->label('Admin Note / Rejection Reason')
                         ->placeholder('No internal note recorded yet.'),
                 ]),
             ]),
