@@ -625,3 +625,40 @@ test('25. Existing CAT-8B mutation methods remain the only authoritative stock m
         ->and($movement->reason)->toBe('Restock')
         ->and($movement->note)->toBe('Delivery from factory');
 });
+
+test('26. filterByKpi method updates table filter and displays matching variants', function () {
+    [$product1, $inStockVariant] = createOverviewProductAndVariant();
+    Inventory::createForVariant($inStockVariant, openingQuantity: 20, lowStockThreshold: 5);
+
+    [$product2, $lowStockVariant] = createOverviewProductAndVariant();
+    Inventory::createForVariant($lowStockVariant, openingQuantity: 2, lowStockThreshold: 5);
+
+    $manager = User::factory()->create(['can_access_admin_panel' => true]);
+    $manager->assignRole('Manager');
+
+    Livewire::actingAs($manager)
+        ->test(StockOverview::class)
+        ->call('filterByKpi', 'low_stock')
+        ->assertCanSeeTableRecords([$lowStockVariant])
+        ->assertCanNotSeeTableRecords([$inStockVariant])
+        ->call('filterByKpi', null)
+        ->assertCanSeeTableRecords([$inStockVariant, $lowStockVariant]);
+});
+
+test('27. setThreshold table action updates the low stock threshold for a variant', function () {
+    [$product, $variant] = createOverviewProductAndVariant();
+    $inventory = Inventory::createForVariant($variant, openingQuantity: 10, lowStockThreshold: 2);
+
+    $manager = User::factory()->create(['can_access_admin_panel' => true]);
+    $manager->assignRole('Manager');
+
+    Livewire::actingAs($manager)
+        ->test(StockOverview::class)
+        ->callTableAction('setThreshold', $variant, [
+            'low_stock_threshold' => 8,
+        ])
+        ->assertHasNoTableActionErrors()
+        ->assertNotified('Threshold updated successfully.');
+
+    expect($inventory->fresh()->low_stock_threshold)->toBe(8);
+});

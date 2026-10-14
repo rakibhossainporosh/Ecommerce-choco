@@ -39,7 +39,9 @@ class ValuesRelationManager extends RelationManager
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->label('Name')
+                    ->label('Value Name')
+                    ->placeholder('e.g. 70% Dark, 100g, Large')
+                    ->prefixIcon(Heroicon::OutlinedTag)
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
@@ -50,17 +52,22 @@ class ValuesRelationManager extends RelationManager
                     }),
 
                 TextInput::make('slug')
-                    ->label('Slug')
+                    ->label('Value Slug')
+                    ->placeholder('e.g. 70-dark')
+                    ->prefixIcon(Heroicon::OutlinedGlobeAlt)
+                    ->helperText('Option identifier.')
                     ->required()
                     ->maxLength(255)
                     ->rules(['alpha_dash']),
 
                 Toggle::make('is_active')
                     ->label('Active')
+                    ->helperText('Available for assignment.')
                     ->default(true),
 
                 TextInput::make('sort_order')
                     ->label('Sort Order')
+                    ->prefixIcon(Heroicon::OutlinedArrowsUpDown)
                     ->numeric()
                     ->default(0)
                     ->minValue(0)
@@ -74,14 +81,18 @@ class ValuesRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Value')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold'),
 
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Slug copied')
+                    ->color('gray'),
 
                 IconColumn::make('is_active')
                     ->label('Active')

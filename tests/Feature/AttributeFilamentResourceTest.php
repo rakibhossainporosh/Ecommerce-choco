@@ -3,6 +3,7 @@
 use App\Filament\Resources\Attributes\AttributeResource;
 use App\Filament\Resources\Attributes\Pages\CreateAttribute;
 use App\Filament\Resources\Attributes\Pages\EditAttribute;
+use App\Filament\Resources\Attributes\Pages\ListAttributes;
 use App\Filament\Resources\Attributes\RelationManagers\ValuesRelationManager;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
@@ -659,4 +660,89 @@ test('40. Admin can mutate everything allowed by existing Gate::before', functio
         ->and(Gate::forUser($admin)->allows('create', ProductVariant::class))->toBeTrue()
         ->and(Gate::forUser($admin)->allows('update', $variant))->toBeTrue()
         ->and(Gate::forUser($admin)->allows('delete', $variant))->toBeTrue();
+});
+
+test('41. Global search returns Attribute by name and slug with details', function () {
+    $attribute = Attribute::factory()->create([
+        'name' => 'Cocoa Percentage',
+        'slug' => 'cocoa-percentage',
+        'type' => Attribute::ATTRIBUTE_TYPE_NUMBER,
+        'scope' => Attribute::SCOPE_PRODUCT,
+        'is_active' => true,
+    ]);
+
+    expect(AttributeResource::getGloballySearchableAttributes())->toBe(['name', 'slug']);
+
+    $details = AttributeResource::getGlobalSearchResultDetails($attribute);
+    expect($details)->toBeArray()
+        ->and($details['Type'])->toBe('Number')
+        ->and($details['Scope'])->toBe('Product')
+        ->and($details['Status'])->toBe('Active');
+});
+
+test('42. AttributesTable displays values count column', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $attribute = Attribute::factory()->create([
+        'name' => 'Box Size',
+        'type' => Attribute::ATTRIBUTE_TYPE_SELECT,
+        'scope' => Attribute::SCOPE_VARIANT,
+    ]);
+
+    AttributeValue::factory()->create(['attribute_id' => $attribute->id, 'name' => 'Small']);
+    AttributeValue::factory()->create(['attribute_id' => $attribute->id, 'name' => 'Medium']);
+
+    Livewire::test(ListAttributes::class)
+        ->assertCanSeeTableRecords([$attribute])
+        ->assertTableColumnExists('values_count');
+});
+
+test('43. Status and Scope tabs filter attributes correctly on ListAttributes page', function () {
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    $variantAttr = Attribute::factory()->create([
+        'name' => 'Flavor Type',
+        'scope' => Attribute::SCOPE_VARIANT,
+        'is_active' => true,
+    ]);
+
+    $productAttr = Attribute::factory()->create([
+        'name' => 'Country of Origin',
+        'scope' => Attribute::SCOPE_PRODUCT,
+        'is_active' => true,
+    ]);
+
+    $inactiveAttr = Attribute::factory()->create([
+        'name' => 'Discontinued Attribute',
+        'scope' => Attribute::SCOPE_VARIANT,
+        'is_active' => false,
+    ]);
+
+    // Variant tab
+    Livewire::test(ListAttributes::class)
+        ->set('activeTab', 'variant')
+        ->assertCanSeeTableRecords([$variantAttr, $inactiveAttr])
+        ->assertCanNotSeeTableRecords([$productAttr]);
+
+    // Product tab
+    Livewire::test(ListAttributes::class)
+        ->set('activeTab', 'product')
+        ->assertCanSeeTableRecords([$productAttr])
+        ->assertCanNotSeeTableRecords([$variantAttr, $inactiveAttr]);
+
+    // Active tab
+    Livewire::test(ListAttributes::class)
+        ->set('activeTab', 'active')
+        ->assertCanSeeTableRecords([$variantAttr, $productAttr])
+        ->assertCanNotSeeTableRecords([$inactiveAttr]);
+
+    // Inactive tab
+    Livewire::test(ListAttributes::class)
+        ->set('activeTab', 'inactive')
+        ->assertCanSeeTableRecords([$inactiveAttr])
+        ->assertCanNotSeeTableRecords([$variantAttr, $productAttr]);
 });

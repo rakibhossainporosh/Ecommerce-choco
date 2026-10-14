@@ -23,23 +23,46 @@ class AttributesTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Attribute Name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold'),
 
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Slug copied')
+                    ->color('gray'),
 
                 TextColumn::make('type')
                     ->label('Type')
                     ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        Attribute::ATTRIBUTE_TYPE_SELECT, Attribute::ATTRIBUTE_TYPE_MULTISELECT => 'info',
+                        Attribute::ATTRIBUTE_TYPE_NUMBER => 'success',
+                        Attribute::ATTRIBUTE_TYPE_BOOLEAN => 'warning',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
                     ->sortable(),
 
                 TextColumn::make('scope')
                     ->label('Scope')
                     ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        Attribute::SCOPE_VARIANT => 'purple',
+                        default => 'primary',
+                    })
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->sortable(),
+
+                TextColumn::make('values_count')
+                    ->counts('values')
+                    ->label('Values')
+                    ->badge()
+                    ->color('gray')
                     ->sortable(),
 
                 IconColumn::make('is_required')

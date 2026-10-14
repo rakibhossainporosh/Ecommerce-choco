@@ -15,11 +15,29 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AttributeResource extends Resource
 {
     protected static ?string $model = Attribute::class;
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'slug'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        /** @var Attribute $record */
+        return [
+            'Type' => ucfirst($record->type),
+            'Scope' => ucfirst($record->scope),
+            'Status' => $record->is_active ? 'Active' : 'Inactive',
+        ];
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
 

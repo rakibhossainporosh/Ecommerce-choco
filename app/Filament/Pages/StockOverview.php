@@ -96,32 +96,47 @@ class StockOverview extends Page implements HasTable
                 'value' => $summary['total_variants'],
                 'color' => 'primary',
                 'icon' => Heroicon::OutlinedSquares2x2,
+                'filter' => null,
+                'subtext' => 'All catalog variants',
             ],
             [
                 'label' => 'In Stock',
                 'value' => $summary['in_stock'],
                 'color' => 'success',
                 'icon' => Heroicon::OutlinedCheckCircle,
+                'filter' => 'in_stock',
+                'subtext' => 'Healthy stock level',
             ],
             [
                 'label' => 'Low Stock',
                 'value' => $summary['low_stock'],
                 'color' => 'warning',
                 'icon' => Heroicon::OutlinedExclamationTriangle,
+                'filter' => 'low_stock',
+                'subtext' => 'Reorder alert threshold',
             ],
             [
                 'label' => 'Out of Stock',
                 'value' => $summary['out_of_stock'],
                 'color' => 'danger',
                 'icon' => Heroicon::OutlinedXCircle,
+                'filter' => 'out_of_stock',
+                'subtext' => '0 items available',
             ],
             [
                 'label' => 'Not Initialized',
                 'value' => $summary['not_initialized'],
                 'color' => 'gray',
                 'icon' => Heroicon::OutlinedQuestionMarkCircle,
+                'filter' => 'not_initialized',
+                'subtext' => 'Opening stock required',
             ],
         ];
+    }
+
+    public function filterByKpi(?string $status): void
+    {
+        $this->tableFilters['stock_status']['value'] = $status;
     }
 
     public function table(Table $table): Table
@@ -371,6 +386,45 @@ class StockOverview extends Page implements HasTable
 
                             $action->halt();
                         }
+                    }),
+
+                Action::make('setThreshold')
+                    ->label('Set Threshold')
+                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
+                    ->color('gray')
+                    ->modalHeading(fn (ProductVariant $record): string => 'Set Low Stock Threshold: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalWidth(Width::Small)
+                    ->authorize(fn () => auth()->user()?->can('adjust', Inventory::class))
+                    ->fillForm(fn (ProductVariant $record): array => [
+                        'low_stock_threshold' => $record->inventory?->low_stock_threshold ?? 0,
+                    ])
+                    ->form([
+                        TextInput::make('low_stock_threshold')
+                            ->label('Low Stock Alert Threshold')
+                            ->helperText('Trigger warning badge when quantity falls to or below this number.')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->default(0)
+                            ->required(),
+                    ])
+                    ->action(function (Action $action, ProductVariant $record, array $data): void {
+                        abort_unless(auth()->user()?->can('adjust', Inventory::class), 403, 'Unauthorized.');
+
+                        $threshold = max(0, (int) $data['low_stock_threshold']);
+                        $inventory = $record->inventory;
+
+                        if (! $inventory) {
+                            $inventory = Inventory::createForVariant($record, lowStockThreshold: $threshold);
+                        } else {
+                            $inventory->update(['low_stock_threshold' => $threshold]);
+                        }
+
+                        Notification::make()
+                            ->title('Threshold updated successfully.')
+                            ->body("Low stock alert threshold set to {$threshold}.")
+                            ->success()
+                            ->send();
                     }),
 
                 Action::make('stockHistory')
