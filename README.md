@@ -1,4 +1,4 @@
-# 🍫 Nobo Shop — Full-Stack Modern E-Commerce Platform
+# 🍫 Nobo Shop - Full-Stack Modern E-Commerce Platform
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="Laravel Logo" />
@@ -19,9 +19,9 @@
 
 ## 📖 Overview
 
-**Nobo Shop (Choco Ecommerce)** is an enterprise-grade, high-performance E-Commerce platform engineered with **Laravel 13**, **Inertia.js v3**, **Vue 3 (Composition API)**, **Tailwind CSS v4**, and **Filament v5**. 
+**Nobo Shop (Choco Ecommerce)** is an enterprise-grade, high-performance E-Commerce platform engineered with **Laravel 13**, **Inertia.js v3**, **Vue 3 (Composition API)**, **Tailwind CSS v4** and **Filament v5**. 
 
-Built for modern retail speed and operational scale, it pairs an ultra-responsive, bilingual (Bengali/English) customer-facing Single Page Application (SPA) with a comprehensive, role-guarded Filament admin dashboard for catalog control, order lifecycle management, multi-courier dispatch, real-time inventory adjustments, and audit tracking.
+Built for modern retail speed and operational scale, it pairs an ultra-responsive, bilingual (Bengali/English) customer-facing Single Page Application (SPA) with a comprehensive, role-guarded Filament admin dashboard for catalog control, order lifecycle management, multi-courier dispatch, real-time inventory adjustments and audit tracking.
 
 ---
 
@@ -50,13 +50,13 @@ Built for modern retail speed and operational scale, it pairs an ultra-responsiv
 
 - **High-Performance SPA**: Seamless navigation powered by Inertia.js v3 and Vue 3 without full page reloads.
 - **Dynamic Catalog & Filtering**:
-  - Filter products by category, stock availability, and price range.
-  - Sort dynamically by latest arrival, price (low-to-high / high-to-low), and popularity.
-- **Live Search & Instant Suggestions**: Debounced typeahead search offering instantaneous suggestions with product thumbnail, price, and category tags.
+  - Filter products by category, stock availability and price range.
+  - Sort dynamically by latest arrival, price (low-to-high / high-to-low) and popularity.
+- **Live Search & Instant Suggestions**: Debounced typeahead search offering instantaneous suggestions with product thumbnail, price and category tags.
 - **Matrix Product Variants**:
-  - Multi-attribute selection (Color, Size, Unit) with real-time price updates and dynamic stock validation.
+  - Multi-attribute selection (Color, Size, Unit) with real time price updates and dynamic stock validation.
 - **Interactive Quick View & Image Gallery**: Rich modal previews and high-resolution thumbnail switching.
-- **Persistent Cart & Wishlist**: Side-drawer carts and wishlists with instant quantity mutation and local persistence.
+- **Persistent Cart & Wishlist**: Side drawer carts and wishlists with instant quantity mutation and local persistence.
 - **Frictionless Checkout**:
   - One-page responsive checkout flow.
   - Dynamic delivery charge calculation based on shipping zone (Inside Dhaka vs. Outside Dhaka).
@@ -64,10 +64,10 @@ Built for modern retail speed and operational scale, it pairs an ultra-responsiv
   - Cash on Delivery (COD) and Mobile Financial Services (bKash, Nagad, Rocket) selection.
 - **Public Order Tracking**: Live visual milestone timeline (Pending → Confirmed → Processing → Shipped → Delivered) searchable by Order Code & Customer Phone.
 - **Customer Account Portal**:
-  - Self-service dashboard for past orders, order status tracking, and printable web invoices.
-  - Profile management, default delivery address book, and security settings.
+  - Self-service dashboard for past orders, order status tracking and printable web invoices.
+  - Profile management, default delivery address book and security settings.
 - **Verified Customer Reviews**: Rating and review submission system with verified-purchase status badges.
-- **Policy & Contact Pages**: Dedicated pages for About Us, Contact (with inquiry submission), FAQ, Privacy Policy, Terms & Conditions, and Return Policy.
+- **Policy & Contact Pages**: Dedicated pages for About Us, Contact (with inquiry submission), FAQ, Privacy Policy, Terms & Conditions and Return Policy.
 
 ---
 
@@ -78,31 +78,31 @@ Built for modern retail speed and operational scale, it pairs an ultra-responsiv
   - Interactive Chart.js graphs for daily sales revenue and monthly order volume.
   - Visual order status distribution chart.
 - **Catalog Management**:
-  - **Products & Variants**: SKU generator, cost vs. selling price tracking, barcode management, and rich media galleries.
+  - **Products & Variants**: SKU generator, cost vs. selling price tracking, barcode management and rich media galleries.
   - **Attributes & Values**: Global attribute definitions (Size, Color, Material) reusable across products.
   - **Categories & Brands**: Hierarchical category tree with image upload and SEO slug generation.
   - **Units**: Measurement units (pcs, kg, box, etc.) with decimal precision.
 - **Order Lifecycle & Dispatch**:
-  - Strict state-machine order progression with status transition audit trails.
+  - Strict state machine order progression with status transition audit trails.
   - Itemized printable invoices formatted for thermal or standard A4/receipt printing.
   - Courier shipment assignment and logistics tracking.
 - **Logistics & Courier Integrations**:
-  - Pre-architected for Bangladesh couriers (Steadfast, Pathao, RedX, Paperfly).
-  - Shipment parcel booking, consignment tracking codes, and delivery status synchronization.
+  - Pre architected for Bangladesh couriers (Steadfast, Pathao, RedX, Paperfly).
+  - Shipment parcel booking, consignment tracking codes and delivery status synchronization.
 - **Warehouse & Inventory Movement**:
   - Real-time stock counts by variant.
   - Comprehensive movement audit logging (Purchases, Customer Orders, Manual Adjustments, Damage Write-offs, Customer Returns).
   - Dedicated Stock Overview page with low-stock warnings.
 - **Marketing & Promotions Engine**:
   - Coupon creation with flexible rules: Fixed amount or Percentage discounts.
-  - Expiry dates, minimum spend thresholds, usage caps, and per-user limits.
+  - Expiry dates, minimum spend thresholds, usage caps and per-user limits.
 - **Granular RBAC (Role-Based Access Control)**:
   - Powered by **Spatie Laravel-Permission**.
   - Roles: `Admin` (full system access via Gate before rule), `Manager` (operations & catalog without destructive actions), and `Staff` (order fulfillment & processing).
 - **Audit Trails & Activity Logs**:
   - Integrated with **Spatie Activitylog** and Filament Activity Log for system-wide auditing of model changes.
 - **System Settings & Branding**:
-  - Centralized settings interface for site title, logo, footer text, contact details, social links, and shipping rates.
+  - Centralized settings interface for site title, logo, footer text, contact details, social links and shipping rates.
 
 ---
 
@@ -239,7 +239,7 @@ DB_PASSWORD=
 ```
 
 #### 4. Run Migrations & Seeders
-Execute database migrations and seed default roles, categories, products, and system settings:
+Execute database migrations and seed default roles, categories, products and system settings:
 ```bash
 php artisan migrate:fresh --seed
 ```
@@ -293,15 +293,15 @@ echo "Admin user created: admin@example.com / password\n";
 ```
 
 ### Pre-Configured Roles & Permissions
-- **Admin**: Full access across all resources, configuration, and security gates.
-- **Manager**: Access to catalog, customer records, inventory adjustments, and orders without destructive deletes or refunds.
-- **Staff**: Operational order processing, picking, packing, and courier dispatch.
+- **Admin**: Full access across all resources, configuration and security gates.
+- **Manager**: Access to catalog, customer records, inventory adjustments and orders without destructive deletes or refunds.
+- **Staff**: Operational order processing, picking, packing and courier dispatch.
 
 ---
 
 ## 🧪 Automated Testing & Code Quality
 
-The project comes with **84+ comprehensive Pest PHP feature test files** verifying business rules, state transitions, security barriers, and regression scenarios:
+The project comes with **84+ comprehensive Pest PHP feature test files** verifying business rules, state transitions, security barriers and regression scenarios:
 
 ```bash
 # Run the complete test suite
@@ -315,7 +315,7 @@ vendor/bin/pest tests/Feature/OrderStateTransitionTest.php
 ```
 
 ### Code Formatting with Laravel Pint
-To maintain clean, consistent, and PSR-standard code:
+To maintain clean, consistent and PSR-standard code:
 ```bash
 # Automatically format code changes
 vendor/bin/pint --dirty --format agent
@@ -339,7 +339,7 @@ vendor/bin/pint --dirty --format agent
 
 ## 🤝 Contributing
 
-Contributions make the open-source community a better place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions make the open-source community a better place to learn, inspire and create. Any contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
