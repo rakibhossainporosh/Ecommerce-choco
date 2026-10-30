@@ -15,7 +15,10 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Cache;
 use UnitEnum;
@@ -102,124 +105,171 @@ class FooterSettings extends Page
         return $schema
             ->statePath('data')
             ->components([
-                Section::make('Brand & Description')
-                    ->description('Store name, logo tagline, and bio in the first column of the footer')
-                    ->collapsible()
-                    ->schema([
-                        Grid::make(2)->schema([
-                            TextInput::make('site_name')
-                                ->label('Store Name')
-                                ->required(),
-                            TextInput::make('site_tagline')
-                                ->label('Tagline')
-                                ->nullable(),
-                        ]),
-                        Textarea::make('footer_about')
-                            ->label('Footer About Text')
-                            ->rows(3)
-                            ->helperText('This text appears below the store brand in the first column of the footer')
-                            ->required(),
-                    ]),
-
-                Section::make('Social Media Links')
-                    ->description('Facebook, Twitter / X, Instagram, and YouTube links (leave empty to hide the icon)')
-                    ->collapsible()
-                    ->schema([
-                        Grid::make(2)->schema([
-                            TextInput::make('facebook_url')
-                                ->label('Facebook URL')
-                                ->nullable(),
-                            TextInput::make('twitter_url')
-                                ->label('Twitter / X URL')
-                                ->nullable(),
-                            TextInput::make('instagram_url')
-                                ->label('Instagram URL')
-                                ->nullable(),
-                            TextInput::make('youtube_url')
-                                ->label('YouTube URL')
-                                ->nullable(),
-                        ]),
-                    ]),
-
-                Section::make('Column 2: Quick Links')
-                    ->description('Second column title and navigation links (add, edit, or reorder)')
-                    ->collapsible()
-                    ->schema([
-                        TextInput::make('footer_col2_title')
-                            ->label('Column Title')
-                            ->required(),
-                        Repeater::make('footer_col2_links')
-                            ->label('Links')
+                Tabs::make('WebsiteSettingsTabs')
+                    ->tabs([
+                        Tab::make('General & Branding')
+                            ->icon(Heroicon::OutlinedBuildingStorefront)
                             ->schema([
-                                TextInput::make('label')
-                                    ->label('Link Label')
-                                    ->required(),
-                                TextInput::make('url')
-                                    ->label('URL / Path')
-                                    ->required(),
-                            ])
-                            ->columns(2)
-                            ->addActionLabel('Add Link')
-                            ->reorderable()
-                            ->collapsible(),
-                    ]),
+                                Section::make('Brand & Identity')
+                                    ->description('Configure your store brand identity, tagline, and short bio shown across the website and footer.')
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            TextInput::make('site_name')
+                                                ->label('Store / Brand Name')
+                                                ->placeholder('e.g. Nobo Shop')
+                                                ->helperText('The primary name of your ecommerce store.')
+                                                ->required(),
+                                            TextInput::make('site_tagline')
+                                                ->label('Tagline / Slogan')
+                                                ->placeholder('e.g. আপনার প্রতিদিনের পছন্দ')
+                                                ->helperText('Catchy tagline shown beneath the logo or in browser metadata.')
+                                                ->nullable(),
+                                        ]),
+                                        Textarea::make('footer_about')
+                                            ->label('Brand Bio / About Text')
+                                            ->placeholder('Write a brief overview of your store and commitment to customers...')
+                                            ->rows(3)
+                                            ->helperText('This introduction text appears directly under your brand logo in the footer.')
+                                            ->required(),
+                                    ]),
+                            ]),
 
-                Section::make('Column 3: Customer Service')
-                    ->description('Third column title and policy/service links')
-                    ->collapsible()
-                    ->schema([
-                        TextInput::make('footer_col3_title')
-                            ->label('Column Title')
-                            ->required(),
-                        Repeater::make('footer_col3_links')
-                            ->label('Links')
+                        Tab::make('Navigation Menus')
+                            ->icon(Heroicon::OutlinedBars3BottomLeft)
                             ->schema([
-                                TextInput::make('label')
-                                    ->label('Link Label')
-                                    ->required(),
-                                TextInput::make('url')
-                                    ->label('URL / Path')
-                                    ->required(),
-                            ])
-                            ->columns(2)
-                            ->addActionLabel('Add Link')
-                            ->reorderable()
-                            ->collapsible(),
-                    ]),
+                                Section::make('Quick Links Menu')
+                                    ->description('Manage primary navigation links for quick access to store sections.')
+                                    ->schema([
+                                        TextInput::make('footer_col2_title')
+                                            ->label('Menu Column Title')
+                                            ->placeholder('প্রয়োজনীয় লিংক')
+                                            ->helperText('Header displayed above this link group in the footer.')
+                                            ->required(),
+                                        Repeater::make('footer_col2_links')
+                                            ->label('Navigation Links')
+                                            ->schema([
+                                                TextInput::make('label')
+                                                    ->label('Menu Title')
+                                                    ->placeholder('e.g. আমাদের সম্পর্কে')
+                                                    ->required(),
+                                                TextInput::make('url')
+                                                    ->label('Destination URL / Path')
+                                                    ->placeholder('/about-us')
+                                                    ->required(),
+                                            ])
+                                            ->columns(2)
+                                            ->addActionLabel('+ Add Navigation Link')
+                                            ->reorderable()
+                                            ->collapsible(),
+                                    ]),
 
-                Section::make('Column 4: Contact Info')
-                    ->description('Fourth column title, address, phone number, and email')
-                    ->collapsible()
-                    ->schema([
-                        TextInput::make('footer_col4_title')
-                            ->label('Column Title')
-                            ->required(),
-                        Textarea::make('contact_address')
-                            ->label('Address')
-                            ->rows(2)
-                            ->required(),
-                        Grid::make(2)->schema([
-                            TextInput::make('contact_phone')
-                                ->label('Phone Number')
-                                ->required(),
-                            TextInput::make('contact_email')
-                                ->label('Email Address')
-                                ->email()
-                                ->required(),
-                        ]),
-                    ]),
+                                Section::make('Customer Service & Policies Menu')
+                                    ->description('Manage customer assistance, policy, and information page links.')
+                                    ->schema([
+                                        TextInput::make('footer_col3_title')
+                                            ->label('Menu Column Title')
+                                            ->placeholder('গ্রাহক সেবা')
+                                            ->helperText('Header displayed above this policy group in the footer.')
+                                            ->required(),
+                                        Repeater::make('footer_col3_links')
+                                            ->label('Service & Policy Links')
+                                            ->schema([
+                                                TextInput::make('label')
+                                                    ->label('Policy Title')
+                                                    ->placeholder('e.g. রিটার্ন পলিসি')
+                                                    ->required(),
+                                                TextInput::make('url')
+                                                    ->label('Destination URL / Path')
+                                                    ->placeholder('/return-policy')
+                                                    ->required(),
+                                            ])
+                                            ->columns(2)
+                                            ->addActionLabel('+ Add Policy Link')
+                                            ->reorderable()
+                                            ->collapsible(),
+                                    ]),
+                            ]),
 
-                Section::make('Copyright & Payment Badges')
-                    ->description('Footer bottom copyright message and payment method badges')
-                    ->collapsible()
-                    ->schema([
-                        TextInput::make('footer_copyright')
-                            ->label('Copyright Text')
-                            ->helperText('{year} is automatically replaced with the current year')
-                            ->required(),
-                        TagsInput::make('footer_payment_methods')
-                            ->label('Payment Badges')
-                            ->helperText('Type a payment method name and press Enter (e.g. bKash, Nagad, Rocket, Upay, VISA, Mastercard)'),
+                        Tab::make('Contact & Support')
+                            ->icon(Heroicon::OutlinedPhone)
+                            ->schema([
+                                Section::make('Official Store Contact Information')
+                                    ->description('Public contact details displayed for customer assistance, orders, and inquiries.')
+                                    ->schema([
+                                        TextInput::make('footer_col4_title')
+                                            ->label('Section Title')
+                                            ->placeholder('যোগাযোগ')
+                                            ->required(),
+                                        Textarea::make('contact_address')
+                                            ->label('Store / Office Physical Address')
+                                            ->placeholder('e.g. ৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ')
+                                            ->rows(2)
+                                            ->helperText('Official head office or pickup showroom address.')
+                                            ->required(),
+                                        Grid::make(2)->schema([
+                                            TextInput::make('contact_phone')
+                                                ->label('Customer Support Hotline')
+                                                ->placeholder('+৮৮০ ৫২৩৪ ৫৬৭৮৯০')
+                                                ->helperText('Direct phone or helpline number for customer inquiries.')
+                                                ->required(),
+                                            TextInput::make('contact_email')
+                                                ->label('Official Support Email')
+                                                ->placeholder('support@noboshop.com')
+                                                ->email()
+                                                ->helperText('Inquiries sent through contact forms will be directed here.')
+                                                ->required(),
+                                        ]),
+                                    ]),
+                            ]),
+
+                        Tab::make('Social Channels')
+                            ->icon(Heroicon::OutlinedShare)
+                            ->schema([
+                                Section::make('Social Media Accounts')
+                                    ->description('Connect your official social media pages. Icons without URLs are automatically hidden.')
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            TextInput::make('facebook_url')
+                                                ->label('Facebook Page / Group URL')
+                                                ->placeholder('https://facebook.com/your-brand')
+                                                ->prefix('https://')
+                                                ->nullable(),
+                                            TextInput::make('twitter_url')
+                                                ->label('X (Twitter) Profile URL')
+                                                ->placeholder('https://twitter.com/your-brand')
+                                                ->prefix('https://')
+                                                ->nullable(),
+                                            TextInput::make('instagram_url')
+                                                ->label('Instagram Profile URL')
+                                                ->placeholder('https://instagram.com/your-brand')
+                                                ->prefix('https://')
+                                                ->nullable(),
+                                            TextInput::make('youtube_url')
+                                                ->label('YouTube Channel URL')
+                                                ->placeholder('https://youtube.com/@your-brand')
+                                                ->prefix('https://')
+                                                ->nullable(),
+                                        ]),
+                                    ]),
+                            ]),
+
+                        Tab::make('Legal & Payments')
+                            ->icon(Heroicon::OutlinedShieldCheck)
+                            ->schema([
+                                Section::make('Legal Copyright & Payment Trust Badges')
+                                    ->description('Configure bottom copyright notices and accepted payment gateway trust badges.')
+                                    ->schema([
+                                        TextInput::make('footer_copyright')
+                                            ->label('Copyright Notice')
+                                            ->placeholder('© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।')
+                                            ->helperText('Note: {year} is automatically replaced with the current year dynamically.')
+                                            ->required(),
+                                        TagsInput::make('footer_payment_methods')
+                                            ->label('Accepted Payment Method Badges')
+                                            ->placeholder('Add payment method and press Enter')
+                                            ->helperText('Badges displayed at footer bottom (e.g. bKash, Nagad, Rocket, Upay, VISA, Mastercard, COD).'),
+                                    ]),
+                            ]),
                     ]),
 
                 Actions::make([
@@ -228,18 +278,13 @@ class FooterSettings extends Page
                         ->icon(Heroicon::OutlinedCheck)
                         ->color('primary')
                         ->action('save'),
-                ]),
+                ])->alignment(Alignment::End),
             ]);
     }
 
     protected function getHeaderActions(): array
     {
-        return [
-            Action::make('save')
-                ->label('Save Settings')
-                ->icon(Heroicon::OutlinedCheck)
-                ->action('save'),
-        ];
+        return [];
     }
 
     public function save(): void
