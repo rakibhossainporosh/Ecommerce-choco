@@ -618,6 +618,119 @@
         color: #f8fafc !important;
     }
 
+    /* Middle Column Alignment & Equalized Gaps across ALL admin tables */
+    .fi-ta-table {
+        table-layout: auto !important;
+        width: 100% !important;
+    }
+
+    /* 1. First column (Checkbox) keeps its default compact left position */
+    .fi-ta-table th:first-child,
+    .fi-ta-table td:first-child {
+        text-align: left !important;
+        padding-left: 1.25rem !important;
+        padding-right: 0.75rem !important;
+        width: 1% !important;
+        white-space: nowrap !important;
+    }
+
+    /* 2. Primary Identifier Column (e.g. Order Number, Log name, Name) stays clean left-aligned */
+    .fi-ta-table th:nth-child(2),
+    .fi-ta-table td:nth-child(2) {
+        text-align: left !important;
+        padding-left: 0.75rem !important;
+        padding-right: 1rem !important;
+    }
+    .fi-ta-table th:nth-child(2) .fi-ta-header-cell-sort-btn,
+    .fi-ta-table td:nth-child(2) .fi-ta-text {
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+
+    /* 3. Middle Columns: Data and Headers CENTER-ALIGNED with Equal Gaps */
+    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child),
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child),
+    .fi-ta-table th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child),
+    .fi-ta-table td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) {
+        text-align: center !important;
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+    }
+
+    /* Header sort button, container and label perfectly centered */
+    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn,
+    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) > button,
+    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) > span,
+    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) > div {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 100% !important;
+    }
+
+    /* Ensure sort button icon doesn't push label off-center */
+    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn {
+        justify-content: center !important;
+    }
+
+    /* Cell content, text, badges, icons, images, and descriptions strictly centered */
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-col,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-icon,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-image,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-item,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-badge,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-description,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > div,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > p,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > a,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > span {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 100% !important;
+    }
+
+    /* Centering inline elements like badges, spans, and icons inside the wrapper */
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-badge,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-item > span,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-placeholder {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    /* Target SVG and Images inside middle cells */
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) svg,
+    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) img {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        display: block !important;
+    }
+
+    /* 4. Last Column (Actions) keeps its precise right-aligned position */
+    .fi-ta-table th:last-child,
+    .fi-ta-table td:last-child {
+        text-align: right !important;
+        padding-right: 1.5rem !important;
+        padding-left: 1rem !important;
+        white-space: nowrap !important;
+        width: 1% !important;
+    }
+    .fi-ta-table td:last-child .fi-ta-actions {
+        justify-content: flex-end !important;
+        margin-left: auto !important;
+    }
+
     .fi-ta-content {
         overflow-x: auto !important;
     }
