@@ -594,8 +594,30 @@
     }
 
     /* ==========================================================================
-       ENTERPRISE TABLE PAGINATION & PER-PAGE ARCHITECTURE (Shopify / Stripe Standard)
+       ENTERPRISE TABLE HEADERS & ACTIONS COLUMN (Shopify / Stripe Standard)
        ========================================================================== */
+    .fi-ta-actions-header-cell {
+        text-align: right !important;
+        padding-right: 1.5rem !important;
+        padding-left: 1rem !important;
+        padding-top: 0.85rem !important;
+        padding-bottom: 0.85rem !important;
+        white-space: nowrap !important;
+    }
+
+    .fi-ta-actions-header-cell::after {
+        content: "Actions" !important;
+        display: inline-block !important;
+        font-size: 0.775rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.01em !important;
+        color: #0f172a !important;
+        text-transform: none !important;
+    }
+    .dark .fi-ta-actions-header-cell::after {
+        color: #f8fafc !important;
+    }
+
     .fi-ta-content {
         overflow-x: auto !important;
     }
