@@ -512,4 +512,286 @@
     .fi-main-ctn {
         transition: margin 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
+
+    /* ==========================================================================
+       LOGIN & SIMPLE AUTH PAGE (Ultra-Luxury Enterprise Ecommerce Style)
+       ========================================================================== */
+    .fi-simple-layout {
+        min-height: 100dvh !important;
+        background-color: #f8fafc !important;
+        background-image: 
+            radial-gradient(at 15% 15%, rgba(245, 158, 11, 0.12) 0px, transparent 40%),
+            radial-gradient(at 85% 15%, rgba(217, 119, 6, 0.08) 0px, transparent 40%),
+            radial-gradient(at 50% 90%, rgba(245, 158, 11, 0.07) 0px, transparent 45%),
+            radial-gradient(#e2e8f0 1.25px, transparent 1.25px) !important;
+        background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        overflow: hidden !important;
+        padding: 2rem 1rem !important;
+    }
+    .dark .fi-simple-layout {
+        background-color: #0b0f19 !important;
+        background-image: 
+            radial-gradient(at 15% 15%, rgba(245, 158, 11, 0.14) 0px, transparent 40%),
+            radial-gradient(at 85% 15%, rgba(217, 119, 6, 0.1) 0px, transparent 40%),
+            radial-gradient(at 50% 90%, rgba(245, 158, 11, 0.08) 0px, transparent 45%),
+            radial-gradient(rgba(255, 255, 255, 0.06) 1.25px, transparent 1.25px) !important;
+    }
+
+    /* Ambient decorative soft blurred light beams */
+    .fi-simple-layout::before {
+        content: "";
+        position: absolute;
+        top: -160px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 800px;
+        height: 420px;
+        background: radial-gradient(50% 50% at 50% 50%, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0) 100%);
+        filter: blur(60px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .fi-simple-main-ctn {
+        width: 100% !important;
+        max-width: 29.5rem !important;
+        padding: 0 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    /* Elegant Floating Glassmorphic Card */
+    .fi-simple-main {
+        position: relative !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(226, 232, 240, 0.95) !important;
+        border-radius: 1.5rem !important;
+        padding: 2.75rem 2.5rem !important;
+        box-shadow: 
+            0 25px 50px -12px rgba(15, 23, 42, 0.08),
+            0 12px 24px -8px rgba(15, 23, 42, 0.04),
+            0 0 0 1px rgba(255, 255, 255, 0.9) inset !important;
+        margin: 0 !important;
+        transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+        overflow: hidden !important;
+    }
+    
+    /* Top subtle amber gradient border accent */
+    .fi-simple-main::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+        opacity: 0.95;
+    }
+
+    .dark .fi-simple-main {
+        background: rgba(17, 24, 39, 0.9) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 
+            0 30px 60px -15px rgba(0, 0, 0, 0.7),
+            0 0 0 1px rgba(255, 255, 255, 0.08) inset !important;
+    }
+
+    /* Login Header & Logo Alignment - Compact & Natural */
+    .fi-simple-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        margin-bottom: 1.75rem !important;
+    }
+
+    .fi-simple-header-logo-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin-bottom: 1rem !important;
+        max-width: 100% !important;
+    }
+    .dark .fi-simple-header-logo-wrapper {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .fi-simple-header-logo-wrapper .fi-logo {
+        max-height: 3.25rem !important;
+        max-width: 100% !important;
+        height: auto !important;
+        width: auto !important;
+        object-fit: contain !important;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.04));
+    }
+
+    .custom-login-brand-text {
+        font-size: 1.5rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.03em !important;
+        color: #0f172a !important;
+        background: linear-gradient(135deg, #0f172a 0%, #475569 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        padding-inline: 0.5rem;
+    }
+    .dark .custom-login-brand-text {
+        background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .fi-simple-header-heading {
+        font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif !important;
+        font-size: 1.5rem !important;
+        font-weight: 600 !important;
+        letter-spacing: -0.015em !important;
+        color: #0f172a !important;
+        margin: 0 !important;
+        line-height: 1.3 !important;
+    }
+    .dark .fi-simple-header-heading {
+        color: #f8fafc !important;
+    }
+
+    .fi-simple-header-subheading {
+        font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif !important;
+        font-size: 0.825rem !important;
+        color: #64748b !important;
+        margin-top: 0.35rem !important;
+        line-height: 1.55 !important;
+        font-weight: 400 !important;
+        max-width: 22rem;
+        margin-inline: auto;
+    }
+    .dark .fi-simple-header-subheading {
+        color: #94a3b8 !important;
+    }
+
+    /* Input Labels */
+    .fi-simple-main .fi-fo-field-wrp-label span {
+        font-size: 0.825rem !important;
+        font-weight: 600 !important;
+        color: #334155 !important;
+        letter-spacing: 0.01em !important;
+    }
+    .dark .fi-simple-main .fi-fo-field-wrp-label span {
+        color: #cbd5e1 !important;
+    }
+
+    /* Input Fields Styling */
+    .fi-simple-main .fi-input-wrp {
+        border-radius: 0.75rem !important;
+        border: 1px solid rgba(203, 213, 225, 0.85) !important;
+        background-color: #f8fafc !important;
+        transition: all 0.2s ease-in-out !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+    }
+    .dark .fi-simple-main .fi-input-wrp {
+        background-color: rgba(15, 23, 42, 0.5) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .fi-simple-main .fi-input-wrp:hover {
+        border-color: #cbd5e1 !important;
+        background-color: #ffffff !important;
+    }
+    .dark .fi-simple-main .fi-input-wrp:hover {
+        border-color: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    .fi-simple-main .fi-input-wrp:focus-within {
+        border-color: #f59e0b !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 3.5px rgba(245, 158, 11, 0.18), 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+    .dark .fi-simple-main .fi-input-wrp:focus-within {
+        background-color: rgba(15, 23, 42, 0.8) !important;
+        box-shadow: 0 0 0 3.5px rgba(245, 158, 11, 0.28), 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Input text style */
+    .fi-simple-main .fi-input-wrp input {
+        font-size: 0.925rem !important;
+        padding-top: 0.65rem !important;
+        padding-bottom: 0.65rem !important;
+        font-weight: 500 !important;
+        color: #0f172a !important;
+    }
+    .dark .fi-simple-main .fi-input-wrp input {
+        color: #f8fafc !important;
+    }
+
+    /* Remember me checkbox */
+    .fi-simple-main .fi-checkbox-input {
+        border-radius: 0.375rem !important;
+        border-color: #cbd5e1 !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    .fi-simple-main .fi-checkbox-input:checked {
+        background-color: #f59e0b !important;
+        border-color: #f59e0b !important;
+    }
+
+    /* Login Submit Button (Amber Theme matching Brand with 3D Depth) */
+    .fi-simple-main .fi-btn {
+        width: 100% !important;
+        border-radius: 0.75rem !important;
+        padding-top: 0.875rem !important;
+        padding-bottom: 0.875rem !important;
+        font-weight: 650 !important;
+        font-size: 0.975rem !important;
+        letter-spacing: 0.015em !important;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        border: none !important;
+        cursor: pointer !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .fi-simple-main .fi-btn:hover {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+        box-shadow: 0 6px 22px rgba(245, 158, 11, 0.48) !important;
+        transform: translateY(-1.5px);
+    }
+
+    .fi-simple-main .fi-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    /* Subtle security badge at footer */
+    .custom-login-footer-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        margin-top: 2rem;
+        font-size: 0.775rem;
+        color: #94a3b8;
+        font-weight: 500;
+        text-align: center;
+    }
+    .custom-login-footer-badge svg {
+        width: 0.95rem;
+        height: 0.95rem;
+        stroke: currentColor;
+    }
+    .dark .custom-login-footer-badge {
+        color: #64748b;
+    }
 </style>

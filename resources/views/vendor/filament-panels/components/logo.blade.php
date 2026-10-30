@@ -1,10 +1,12 @@
 @php
+    use App\Models\Setting;
     use Illuminate\Contracts\Support\Htmlable;
     use Illuminate\Support\Arr;
 
-    $brandName = filament()->getBrandName();
-    $brandLogo = filament()->getBrandLogo();
-    $brandLogoHeight = filament()->getBrandLogoHeight() ?? '1.5rem';
+    $brandName = Setting::get('site_name', filament()->getBrandName() ?? config('app.name', 'Nobo Shop'));
+    $dbLogo = Setting::get('site_logo');
+    $brandLogo = $dbLogo ? asset('storage/' . ltrim($dbLogo, '/')) : filament()->getBrandLogo();
+    $brandLogoHeight = filament()->getBrandLogoHeight() ?? '2.5rem';
     $darkModeBrandLogo = filament()->getDarkModeBrandLogo();
     $hasDarkModeBrandLogo = filled($darkModeBrandLogo);
 
@@ -14,7 +16,7 @@
         'fi-logo-dark' => $isDarkMode,
     ]);
 
-    $logoStyles = 'height: ' . e($brandLogoHeight);
+    $logoStyles = 'height: ' . e($brandLogoHeight) . '; max-height: ' . e($brandLogoHeight) . '; width: auto; object-fit: contain;';
 @endphp
 
 @capture($content, $logo, $isDarkMode = false)
@@ -43,6 +45,7 @@
             {{
                 $attributes->class([
                     $getLogoClasses($isDarkMode),
+                    'custom-login-brand-text',
                 ])
             }}
         >
