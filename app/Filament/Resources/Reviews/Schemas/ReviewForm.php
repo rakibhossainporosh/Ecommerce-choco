@@ -9,6 +9,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rule;
 
 class ReviewForm
 {
@@ -21,12 +22,21 @@ class ReviewForm
                         ->relationship('product', 'name')
                         ->searchable()
                         ->preload()
-                        ->required(),
+                        ->required()
+                        ->live(),
                     Select::make('user_id')
                         ->relationship('user', 'name')
                         ->searchable()
                         ->preload()
-                        ->required(),
+                        ->required()
+                        ->rules([
+                            fn ($get, $record) => Rule::unique('reviews', 'user_id')
+                                ->where('product_id', $get('product_id'))
+                                ->ignore($record?->id),
+                        ])
+                        ->validationMessages([
+                            'unique' => 'এই ইউজার ইতোমধ্যে এই প্রোডাক্টের জন্য একটি রিভিউ জমা দিয়েছেন।',
+                        ]),
                     Select::make('rating')
                         ->options([
                             1 => '1 Star',

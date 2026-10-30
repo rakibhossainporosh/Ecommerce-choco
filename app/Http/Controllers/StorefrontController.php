@@ -301,7 +301,18 @@ class StorefrontController extends Controller
         });
 
         $reviewsCount = $reviews->count();
-        $avgRating = $reviewsCount > 0 ? round($reviews->avg('rating'), 1) : 5.0;
+        $avgRating = $reviewsCount > 0 ? round($reviews->avg('rating'), 1) : 0.0;
+
+        // Breakdown percentages for 5, 4, 3, 2, 1 stars
+        $ratingBreakdown = [];
+        for ($s = 5; $s >= 1; $s--) {
+            $countForStar = $reviews->where('rating', $s)->count();
+            $percentage = $reviewsCount > 0 ? round(($countForStar / $reviewsCount) * 100) : 0;
+            $ratingBreakdown[$s] = [
+                'count' => $countForStar,
+                'percentage' => $percentage,
+            ];
+        }
 
         $inventory = $variant?->inventory;
         $stockQuantity = $inventory ? (int) $inventory->quantity : null;
@@ -318,6 +329,11 @@ class StorefrontController extends Controller
             'price' => (float) ($variant?->selling_price ?? 0),
             'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
             'image' => $mainImage,
+            'rating' => $avgRating > 0 ? $avgRating : 5.0,
+            'rating_raw' => $avgRating,
+            'reviews_count' => $reviewsCount,
+            'rating_breakdown' => $ratingBreakdown,
+            'reviews' => $reviews,
             'images' => $mediaImages,
             'short_description' => $product->short_description,
             'description' => $product->description,
@@ -519,35 +535,80 @@ class StorefrontController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'title' => 'nullable|string|max:255',
             'body' => 'required|string|max:2000',
-            'reviewer_name' => 'nullable|string|max:255',
+            'reviewer_name' => 'required|string|max:255',
+            'reviewer_email' => 'required|email|max:255',
+        ], [
+            'reviewer_name.required' => 'আপনার নাম প্রদান করুন।',
+            'reviewer_email.required' => 'আপনার ইমেইল ঠিকানা প্রদান করুন।',
+            'reviewer_email.email' => 'সঠিক ইমেইল ঠিকানা প্রদান করুন।',
+            'body.required' => 'আপনার মতামত ও অভিজ্ঞতা লিখুন।',
+            'rating.required' => 'একটি স্টার রেটিং নির্বাচন করুন।',
         ]);
 
-        $user = auth()->user();
-        if (! $user) {
-            $reviewerName = ! empty($validated['reviewer_name']) ? $validated['reviewer_name'] : 'সন্তুষ্ট গ্রাহক';
+        // Priority: Check logged-in customer guard, then web guard
+        $customerUser = auth('customer')->user();
+        $webUser = auth('web')->user();
+
+        if ($customerUser) {
+            // Find or create a matching User record for the customer
+            $email = $customerUser->email ?: ($validated['reviewer_email'] ?? "customer_{$customerUser->id}@noboshop.local");
+            $name = $customerUser->name ?: $validated['reviewer_name'];
+
             $user = User::firstOrCreate(
-                ['email' => 'guest_review_'.md5(strtolower($reviewerName)).'@noboshop.com'],
+                ['email' => strtolower(trim($email))],
                 [
-                    'name' => $reviewerName,
+                    'name' => trim($name),
                     'password' => bcrypt(str()->random(16)),
                 ]
             );
+
+            // Update user name if changed
+            if ($user->name !== $name) {
+                $user->update(['name' => $name]);
+            }
+        } elseif ($webUser) {
+            $user = $webUser;
+        } else {
+            // Guest submission: find or create User by the provided reviewer_email
+            $user = User::firstOrCreate(
+                ['email' => strtolower(trim($validated['reviewer_email']))],
+                [
+                    'name' => trim($validated['reviewer_name']),
+                    'password' => bcrypt(str()->random(16)),
+                ]
+            );
+
+            if ($user->name !== trim($validated['reviewer_name'])) {
+                $user->update(['name' => trim($validated['reviewer_name'])]);
+            }
         }
 
-        Review::updateOrCreate(
-            [
-                'product_id' => $product->id,
-                'user_id' => $user->id,
-            ],
-            [
-                'rating' => $validated['rating'],
-                'title' => $validated['title'] ?: ($validated['reviewer_name'] ? "রিভিউ করেছেন: {$validated['reviewer_name']}" : 'কাস্টমার রিভিউ'),
-                'body' => $validated['body'],
-                'is_approved' => true,
-            ]
-        );
+        // Check if this user already reviewed this product
+        $existingReview = Review::where('product_id', $product->id)
+            ->where('user_id', $user->id)
+            ->first();
 
-        return back()->with('success', 'আপনার রিভিউ সফলভাবে যুক্ত হয়েছে! ধন্যবাদ।');
+        if ($existingReview) {
+            $existingReview->update([
+                'rating' => $validated['rating'],
+                'title' => $validated['title'] ?: "রিভিউ করেছেন: {$user->name}",
+                'body' => $validated['body'],
+                'is_approved' => false,
+            ]);
+
+            return back()->with('success', 'আপনার মূল্যবান রিভিউ প্রদানের জন্য ধন্যবাদ!');
+        }
+
+        Review::create([
+            'product_id' => $product->id,
+            'user_id' => $user->id,
+            'rating' => $validated['rating'],
+            'title' => $validated['title'] ?: "রিভিউ করেছেন: {$user->name}",
+            'body' => $validated['body'],
+            'is_approved' => false,
+        ]);
+
+        return back()->with('success', 'আপনার মূল্যবান রিভিউ প্রদানের জন্য ধন্যবাদ!');
     }
 
     /**

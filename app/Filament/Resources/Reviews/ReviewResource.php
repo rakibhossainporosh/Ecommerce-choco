@@ -30,6 +30,18 @@ class ReviewResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'id';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::where('is_approved', false)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ReviewForm::configure($schema);

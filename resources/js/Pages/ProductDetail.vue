@@ -3,7 +3,8 @@ import { ref, computed } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { 
     ShoppingBag, Plus, Minus, Heart, ChevronRight, Star, 
-    CheckCircle2, MessageSquare, ShieldCheck, Truck, RotateCcw 
+    CheckCircle2, MessageSquare, ShieldCheck, Truck, RotateCcw,
+    ThumbsUp, Check, X
 } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
@@ -23,6 +24,7 @@ const { addToCart, toggleWishlist, isInWishlist } = useCart();
 const quantity = ref(1);
 const activeImage = ref(props.product.image);
 const showReviewForm = ref(false);
+const hoverRating = ref(0);
 
 const images = computed(() => {
     if (props.product.images && props.product.images.length > 0) {
@@ -94,16 +96,50 @@ const decrementQuantity = () => {
 const reviewForm = useForm({
     rating: 5,
     reviewer_name: page.props.customer?.name || '',
+    reviewer_email: page.props.customer?.email || '',
     title: '',
     body: '',
 });
+
+const reviewSuccess = ref(false);
+
+const ratingLabels = {
+    0: 'রেটিং নির্বাচন করুন (০/৫)',
+    1: 'খুবই হতাশাজনক (১/৫)',
+    2: 'তেমন ভালো লাগেনি (২/৫)',
+    3: 'মোটামুটি মানের (৩/৫)',
+    4: 'ভালো, মানসম্মত পণ্য (৪/৫)',
+    5: 'অসাধারণ! খুব পছন্দ হয়েছে (৫/৫)',
+};
+
+const setRating = (star) => {
+    // If user clicks the currently selected active star, deselect that specific star (reduce by 1)
+    if (reviewForm.rating === star) {
+        reviewForm.rating = star - 1;
+    } else {
+        reviewForm.rating = star;
+    }
+    hoverRating.value = 0;
+};
+
+const setHover = (star) => {
+    hoverRating.value = star;
+};
+
+const clearHover = () => {
+    hoverRating.value = 0;
+};
 
 const submitReview = () => {
     reviewForm.post(`/product/${props.product.slug}/reviews`, {
         preserveScroll: true,
         onSuccess: () => {
-            reviewForm.reset();
+            reviewForm.reset('title', 'body');
             showReviewForm.value = false;
+            reviewSuccess.value = true;
+            setTimeout(() => {
+                reviewSuccess.value = false;
+            }, 6000);
         },
     });
 };
@@ -336,108 +372,193 @@ const submitReview = () => {
 
             <!-- Customer Reviews Section -->
             <div id="reviews" class="mt-8 bg-white rounded-3xl p-6 sm:p-10 border border-[#EAE3D6] shadow-sm">
+                <!-- Section Header -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#F0EAE1]">
                     <div>
                         <h2 class="text-xl font-bold text-[#1E293B] flex items-center gap-2">
                             <MessageSquare class="w-5 h-5 text-[#E86A28]" />
                             <span>গ্রাহকদের রিভিউ ও রেটিং</span>
                         </h2>
-                        <div class="flex items-center gap-3 mt-2">
-                            <div class="flex items-center text-amber-400">
-                                <Star
-                                    v-for="s in 5"
-                                    :key="s"
-                                    class="w-4 h-4"
-                                    :class="s <= Math.round(product.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'"
-                                />
-                            </div>
-                            <span class="text-sm font-bold text-[#1E293B]">{{ Number(product.rating || 5).toFixed(1) }} / ৫</span>
-                            <span class="text-xs text-[#64748B]">({{ product.reviews_count || 0 }} টি রিভিউ)</span>
-                        </div>
+                        <p class="text-xs text-[#64748B] mt-1">পণ্যটি সম্পর্কে আমাদের আসল ক্রেতাদের অভিজ্ঞতা ও মতামত</p>
                     </div>
 
                     <button
                         @click="showReviewForm = !showReviewForm"
                         type="button"
-                        class="px-5 py-2.5 bg-[#FAF7F2] hover:bg-[#E86A28] text-[#1E293B] hover:text-white border border-[#EAE3D6] hover:border-[#E86A28] rounded-xl text-sm font-semibold transition-all shadow-xs w-fit cursor-pointer"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow cursor-pointer w-fit"
                     >
-                        {{ showReviewForm ? 'ফর্ম লুকান' : 'একটি রিভিউ দিন' }}
+                        <MessageSquare class="w-4 h-4" />
+                        <span>{{ showReviewForm ? 'ফর্ম বন্ধ করুন' : 'একটি রিভিউ দিন' }}</span>
                     </button>
                 </div>
 
-                <!-- Review Form Drawer / Box -->
-                <div v-if="showReviewForm" class="mt-6 p-6 rounded-2xl bg-[#FDFBF7] border border-[#EAE3D6]">
-                    <h3 class="text-base font-bold text-[#1E293B] mb-4">আপনার রিভিউ লিখুন</h3>
-                    
-                    <form @submit.prevent="submitReview" class="space-y-4">
-                        <!-- Star Rating Input -->
-                        <div>
-                            <label class="block text-xs font-semibold text-[#64748B] mb-1.5 uppercase">আপনার রেটিং</label>
-                            <div class="flex items-center gap-2">
-                                <button
-                                    v-for="star in 5"
-                                    :key="star"
-                                    type="button"
-                                    @click="reviewForm.rating = star"
-                                    class="p-1 hover:scale-110 transition-transform focus:outline-hidden cursor-pointer"
-                                >
-                                    <Star
-                                        class="w-6 h-6 transition-colors"
-                                        :class="star <= reviewForm.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300 hover:text-amber-300'"
-                                    />
-                                </button>
-                                <span class="text-sm font-bold text-[#1E293B] ml-2">{{ reviewForm.rating }} স্টার</span>
+                <!-- Review Breakdown & Overview (Industry Standard Style) -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 py-8 border-b border-[#F0EAE1]">
+                    <!-- Left: Overall Rating Box -->
+                    <div class="md:col-span-4 flex flex-col items-center justify-center p-6 bg-[#FAF7F2] rounded-2xl border border-[#EAE3D6] text-center">
+                        <span class="text-5xl font-black text-[#1E293B] tracking-tight">
+                            {{ Number(product.rating || 5).toFixed(1) }}
+                        </span>
+                        <div class="flex items-center gap-1 text-amber-400 my-2">
+                            <Star
+                                v-for="s in 5"
+                                :key="s"
+                                class="w-5 h-5"
+                                :class="s <= Math.round(product.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'"
+                            />
+                        </div>
+                        <span class="text-sm font-semibold text-[#1E293B]">৫ এর মধ্যে গড় রেটিং</span>
+                        <span class="text-xs text-[#64748B] mt-0.5">মোট {{ product.reviews_count || (product.reviews ? product.reviews.length : 0) }} টি ভেরিফাইড রিভিউ</span>
+                    </div>
+
+                    <!-- Right: Star Rating Bars -->
+                    <div class="md:col-span-8 flex flex-col justify-center gap-2.5">
+                        <div 
+                            v-for="s in [5, 4, 3, 2, 1]" 
+                            :key="s"
+                            class="flex items-center gap-3 text-xs sm:text-sm"
+                        >
+                            <span class="w-12 font-bold text-[#475569] flex items-center gap-1 shrink-0">
+                                <span>{{ s }}</span>
+                                <Star class="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                            </span>
+                            <div class="flex-1 h-3 bg-[#EAE3D6]/60 rounded-full overflow-hidden">
+                                <div 
+                                    class="h-full bg-amber-400 rounded-full transition-all duration-500"
+                                    :style="{ width: (product.rating_breakdown && product.rating_breakdown[s] ? product.rating_breakdown[s].percentage : (s === 5 ? 100 : 0)) + '%' }"
+                                ></div>
                             </div>
-                            <p v-if="reviewForm.errors.rating" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.rating }}</p>
+                            <span class="w-12 text-right text-xs font-semibold text-[#64748B] shrink-0">
+                                {{ product.rating_breakdown && product.rating_breakdown[s] ? product.rating_breakdown[s].count : 0 }}টি
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Success Alert -->
+                <div v-if="reviewSuccess || page.props.flash?.success" class="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 animate-fade-in">
+                    <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span class="text-sm font-semibold">{{ page.props.flash?.success || 'আপনার মূল্যবান রিভিউ প্রদানের জন্য ধন্যবাদ!' }}</span>
+                </div>
+
+                <!-- Modern Interactive Review Form Box -->
+                <div v-if="showReviewForm" class="mt-6 p-6 sm:p-8 rounded-2xl bg-[#FDFBF7] border-2 border-[#E86A28]/30 shadow-md">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-[#EAE3D6]">
+                        <div>
+                            <h3 class="text-lg font-bold text-[#1E293B]">আপনার মূল্যবান রিভিউ দিন</h3>
+                            <p class="text-xs text-[#64748B]">অন্যান্য ক্রেতাদের সঠিক সিদ্ধান্ত নিতে সহায়তা করুন</p>
+                        </div>
+                        <button 
+                            type="button" 
+                            @click="showReviewForm = false"
+                            class="p-2 text-[#64748B] hover:text-[#1E293B] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer"
+                        >
+                            <X class="w-5 h-5" />
+                        </button>
+                    </div>
+                    
+                    <form @submit.prevent="submitReview" class="space-y-6">
+                        <!-- Modern Interactive Star Rating Input with Dynamic Feedback -->
+                        <div class="p-4 bg-white rounded-2xl border border-[#EAE3D6]">
+                            <label class="block text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2">
+                                আপনার রেটিং নির্বাচন করুন <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <div class="flex items-center gap-1" @mouseleave="clearHover">
+                                    <button
+                                        v-for="star in 5"
+                                        :key="star"
+                                        type="button"
+                                        @click="setRating(star)"
+                                        @mouseenter="setHover(star)"
+                                        class="p-1.5 hover:scale-125 active:scale-90 transition-transform duration-100 focus:outline-none cursor-pointer"
+                                        :title="star + ' স্টার'"
+                                    >
+                                        <Star
+                                            class="w-8 h-8 pointer-events-none transition-colors"
+                                            :class="star <= (hoverRating || reviewForm.rating) ? 'fill-amber-400 text-amber-400 drop-shadow-sm' : 'fill-transparent text-gray-300'"
+                                        />
+                                    </button>
+                                </div>
+                                <div class="px-3.5 py-1.5 bg-[#FAF7F2] border border-[#EAE3D6] rounded-xl text-xs sm:text-sm font-bold text-[#E86A28] w-fit">
+                                    {{ ratingLabels[hoverRating || reviewForm.rating] }}
+                                </div>
+                            </div>
+                            <p v-if="reviewForm.errors.rating" class="text-xs text-red-500 mt-2">{{ reviewForm.errors.rating }}</p>
                         </div>
 
+                        <!-- Name & Email Inputs -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-[#64748B] mb-1.5">আপনার নাম</label>
+                                <label class="block text-xs font-bold text-[#475569] mb-1.5">
+                                    আপনার পুরো নাম <span class="text-red-500">*</span>
+                                </label>
                                 <input
                                     v-model="reviewForm.reviewer_name"
                                     type="text"
-                                    placeholder="যেমন: মোঃ করিম"
-                                    class="w-full px-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-white"
+                                    required
+                                    placeholder="যেমন: মোঃ করিম হোসেন"
+                                    class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium"
                                 />
                                 <p v-if="reviewForm.errors.reviewer_name" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.reviewer_name }}</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-[#64748B] mb-1.5">রিভিউ শিরোনাম (ঐচ্ছিক)</label>
+                                <label class="block text-xs font-bold text-[#475569] mb-1.5">
+                                    আপনার ইমেইল ঠিকানা <span class="text-red-500">*</span>
+                                </label>
                                 <input
-                                    v-model="reviewForm.title"
-                                    type="text"
-                                    placeholder="যেমন: অসাধারণ কোয়ালিটি ও দ্রুত ডেলিভারি"
-                                    class="w-full px-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-white"
+                                    v-model="reviewForm.reviewer_email"
+                                    type="email"
+                                    required
+                                    placeholder="যেমন: karim@example.com"
+                                    class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium"
                                 />
-                                <p v-if="reviewForm.errors.title" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.title }}</p>
+                                <p v-if="reviewForm.errors.reviewer_email" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.reviewer_email }}</p>
                             </div>
                         </div>
 
+                        <!-- Review Title -->
                         <div>
-                            <label class="block text-xs font-semibold text-[#64748B] mb-1.5">আপনার মতামত ও অভিজ্ঞতা *</label>
+                            <label class="block text-xs font-bold text-[#475569] mb-1.5">
+                                রিভিউয়ের শিরোনাম <span class="text-[#94A3B8] font-normal">(ঐচ্ছিক)</span>
+                            </label>
+                            <input
+                                v-model="reviewForm.title"
+                                type="text"
+                                placeholder="সংক্ষেপে এক লাইনে আপনার মতামত (যেমন: দারুণ প্রোডাক্ট, খুবই আরামদায়ক)"
+                                class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium"
+                            />
+                            <p v-if="reviewForm.errors.title" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.title }}</p>
+                        </div>
+
+                        <!-- Review Body -->
+                        <div>
+                            <label class="block text-xs font-bold text-[#475569] mb-1.5">
+                                বিস্তারিত মতামত ও অভিজ্ঞতা <span class="text-red-500">*</span>
+                            </label>
                             <textarea
                                 v-model="reviewForm.body"
-                                rows="3"
+                                rows="4"
                                 required
-                                placeholder="পণ্যটি সম্পর্কে আপনার বিস্তারিত অভিজ্ঞতা শেয়ার করুন..."
-                                class="w-full px-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-white"
+                                placeholder="পণ্যটির কোয়ালিটি, সাইজ, মেটেরিয়াল ও ডেলিভারি সম্পর্কে আপনার বাস্তব অভিজ্ঞতা শেয়ার করুন..."
+                                class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium leading-relaxed"
                             ></textarea>
                             <p v-if="reviewForm.errors.body" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.body }}</p>
                         </div>
 
+                        <!-- Form Actions -->
                         <div class="flex items-center justify-end gap-3 pt-2">
                             <button
                                 type="button"
                                 @click="showReviewForm = false"
-                                class="px-4 py-2 rounded-xl text-sm font-semibold text-[#64748B] hover:bg-gray-100 transition-colors cursor-pointer"
+                                class="px-5 py-2.5 rounded-xl text-sm font-semibold text-[#64748B] hover:bg-[#FAF7F2] transition-colors cursor-pointer"
                             >
                                 বাতিল
                             </button>
                             <button
                                 type="submit"
                                 :disabled="reviewForm.processing"
-                                class="px-6 py-2.5 rounded-xl text-sm font-bold bg-[#E86A28] hover:bg-[#D35B1D] text-white shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                                class="px-8 py-3 rounded-xl text-sm font-bold bg-[#E86A28] hover:bg-[#D35B1D] text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
                             >
                                 {{ reviewForm.processing ? 'জমা দেওয়া হচ্ছে...' : 'রিভিউ সাবমিট করুন' }}
                             </button>
@@ -445,35 +566,42 @@ const submitReview = () => {
                     </form>
                 </div>
 
-                <!-- Review Listing -->
-                <div class="mt-6 divide-y divide-[#F0EAE1]">
+                <!-- Review Listing Section -->
+                <div class="mt-8 divide-y divide-[#F0EAE1]">
                     <div
                         v-for="review in product.reviews"
                         :key="review.id"
-                        class="py-5 first:pt-0 last:pb-0"
+                        class="py-6 first:pt-2 last:pb-2"
                     >
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-[#F3ECE2] text-[#E86A28] font-bold flex items-center justify-center text-sm">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#E86A28] to-[#F59E0B] text-white font-bold flex items-center justify-center text-sm shadow-xs uppercase">
                                     {{ review.reviewer_name ? review.reviewer_name.charAt(0) : 'ক' }}
                                 </div>
                                 <div>
-                                    <h4 class="text-sm font-bold text-[#1E293B]">{{ review.reviewer_name }}</h4>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        <div class="flex items-center text-amber-400">
-                                            <Star
-                                                v-for="s in 5"
-                                                :key="s"
-                                                class="w-3.5 h-3.5"
-                                                :class="s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'"
-                                            />
-                                        </div>
-                                        <span class="text-xs text-[#94A3B8]">{{ review.created_at }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-sm font-bold text-[#1E293B]">{{ review.reviewer_name }}</h4>
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                            <Check class="w-3 h-3 stroke-[2.5]" />
+                                            ভেরিফাইড পারচেজ
+                                        </span>
                                     </div>
+                                    <span class="text-xs text-[#94A3B8]">{{ review.created_at }}</span>
                                 </div>
                             </div>
+
+                            <!-- Star Rating -->
+                            <div class="flex items-center text-amber-400">
+                                <Star
+                                    v-for="s in 5"
+                                    :key="s"
+                                    class="w-4 h-4"
+                                    :class="s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'"
+                                />
+                            </div>
                         </div>
-                        <h5 v-if="review.title" class="text-sm font-semibold text-[#1E293B] mt-2 mb-1">
+
+                        <h5 v-if="review.title" class="text-sm sm:text-base font-bold text-[#1E293B] mb-1.5">
                             {{ review.title }}
                         </h5>
                         <p class="text-sm text-[#475569] leading-relaxed">
@@ -481,10 +609,21 @@ const submitReview = () => {
                         </p>
                     </div>
 
-                    <div v-if="!product.reviews || product.reviews.length === 0" class="py-12 text-center">
-                        <MessageSquare class="w-10 h-10 text-[#CBD5E1] mx-auto mb-3" />
-                        <p class="text-base font-semibold text-[#1E293B]">এখনো কোনো রিভিউ দেওয়া হয়নি</p>
-                        <p class="text-sm text-[#64748B] mt-1">পণ্যটি ব্যবহার করে আপনার মূল্যবান মতামত সবার সাথে শেয়ার করুন।</p>
+                    <!-- Empty State -->
+                    <div v-if="!product.reviews || product.reviews.length === 0" class="py-14 text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE3D6] flex items-center justify-center text-[#E86A28]">
+                            <MessageSquare class="w-8 h-8" />
+                        </div>
+                        <h4 class="text-base font-bold text-[#1E293B]">এখনো কোনো রিভিউ দেওয়া হয়নি</h4>
+                        <p class="text-sm text-[#64748B] max-w-md mx-auto mt-1 mb-5">আপনি কি এই পণ্যটি ব্যবহার করেছেন? সবার প্রথম রিভিউ দিয়ে অন্য ক্রেতাদের সাহায্য করুন।</p>
+                        <button
+                            v-if="!showReviewForm"
+                            @click="showReviewForm = true"
+                            type="button"
+                            class="px-5 py-2.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl text-sm font-bold transition-all shadow-sm cursor-pointer"
+                        >
+                            প্রথম রিভিউটি আপনি দিন
+                        </button>
                     </div>
                 </div>
             </div>
