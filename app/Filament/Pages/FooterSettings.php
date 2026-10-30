@@ -22,15 +22,15 @@ use UnitEnum;
 
 class FooterSettings extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWindow;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
 
     protected static string|UnitEnum|null $navigationGroup = 'System';
 
-    protected static ?string $navigationLabel = 'Footer Settings';
+    protected static ?string $navigationLabel = 'Website Settings';
 
-    protected static ?string $title = 'Footer Settings';
+    protected static ?string $title = 'Website Settings';
 
-    protected static ?string $slug = 'settings/footer';
+    protected static ?string $slug = 'settings/website';
 
     protected static ?int $navigationSort = 20;
 
@@ -287,7 +287,7 @@ class FooterSettings extends Page
         }
 
         Notification::make()
-            ->title('Footer settings saved successfully!')
+            ->title('Website settings saved successfully!')
             ->success()
             ->send();
     }
