@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Settings\Pages;
 
 use App\Enums\SettingType;
+use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Settings\SettingResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
@@ -10,6 +11,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditSetting extends EditRecord
 {
+    use HasDescriptiveNotifications;
+
     protected static string $resource = SettingResource::class;
 
     protected function getHeaderActions(): array

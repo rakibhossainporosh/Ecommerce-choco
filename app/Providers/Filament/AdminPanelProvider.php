@@ -3,6 +3,13 @@
 namespace App\Providers\Filament;
 
 use App\Models\Setting;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ReplicateAction;
+use Filament\Actions\RestoreAction;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -33,6 +40,34 @@ class AdminPanelProvider extends PanelProvider
                 ->emptyStateIcon(Heroicon::OutlinedInbox)
                 ->emptyStateHeading(fn (Table $table): string => 'No '.$table->getPluralModelLabel().' Found')
                 ->emptyStateDescription(fn (Table $table): string => 'There are currently no '.strtolower($table->getPluralModelLabel()).' recorded in the system. New entries will show up here.');
+        });
+
+        CreateAction::configureUsing(function (CreateAction $action): void {
+            $action->successNotificationTitle(fn (CreateAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' created successfully' : 'Created successfully');
+        });
+
+        EditAction::configureUsing(function (EditAction $action): void {
+            $action->successNotificationTitle(fn (EditAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' updated successfully' : 'Changes saved successfully');
+        });
+
+        DeleteAction::configureUsing(function (DeleteAction $action): void {
+            $action->successNotificationTitle(fn (DeleteAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' deleted successfully' : 'Deleted successfully');
+        });
+
+        DeleteBulkAction::configureUsing(function (DeleteBulkAction $action): void {
+            $action->successNotificationTitle(fn (DeleteBulkAction $a): string => filled($m = $a->getPluralModelLabel()) ? 'Selected '.strtolower($m).' deleted successfully' : 'Selected records deleted successfully');
+        });
+
+        RestoreAction::configureUsing(function (RestoreAction $action): void {
+            $action->successNotificationTitle(fn (RestoreAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' restored successfully' : 'Restored successfully');
+        });
+
+        ForceDeleteAction::configureUsing(function (ForceDeleteAction $action): void {
+            $action->successNotificationTitle(fn (ForceDeleteAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' permanently deleted' : 'Permanently deleted');
+        });
+
+        ReplicateAction::configureUsing(function (ReplicateAction $action): void {
+            $action->successNotificationTitle(fn (ReplicateAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' duplicated successfully' : 'Duplicated successfully');
         });
     }
 

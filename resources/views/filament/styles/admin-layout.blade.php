@@ -1129,4 +1129,36 @@
     .dark .custom-login-footer-badge {
         color: #64748b;
     }
+
+    /* ==========================================================================
+       ENTERPRISE LUXURY TOASTER NOTIFICATIONS (Shopify / Stripe / Vercel Standard)
+       ========================================================================== */
+    .fi-no-notification {
+        border-radius: 1rem !important;
+        padding: 1rem 1.25rem !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+        backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    }
+    .dark .fi-no-notification {
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .fi-no-notification-title {
+        font-size: 0.95rem !important;
+        font-weight: 650 !important;
+        letter-spacing: -0.015em !important;
+        line-height: 1.35 !important;
+    }
+
+    .fi-no-notification-body {
+        font-size: 0.85rem !important;
+        color: #64748b !important;
+        line-height: 1.45 !important;
+        margin-top: 0.25rem !important;
+    }
+    .dark .fi-no-notification-body {
+        color: #94a3b8 !important;
+    }
 </style>

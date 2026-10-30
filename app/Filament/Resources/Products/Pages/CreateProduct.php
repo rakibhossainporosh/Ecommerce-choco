@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Pages;
 
+use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class CreateProduct extends CreateRecord
 {
+    use HasDescriptiveNotifications;
+
     protected static string $resource = ProductResource::class;
 
     protected function handleRecordCreation(array $data): Model

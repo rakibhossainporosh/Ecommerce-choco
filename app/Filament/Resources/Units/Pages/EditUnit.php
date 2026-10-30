@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Units\Pages;
 
+use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Units\UnitResource;
 use App\Models\Unit;
 use Filament\Actions\DeleteAction;
@@ -10,6 +11,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditUnit extends EditRecord
 {
+    use HasDescriptiveNotifications;
+
     protected static string $resource = UnitResource::class;
 
     protected function getHeaderActions(): array

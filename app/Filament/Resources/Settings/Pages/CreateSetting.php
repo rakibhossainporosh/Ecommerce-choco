@@ -3,11 +3,14 @@
 namespace App\Filament\Resources\Settings\Pages;
 
 use App\Enums\SettingType;
+use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Settings\SettingResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateSetting extends CreateRecord
 {
+    use HasDescriptiveNotifications;
+
     protected static string $resource = SettingResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

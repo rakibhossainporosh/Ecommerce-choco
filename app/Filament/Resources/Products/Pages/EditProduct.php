@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Pages;
 
+use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Attribute;
 use App\Models\Product;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class EditProduct extends EditRecord
 {
+    use HasDescriptiveNotifications;
+
     protected static string $resource = ProductResource::class;
 
     protected function getHeaderActions(): array

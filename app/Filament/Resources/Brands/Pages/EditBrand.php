@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Brands\Pages;
 
+use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Brands\BrandResource;
 use App\Models\Brand;
 use Filament\Actions\DeleteAction;
@@ -10,6 +11,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditBrand extends EditRecord
 {
+    use HasDescriptiveNotifications;
+
     protected static string $resource = BrandResource::class;
 
     protected function getHeaderActions(): array
