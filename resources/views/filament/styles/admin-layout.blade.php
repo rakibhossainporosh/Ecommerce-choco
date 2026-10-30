@@ -72,7 +72,7 @@
         }
     }
 
-    /* Hide default out-of-place toggle and duplicate logo in topbar */
+    /* Hide default desktop toggle and duplicate logo in topbar */
     .fi-topbar-collapse-sidebar-btn-ctn {
         display: none !important;
     }
@@ -81,18 +81,98 @@
         display: none !important;
     }
 
-    /* Topbar Page Heading (Title in Topbar) */
-    .custom-topbar-page-heading-wrapper {
-        display: flex;
-        align-items: center;
-        padding-left: 1.25rem;
-        padding-right: 1.25rem;
-        height: 100%;
-        margin-right: auto;
+    /* Mobile Header Layout (Phone Version) */
+    @media (max-width: 1023px) {
+        .fi-topbar {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            gap: 0.5rem !important;
+            height: 3.5rem !important;
+        }
+
+        /* 1. Mobile Menu Toggle Buttons on Left - Respect Alpine x-show so both icons NEVER show at once */
+        .fi-topbar-open-sidebar-btn {
+            order: 1 !important;
+            margin: 0 !important;
+            flex-shrink: 0 !important;
+        }
+
+        .fi-topbar-close-sidebar-btn {
+            order: 1 !important;
+            margin: 0 !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Prevent both hamburger and cross from displaying simultaneously */
+        [style*="display: none"] {
+            display: none !important;
+        }
+
+        /* 2. Page Title immediately next to Toggle with flexible expansion */
+        .custom-topbar-page-heading-wrapper {
+            order: 2 !important;
+            padding-left: 0.25rem !important;
+            padding-right: 0.5rem !important;
+            margin-right: auto !important;
+            flex: 1 1 auto !important;
+            overflow: hidden !important;
+            min-width: 0 !important;
+        }
+
+        .custom-topbar-title-text {
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+
+        /* 3. Hide Search button on mobile - phone doesn't need search taking up valuable navbar space */
+        .fi-topbar-end .fi-global-search-ctn,
+        .fi-topbar-end [data-global-search],
+        .fi-topbar-end button[aria-label*="Search"],
+        .fi-topbar-end button[title*="Search"],
+        .fi-topbar-end .fi-input-wrp:has(input[type="search"]),
+        .fi-topbar-end .fi-global-search-btn {
+            display: none !important;
+        }
+
+        /* 4. Notification and user menu on the far right */
+        .fi-topbar-end {
+            order: 3 !important;
+            margin-left: auto !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.35rem !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Clean user menu trigger - remove harsh focus outline box around circular avatar */
+        .fi-topbar-end .fi-user-menu-btn,
+        .fi-topbar-end button:has(.fi-avatar) {
+            outline: none !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+    }
+
+    /* Desktop Topbar Page Heading */
+    @media (min-width: 1024px) {
+        .custom-topbar-page-heading-wrapper {
+            display: flex;
+            align-items: center;
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+            height: 100%;
+            margin-right: auto;
+        }
     }
 
     .custom-topbar-title-text {
-        font-size: 1.25rem !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em !important;
         color: #0f172a !important;
