@@ -98,14 +98,17 @@ const getCurrentStepIndex = () => {
     <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
         <Header />
 
-        <main class="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full">
+        <main class="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full flex flex-col">
+            <!-- Breadcrumb stays at top in its original position -->
             <nav class="flex items-center gap-2 text-sm text-[#64748B] mb-8">
                 <Link href="/" class="hover:text-[#E86A28] transition-colors">হোম</Link>
                 <ChevronRight class="w-4 h-4" />
                 <span class="text-[#1E293B] font-medium">ট্র্যাক অর্ডার</span>
             </nav>
 
-            <div class="bg-white rounded-3xl p-6 md:p-8 border border-[#EAE3D6] shadow-sm mb-8">
+            <!-- Card Centered in available space -->
+            <div class="flex-1 flex flex-col justify-center" :class="{ 'my-auto': !order }">
+                <div class="bg-white rounded-3xl p-6 md:p-8 border border-[#EAE3D6] shadow-sm mb-8">
                 <div class="text-center mb-8">
                     <h1 class="text-2xl md:text-3xl font-bold text-[#1E293B] mb-2">আপনার অর্ডার ট্র্যাক করুন</h1>
                     <p class="text-[#64748B]">অর্ডারের বর্তমান অবস্থা জানতে নিচের বক্সে আপনার অর্ডার নম্বর দিন।</p>
@@ -145,6 +148,7 @@ const getCurrentStepIndex = () => {
                     <AlertCircle class="w-5 h-5 shrink-0 mt-0.5" />
                     <span class="text-sm font-medium">{{ error }}</span>
                 </div>
+            </div>
             </div>
 
             <!-- Order Details -->
