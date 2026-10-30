@@ -28,6 +28,11 @@ const submitForm = () => {
         },
     });
 };
+
+const getGmailComposeUrl = (email) => {
+    const targetEmail = email || 'support@noboshop.com';
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(targetEmail)}`;
+};
 </script>
 
 <template>
@@ -80,7 +85,13 @@ const submitForm = () => {
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-semibold text-[#1E293B]">ইমেইল</h3>
-                                    <a :href="'mailto:' + (settings.contact_email || 'support@noboshop.com')" class="text-[#64748B] hover:text-[#E86A28] text-sm mt-1 inline-block transition-colors">
+                                    <a 
+                                        :href="getGmailComposeUrl(settings.contact_email)" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        title="Gmail-এ ইমেইল পাঠান"
+                                        class="text-[#64748B] hover:text-[#E86A28] text-sm mt-1 inline-block transition-colors"
+                                    >
                                         {{ settings.contact_email || 'support@noboshop.com' }}
                                     </a>
                                 </div>

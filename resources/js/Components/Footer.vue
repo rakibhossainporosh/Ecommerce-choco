@@ -23,6 +23,11 @@ const isInternalLink = (url) => {
     if (!url) return false;
     return url.startsWith('/') && !url.includes('#');
 };
+
+const getGmailComposeUrl = (email) => {
+    const targetEmail = email || 'support@noboshop.com';
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(targetEmail)}`;
+};
 </script>
 
 <template>
@@ -160,7 +165,13 @@ const isInternalLink = (url) => {
                         </li>
                         <li class="flex items-center gap-3">
                             <Mail class="w-5 h-5 text-[#E86A28] shrink-0" />
-                            <a :href="'mailto:' + (settings.contact_email || 'support@noboshop.com')" class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors">
+                            <a 
+                                :href="getGmailComposeUrl(settings.contact_email)" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                title="Gmail-এ ইমেইল পাঠান"
+                                class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors"
+                            >
                                 {{ settings.contact_email || 'support@noboshop.com' }}
                             </a>
                         </li>
