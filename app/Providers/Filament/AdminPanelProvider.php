@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\Setting;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -11,11 +12,14 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -27,7 +31,18 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Choco Ecommerce')
+            ->brandName(fn () => Setting::get('site_name', config('app.name', 'Nobo Shop')))
+            ->brandLogo(function () {
+                $logo = Setting::get('site_logo');
+
+                return $logo ? asset('storage/'.ltrim($logo, '/')) : null;
+            })
+            ->brandLogoHeight('2.5rem')
+            ->favicon(function () {
+                $favicon = Setting::get('site_favicon');
+
+                return $favicon ? asset('storage/'.ltrim($favicon, '/')) : null;
+            })
             ->font('Poppins')
             ->colors([
                 'primary' => Color::Amber,
@@ -45,6 +60,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('14.5rem')
+            ->collapsedSidebarWidth('4.5rem')
+            ->maxContentWidth(Width::Full)
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => Blade::render("@include('filament.styles.admin-layout')"),
+            )
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_START,
+                fn (): string => Blade::render("@include('filament.components.sidebar-header')"),
+            )
             ->navigationGroups([
                 NavigationGroup::make('Sales'),
                 NavigationGroup::make('Catalog'),

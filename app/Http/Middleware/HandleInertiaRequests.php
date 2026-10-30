@@ -111,9 +111,14 @@ class HandleInertiaRequests extends Middleware
                     $paymentMethods = $defaultPaymentMethods;
                 }
 
+                $logo = Setting::get('site_logo');
+                $favicon = Setting::get('site_favicon');
+
                 return [
                     'site_name' => Setting::get('site_name', 'Nobo Shop'),
                     'site_tagline' => Setting::get('site_tagline', 'আপনার প্রতিদিনের পছন্দ'),
+                    'site_logo' => $logo ? asset('storage/'.ltrim($logo, '/')) : null,
+                    'site_favicon' => $favicon ? asset('storage/'.ltrim($favicon, '/')) : null,
                     'footer_about' => Setting::get('footer_about', 'আপনার প্রতিদিনের পছন্দ — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।'),
                     'contact_phone' => Setting::get('contact_phone', '+৮৮০ ৫২৩৪ ৫৬৭৮৯০'),
                     'contact_email' => Setting::get('contact_email', 'support@noboshop.com'),

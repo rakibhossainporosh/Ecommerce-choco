@@ -37,16 +37,24 @@ const getGmailComposeUrl = (email) => {
                 <!-- Brand Info -->
                 <div class="flex flex-col gap-4">
                     <a href="/" class="flex items-center gap-3 group">
-                        <div class="w-10 h-10 rounded-full bg-[#E86A28] flex items-center justify-center text-white shadow-sm">
-                            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xl font-bold tracking-tight text-[#1E293B] leading-tight">
-                                {{ settings.site_name || 'Nobo Shop' }}
-                            </span>
-                        </div>
+                        <img 
+                            v-if="settings.site_logo" 
+                            :src="settings.site_logo" 
+                            :alt="settings.site_name || 'Logo'" 
+                            class="h-10 w-auto max-w-[150px] object-contain drop-shadow-xs"
+                        />
+                        <template v-else>
+                            <div class="w-10 h-10 rounded-full bg-[#E86A28] flex items-center justify-center text-white shadow-sm">
+                                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xl font-bold tracking-tight text-[#1E293B] leading-tight">
+                                    {{ settings.site_name || 'Nobo Shop' }}
+                                </span>
+                            </div>
+                        </template>
                     </a>
                     <p class="text-[15px] text-[#64748B] leading-relaxed mt-2 whitespace-pre-line">
                         {{ settings.footer_about || (settings.site_tagline ? settings.site_tagline + ' — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান।' : 'আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।') }}

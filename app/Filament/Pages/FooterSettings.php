@@ -6,6 +6,7 @@ use App\Enums\SettingType;
 use App\Models\Setting;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
@@ -79,9 +80,11 @@ class FooterSettings extends Page
         $col3Links = Setting::get('footer_col3_links');
         $paymentMethods = Setting::get('footer_payment_methods');
 
-        $this->data = [
+        $this->form->fill([
             'site_name' => Setting::get('site_name', 'Nobo Shop'),
             'site_tagline' => Setting::get('site_tagline', 'আপনার প্রতিদিনের পছন্দ'),
+            'site_logo' => Setting::get('site_logo'),
+            'site_favicon' => Setting::get('site_favicon'),
             'footer_about' => Setting::get('footer_about', 'আপনার প্রতিদিনের পছন্দ — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।'),
             'facebook_url' => Setting::get('facebook_url', 'https://facebook.com'),
             'twitter_url' => Setting::get('twitter_url', 'https://twitter.com'),
@@ -97,7 +100,7 @@ class FooterSettings extends Page
             'contact_email' => Setting::get('contact_email', 'support@noboshop.com'),
             'footer_copyright' => Setting::get('footer_copyright', '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।'),
             'footer_payment_methods' => is_array($paymentMethods) ? $paymentMethods : ['bKash', 'Nagad', 'VISA'],
-        ];
+        ]);
     }
 
     public function form(Schema $schema): Schema
@@ -110,8 +113,8 @@ class FooterSettings extends Page
                         Tab::make('General & Branding')
                             ->icon(Heroicon::OutlinedBuildingStorefront)
                             ->schema([
-                                Section::make('Brand & Identity')
-                                    ->description('Configure your store brand identity, tagline, and short bio shown across the website and footer.')
+                                Section::make('Brand Identity & Logo')
+                                    ->description('Configure your store brand identity, official logo, favicon, and bio shown across the website.')
                                     ->schema([
                                         Grid::make(2)->schema([
                                             TextInput::make('site_name')
@@ -124,6 +127,32 @@ class FooterSettings extends Page
                                                 ->placeholder('e.g. আপনার প্রতিদিনের পছন্দ')
                                                 ->helperText('Catchy tagline shown beneath the logo or in browser metadata.')
                                                 ->nullable(),
+                                        ]),
+                                        Grid::make(2)->schema([
+                                            FileUpload::make('site_logo')
+                                                ->label('Website Official Logo')
+                                                ->image()
+                                                ->disk('public')
+                                                ->directory('settings/branding')
+                                                ->visibility('public')
+                                                ->maxSize(5120)
+                                                ->imageEditor()
+                                                ->openable()
+                                                ->downloadable()
+                                                ->deletable()
+                                                ->helperText('PNG, JPG, WebP, SVG, AVIF (Max: 5MB). লোগো পরিবর্তন করতে চাইলে নতুন ছবি সিলেক্ট করুন বা ক্রস চিহ্নে ক্লিক করে রিমুভ করুন।'),
+                                            FileUpload::make('site_favicon')
+                                                ->label('Browser Favicon Icon')
+                                                ->image()
+                                                ->disk('public')
+                                                ->directory('settings/branding')
+                                                ->visibility('public')
+                                                ->maxSize(2048)
+                                                ->imageEditor()
+                                                ->openable()
+                                                ->downloadable()
+                                                ->deletable()
+                                                ->helperText('Square 1:1 icon (PNG, ICO, SVG, WebP, Max: 2MB). ফেভিকন পরিবর্তন করতে চাইলে নতুন ফাইল সিলেক্ট করুন বা ক্রস চিহ্নে ক্লিক করে রিমুভ করুন।'),
                                         ]),
                                         Textarea::make('footer_about')
                                             ->label('Brand Bio / About Text')
@@ -304,7 +333,7 @@ class FooterSettings extends Page
             $type = SettingType::String;
             $group = 'footer';
 
-            if (in_array($key, ['site_name', 'site_tagline'])) {
+            if (in_array($key, ['site_name', 'site_tagline', 'site_logo', 'site_favicon'])) {
                 $group = 'general';
             } elseif (in_array($key, ['facebook_url', 'twitter_url', 'instagram_url', 'youtube_url'])) {
                 $group = 'social';
@@ -342,6 +371,8 @@ class FooterSettings extends Page
         return match ($key) {
             'site_name' => 'Site Name',
             'site_tagline' => 'Site Tagline',
+            'site_logo' => 'Website Logo',
+            'site_favicon' => 'Website Favicon',
             'footer_about' => 'Footer About Description',
             'facebook_url' => 'Facebook URL',
             'twitter_url' => 'Twitter / X URL',

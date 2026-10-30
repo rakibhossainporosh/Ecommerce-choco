@@ -192,20 +192,28 @@ onUnmounted(() => {
             <div class="flex items-center justify-between h-20 gap-4">
                 <!-- Brand / Logo -->
                 <a href="/" class="flex items-center gap-3 group shrink-0">
-                    <div class="w-11 h-11 rounded-full bg-[#E86A28] flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
-                        <!-- Stylized Nobo Icon matching screenshot -->
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xl font-bold tracking-tight text-[#1E293B] group-hover:text-[#E86A28] transition-colors leading-tight">
-                            {{ page.props.site_settings?.site_name || 'Nobo Shop' }}
-                        </span>
-                        <span class="text-[12px] text-[#64748B] font-medium leading-none mt-0.5">
-                            {{ page.props.site_settings?.site_tagline || 'আপনার প্রতিদিনের পছন্দ' }}
-                        </span>
-                    </div>
+                    <img 
+                        v-if="page.props.site_settings?.site_logo" 
+                        :src="page.props.site_settings.site_logo" 
+                        :alt="page.props.site_settings?.site_name || 'Logo'" 
+                        class="h-11 w-auto max-w-[160px] object-contain drop-shadow-xs transition-transform group-hover:scale-105"
+                    />
+                    <template v-else>
+                        <div class="w-11 h-11 rounded-full bg-[#E86A28] flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
+                            <!-- Stylized Nobo Icon matching screenshot -->
+                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xl font-bold tracking-tight text-[#1E293B] group-hover:text-[#E86A28] transition-colors leading-tight">
+                                {{ page.props.site_settings?.site_name || 'Nobo Shop' }}
+                            </span>
+                            <span class="text-[12px] text-[#64748B] font-medium leading-none mt-0.5">
+                                {{ page.props.site_settings?.site_tagline || 'আপনার প্রতিদিনের পছন্দ' }}
+                            </span>
+                        </div>
+                    </template>
                 </a>
 
                 <!-- Search Bar -->
