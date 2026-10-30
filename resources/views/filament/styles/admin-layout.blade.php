@@ -81,6 +81,52 @@
         display: none !important;
     }
 
+    /* Topbar Page Heading (Title in Topbar) */
+    .custom-topbar-page-heading-wrapper {
+        display: flex;
+        align-items: center;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        height: 100%;
+        margin-right: auto;
+    }
+
+    .custom-topbar-title-text {
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em !important;
+        color: #0f172a !important;
+        margin: 0 !important;
+        line-height: 1.25 !important;
+        white-space: nowrap !important;
+    }
+    .dark .custom-topbar-title-text {
+        color: #f8fafc !important;
+    }
+
+    /* In page body: Hide duplicate large heading so title only displays in topbar, while keeping breadcrumbs and actions */
+    .fi-header-heading {
+        display: none !important;
+    }
+
+    /* Page container spacing - Remove default py-8 (2rem gap) so breadcrumbs sit closely and neatly below topbar */
+    .fi-page-header-main-ctn {
+        padding-top: 1rem !important;
+        padding-bottom: 2rem !important;
+        gap: 1.25rem !important;
+    }
+
+    /* Page body breadcrumbs & actions bar styling */
+    .fi-header {
+        margin-bottom: 0.5rem !important;
+        padding-top: 0 !important;
+    }
+
+    .fi-header .fi-breadcrumbs {
+        display: block !important;
+        margin-bottom: 0 !important;
+    }
+
     /* Hide default sidebar header since we render custom GitHub / ONETECH header */
     .fi-sidebar-header-ctn {
         display: none !important;

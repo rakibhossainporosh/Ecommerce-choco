@@ -72,6 +72,10 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::SIDEBAR_START,
                 fn (): string => Blade::render("@include('filament.components.sidebar-header')"),
             )
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_START,
+                fn (): string => Blade::render("@include('filament.components.topbar-heading')"),
+            )
             ->navigationGroups([
                 NavigationGroup::make('Sales'),
                 NavigationGroup::make('Catalog'),
