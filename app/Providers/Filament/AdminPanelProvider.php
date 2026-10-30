@@ -13,6 +13,8 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -24,6 +26,16 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        Table::configureUsing(function (Table $table): void {
+            $table
+                ->emptyStateIcon(Heroicon::OutlinedInbox)
+                ->emptyStateHeading(fn (Table $table): string => 'No '.$table->getPluralModelLabel().' Found')
+                ->emptyStateDescription(fn (Table $table): string => 'There are currently no '.strtolower($table->getPluralModelLabel()).' recorded in the system. New entries will show up here.');
+        });
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
