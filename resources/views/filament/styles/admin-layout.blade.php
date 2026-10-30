@@ -594,6 +594,126 @@
     }
 
     /* ==========================================================================
+       ENTERPRISE TABLE PAGINATION & PER-PAGE ARCHITECTURE (Shopify / Stripe Standard)
+       ========================================================================== */
+    .fi-ta-content {
+        overflow-x: auto !important;
+    }
+
+    /* Transform fragmented 3-column pagination into a cohesive 2-part enterprise layout */
+    .fi-pagination {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        gap: 1rem !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        grid-template-columns: none !important;
+    }
+
+    /* 1. Left Group: Overview Count + Per-page Dropdown cleanly paired */
+    .fi-pagination-overview {
+        display: inline-flex !important;
+        align-items: center !important;
+        font-size: 0.84rem !important;
+        font-weight: 500 !important;
+        color: #64748b !important;
+        order: 1 !important;
+    }
+    .dark .fi-pagination-overview {
+        color: #94a3b8 !important;
+    }
+
+    .fi-pagination-records-per-page-select-ctn {
+        order: 2 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        margin-right: auto !important;
+        margin-left: 0.75rem !important;
+    }
+
+    /* Subtle divider line between "Showing 1 to 10 of 28" and "Per page [10 ▾]" on desktop */
+    @media (min-width: 640px) {
+        .fi-pagination-records-per-page-select-ctn::before {
+            content: "" !important;
+            display: inline-block !important;
+            width: 1px !important;
+            height: 1.15rem !important;
+            background-color: #e2e8f0 !important;
+            margin-right: 0.75rem !important;
+        }
+        .dark .fi-pagination-records-per-page-select-ctn::before {
+            background-color: rgba(255, 255, 255, 0.12) !important;
+        }
+    }
+
+    /* Compact, clean Per page selector wrapper - HIDE DUPLICATE compact select */
+    .fi-pagination-records-per-page-select.fi-compact {
+        display: none !important;
+    }
+
+    .fi-pagination-records-per-page-select:not(.fi-compact) {
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    .fi-pagination-records-per-page-select .fi-input-wrp {
+        border-radius: 0.5rem !important;
+        border: 1px solid rgba(203, 213, 225, 0.9) !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    .dark .fi-pagination-records-per-page-select .fi-input-wrp {
+        background-color: rgba(30, 41, 59, 0.7) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .fi-pagination-records-per-page-select .fi-input-wrp:hover {
+        border-color: #94a3b8 !important;
+    }
+
+    .fi-pagination-records-per-page-select .fi-input-wrp:focus-within {
+        border-color: #f59e0b !important;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+    }
+
+    /* 2. Right Group: Page numbers & Next/Prev navigation */
+    .fi-pagination-items {
+        order: 3 !important;
+        display: flex !important;
+        align-items: center !important;
+        margin-left: auto !important;
+        border-radius: 0.5rem !important;
+        border: 1px solid rgba(203, 213, 225, 0.8) !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+        overflow: hidden !important;
+    }
+    .dark .fi-pagination-items {
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .fi-pagination-item-btn {
+        transition: all 0.15s ease-in-out !important;
+    }
+
+    .fi-pagination-item.fi-active .fi-pagination-item-btn {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        color: #d97706 !important;
+        font-weight: 700 !important;
+    }
+    .dark .fi-pagination-item.fi-active .fi-pagination-item-btn {
+        background-color: rgba(245, 158, 11, 0.22) !important;
+        color: #fbbf24 !important;
+    }
+
+    .fi-pagination-previous-btn,
+    .fi-pagination-next-btn {
+        order: 4 !important;
+    }
+
+    /* ==========================================================================
        LOGIN & SIMPLE AUTH PAGE (Ultra-Luxury Enterprise Ecommerce Style)
        ========================================================================== */
     .fi-simple-layout {
