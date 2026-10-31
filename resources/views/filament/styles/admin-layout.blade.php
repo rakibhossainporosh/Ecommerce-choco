@@ -646,9 +646,17 @@
         width: 100% !important;
     }
 
-    /* 1. First column (Checkbox) keeps its default compact left position */
-    .fi-ta-table th:first-child,
-    .fi-ta-table td:first-child {
+    /* Prevent accidental horizontal table scrollbar on desktop */
+
+    @media (min-width: 1024px) {
+        .fi-ta-content {
+            overflow-x: visible !important;
+        }
+    }
+
+    /* 1. Selection Checkbox Column (Only present when selection is enabled) */
+    .fi-ta-table th.fi-ta-selection-cell,
+    .fi-ta-table td.fi-ta-selection-cell {
         text-align: left !important;
         padding-left: 1.25rem !important;
         padding-right: 0.75rem !important;
@@ -656,34 +664,66 @@
         white-space: nowrap !important;
     }
 
-    /* 2. Primary Identifier Column (e.g. Order Number, Log name, Name) stays clean left-aligned */
-    .fi-ta-table th:nth-child(2),
-    .fi-ta-table td:nth-child(2) {
+    /* 2. Primary Identifier Column (Order #, Name, Log name, etc.)
+          Ensure the header and cell content start at the exact same horizontal position! */
+    .fi-ta-table th.fi-ta-header-cell:not(.fi-ta-selection-cell):not(.fi-ta-actions-header-cell):first-of-type,
+    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child):first-of-type,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:nth-child(2),
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:nth-child(2),
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:first-child,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:first-child {
         text-align: left !important;
-        padding-left: 0.75rem !important;
-        padding-right: 1rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.25rem !important;
     }
-    .fi-ta-table th:nth-child(2) .fi-ta-header-cell-sort-btn,
-    .fi-ta-table td:nth-child(2) .fi-ta-text {
+
+    /* Reset internal padding inside first data cell so it flushes exactly with the header text */
+    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):first-of-type .fi-ta-text,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:nth-child(2) .fi-ta-text,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:first-child .fi-ta-text {
+        padding-left: 0 !important;
+        padding-inline-start: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    .fi-ta-table th.fi-ta-header-cell:not(.fi-ta-selection-cell):not(.fi-ta-actions-header-cell):first-of-type .fi-ta-header-cell-sort-btn,
+    .fi-ta-table th.fi-ta-header-cell:not(.fi-ta-selection-cell):not(.fi-ta-actions-header-cell):first-of-type > button,
+    .fi-ta-table th.fi-ta-header-cell:not(.fi-ta-selection-cell):not(.fi-ta-actions-header-cell):first-of-type > span,
+    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child):first-of-type .fi-ta-col,
+    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child):first-of-type .fi-ta-text-item,
+    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child):first-of-type a,
+    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child):first-of-type div,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:first-child .fi-ta-header-cell-sort-btn,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:first-child .fi-ta-text-item,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:first-child a {
+        display: inline-flex !important;
+        align-items: center !important;
         justify-content: flex-start !important;
         text-align: left !important;
+        margin-left: 0 !important;
+        margin-right: auto !important;
+        padding-left: 0 !important;
     }
 
     /* 3. Middle Columns: Data and Headers CENTER-ALIGNED with Equal Gaps */
-    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child),
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child),
-    .fi-ta-table th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child),
-    .fi-ta-table td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) {
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child),
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child),
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child),
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) {
         text-align: center !important;
         padding-left: 1.25rem !important;
         padding-right: 1.25rem !important;
     }
 
     /* Header sort button, container and label perfectly centered */
-    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn,
-    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) > button,
-    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) > span,
-    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) > div {
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > button,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > span,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > div,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) .fi-ta-header-cell-sort-btn,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) > button,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) > span,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) > div {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -694,23 +734,36 @@
     }
 
     /* Ensure sort button icon doesn't push label off-center */
-    .fi-ta-table th:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn {
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) .fi-ta-header-cell-sort-btn {
         justify-content: center !important;
     }
 
     /* Cell content, text, badges, icons, images, and descriptions strictly centered */
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-col,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-icon,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-image,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-item,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-badge,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-description,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > div,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > p,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > a,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) > span {
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-col,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-icon,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-image,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-item,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-badge,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-description,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > div,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > p,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > a,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > span,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-col,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-icon,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-image,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text-item,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-badge,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text-description,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > div,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > p,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > a,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > span {
         display: flex !important;
+        flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
@@ -720,9 +773,9 @@
     }
 
     /* Centering inline elements like badges, spans, and icons inside the wrapper */
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-badge,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-item > span,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-placeholder {
+    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child) .fi-badge,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text-item > span,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-placeholder {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -732,11 +785,52 @@
     }
 
     /* Target SVG and Images inside middle cells */
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) svg,
-    .fi-ta-table td:not(:first-child):not(:nth-child(2)):not(:last-child) img {
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td:not(:first-child):not(:nth-child(2)):not(:last-child) svg,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) td:not(:first-child):not(:nth-child(2)):not(:last-child) img,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td:not(:first-child):not(:last-child) svg,
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td:not(:first-child):not(:last-child) img {
         margin-left: auto !important;
         margin-right: auto !important;
         display: block !important;
+    }
+
+    /* Highlight interactive clickable table rows with distinct background, border indicator, and pointer cursor */
+    .fi-ta-table tbody tr.fi-clickable,
+    .fi-ta-row.fi-clickable {
+        cursor: pointer !important;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .fi-ta-table tbody tr.fi-clickable:hover,
+    .fi-ta-row.fi-clickable:hover {
+        background-color: #f1f5f9 !important; /* Clearly visible soft slate/gray */
+    }
+    .dark .fi-ta-table tbody tr.fi-clickable:hover,
+    .dark .fi-ta-row.fi-clickable:hover {
+        background-color: rgba(51, 65, 85, 0.6) !important;
+    }
+
+    /* Primary identifier (Order #) gets subtle brand color on hover to indicate clickability */
+    .fi-ta-table tbody tr.fi-clickable:hover td.fi-ta-cell:first-of-type .fi-ta-text-item,
+    .fi-ta-table tbody tr.fi-clickable:hover td.fi-ta-cell:nth-child(2) .fi-ta-text-item {
+        color: #d97706 !important; /* Amber brand accent */
+        transition: color 0.15s ease-in-out !important;
+    }
+    .dark .fi-ta-table tbody tr.fi-clickable:hover td.fi-ta-cell:first-of-type .fi-ta-text-item,
+    .dark .fi-ta-table tbody tr.fi-clickable:hover td.fi-ta-cell:nth-child(2) .fi-ta-text-item {
+        color: #fbbf24 !important;
+    }
+
+    /* Remove ugly browser link underlines on all table links and cells */
+    .fi-ta-table a,
+    .fi-ta-table a:hover,
+    .fi-ta-table a:focus,
+    .fi-ta-table .fi-ta-text-item a,
+    .fi-ta-table .fi-ta-text-item a:hover,
+    .fi-ta-table .fi-ta-text-item:hover,
+    .fi-ta-table .fi-ta-text a {
+        text-decoration: none !important;
+        text-decoration-line: none !important;
     }
 
     /* 4. Last Column (Actions) keeps its precise right-aligned position */
@@ -753,9 +847,7 @@
         margin-left: auto !important;
     }
 
-    .fi-ta-content {
-        overflow-x: auto !important;
-    }
+
 
     /* Transform fragmented 3-column pagination into a cohesive 2-part enterprise layout */
     .fi-pagination {

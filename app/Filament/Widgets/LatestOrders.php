@@ -35,8 +35,7 @@ class LatestOrders extends BaseWidget
                 TextColumn::make('order_number')
                     ->label('Order #')
                     ->weight('bold')
-                    ->searchable()
-                    ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
+                    ->searchable(),
 
                 TextColumn::make('customer_name')
                     ->label('Customer')
@@ -92,6 +91,7 @@ class LatestOrders extends BaseWidget
                 ViewAction::make()
                     ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
             ])
+            ->recordUrl(fn (Order $record): ?string => OrderResource::canView($record) ? OrderResource::getUrl('view', ['record' => $record]) : null)
             ->paginated(false);
     }
 }
