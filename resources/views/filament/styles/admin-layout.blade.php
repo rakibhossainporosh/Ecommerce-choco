@@ -479,18 +479,40 @@
             padding-left: 0 !important;
             padding-right: 0 !important;
             padding-top: 1rem !important;
+            padding-bottom: 2rem !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
+            overflow-y: auto !important;
             overflow-x: hidden !important;
-            scrollbar-gutter: auto !important;
-            scrollbar-width: none !important; /* Firefox */
-            -ms-overflow-style: none !important; /* IE and Edge */
+            scrollbar-gutter: stable;
+            scrollbar-width: thin !important;
+            scrollbar-color: #858c97 transparent !important;
         }
+        .dark .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
+            scrollbar-color: #64748b transparent !important;
+        }
+
+        /* Sleek Modern Scrollbar for Collapsed Rail */
         .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar {
-            display: none !important; /* Chrome, Safari, Opera */
-            width: 0 !important;
-            height: 0 !important;
+            width: 5px !important;
+            display: block !important;
+        }
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar-thumb {
+            background: #858c97 !important;
+            border-radius: 9999px !important;
+        }
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: #64748b !important;
+        }
+        .dark .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar-thumb {
+            background: #64748b !important;
+        }
+        .dark .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8 !important;
         }
 
         .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
