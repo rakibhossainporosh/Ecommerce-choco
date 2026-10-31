@@ -1301,4 +1301,203 @@
     .dark .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window {
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     }
+
+    /* ==========================================================================
+       CHART WIDGET RESPONSIVENESS & PREMIUM SELECT STYLING
+       ========================================================================== */
+    .fi-wi-chart .fi-section-header {
+        flex-wrap: wrap !important;
+        gap: 0.75rem !important;
+        align-items: center !important;
+    }
+
+    .fi-wi-chart .fi-section-header-text-ctn {
+        min-width: 10rem !important;
+        flex: 1 1 auto !important;
+    }
+
+    .fi-wi-chart .fi-section-header-after-ctn {
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* Enterprise Clean Filter Pill Select */
+    .fi-wi-chart .fi-wi-chart-filter.fi-input-wrp {
+        border-radius: 0.625rem !important;
+        background-color: #ffffff !important;
+        border: 1px solid rgba(203, 213, 225, 0.8) !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    .dark .fi-wi-chart .fi-wi-chart-filter.fi-input-wrp {
+        background-color: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        box-shadow: none !important;
+    }
+
+    .fi-wi-chart .fi-wi-chart-filter.fi-input-wrp:hover {
+        border-color: #d97706 !important;
+    }
+
+    .fi-wi-chart .fi-wi-chart-filter select.fi-select-input {
+        font-size: 0.825rem !important;
+        font-weight: 600 !important;
+        color: #334155 !important;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+        padding-left: 0.85rem !important;
+        padding-right: 2.25rem !important;
+        cursor: pointer !important;
+        border-radius: 0.625rem !important;
+        outline: none !important;
+    }
+    .dark .fi-wi-chart .fi-wi-chart-filter select.fi-select-input {
+        color: #f1f5f9 !important;
+    }
+
+    /* Modern Dropdown Option styling inside native popup */
+    .fi-wi-chart .fi-wi-chart-filter select.fi-select-input option {
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        padding: 0.6rem 0.85rem !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+    .dark .fi-wi-chart .fi-wi-chart-filter select.fi-select-input option {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+    }
+
+    @media (max-width: 639px) {
+        .fi-wi-chart .fi-section-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+
+        .fi-wi-chart .fi-section-header-after-ctn {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
+        .fi-wi-chart .fi-wi-chart-filter.fi-input-wrp {
+            width: 100% !important;
+        }
+
+        .fi-wi-chart .fi-wi-chart-filter select.fi-select-input {
+            width: 100% !important;
+        }
+    }
+
+    /* ==========================================================================
+       LATEST ORDERS WIDGET: SAME ROW SEARCHBOX & COMPACT ENTERPRISE HEADER
+       ========================================================================== */
+    @media (min-width: 640px) {
+        .fi-ta-ctn > .fi-ta-main > .fi-ta-header-ctn {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: wrap !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            padding: 0.875rem 1.5rem !important;
+            gap: 1rem !important;
+        }
+        .dark .fi-ta-ctn > .fi-ta-main > .fi-ta-header-ctn {
+            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            border-bottom: none !important;
+            padding: 0 !important;
+            gap: 1.25rem !important;
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header > div:first-child {
+            flex-shrink: 0 !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header .fi-ta-actions {
+            margin-inline-start: 0 !important;
+            margin-left: 0 !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header-toolbar {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            border-bottom: none !important;
+            border-top: none !important;
+            padding: 0 !important;
+            margin-left: auto !important;
+            gap: 0.75rem !important;
+            flex-shrink: 0 !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header-toolbar > .fi-ta-actions:empty,
+        .fi-ta-ctn .fi-ta-header-toolbar > div:first-child:empty,
+        .fi-ta-ctn .fi-ta-header-toolbar > div:first-child:not(:has(*:not(:empty))) {
+            display: none !important;
+            min-height: 0 !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header-toolbar > div:has(.fi-ta-search-field) {
+            margin-left: 0 !important;
+            min-height: auto !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header-toolbar .fi-ta-search-field {
+            min-width: 14rem !important;
+            max-width: 20rem !important;
+        }
+    }
+
+    /* Phone Version: Compact Spacing & Zero Extra Gap (Below 640px) */
+    @media (max-width: 639px) {
+        .fi-ta-ctn .fi-ta-header {
+            padding-bottom: 0.5rem !important;
+            border-bottom: none !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header-toolbar {
+            padding-top: 0 !important;
+            padding-bottom: 0.75rem !important;
+            border-top: none !important;
+            gap: 0 !important;
+        }
+
+        .fi-ta-header-toolbar > .fi-ta-actions:empty,
+        .fi-ta-header-toolbar > div:first-child:empty,
+        .fi-ta-header-toolbar > div:first-child:not(:has(*:not(:empty))) {
+            display: none !important;
+            min-height: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .fi-ta-header-toolbar > div:has(.fi-ta-search-field),
+        .fi-ta-header-toolbar > div:last-child {
+            width: 100% !important;
+            min-height: auto !important;
+            margin-top: 0 !important;
+            margin-left: 0 !important;
+            margin-inline-start: 0 !important;
+        }
+
+        .fi-ta-header-toolbar .fi-ta-search-field,
+        .fi-ta-header-toolbar .fi-ta-search-field .fi-input-wrp {
+            width: 100% !important;
+            margin-top: 0 !important;
+        }
+    }
 </style>
