@@ -1183,4 +1183,30 @@
     .dark .fi-no-notification-body {
         color: #94a3b8 !important;
     }
+
+    /* ==========================================================================
+       ENTERPRISE MODAL CENTERING (Shopify / Stripe Standard - Exactly Centered)
+       ========================================================================== */
+    .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn {
+        grid-template-rows: 1fr auto 1fr !important;
+        align-items: center !important;
+        justify-items: center !important;
+    }
+
+    @media (min-width: 640px) {
+        .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn {
+            grid-template-rows: 1fr auto 1fr !important;
+        }
+    }
+
+    .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window {
+        margin: auto !important;
+        align-self: center !important;
+        justify-self: center !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+        border-radius: 1.25rem !important;
+    }
+    .dark .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    }
 </style>
