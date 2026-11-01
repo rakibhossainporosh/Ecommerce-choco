@@ -17,15 +17,7 @@ enum ShippingProvider: string
      */
     public function label(): string
     {
-        return match ($this) {
-            self::Steadfast => 'Steadfast Courier',
-            self::Pathao => 'Pathao Courier',
-            self::RedX => 'RedX Delivery',
-            self::Paperfly => 'Paperfly',
-            self::ECourier => 'eCourier',
-            self::Sundarban => 'Sundarban Courier',
-            self::InHouse => 'In-House / Own Fleet',
-        };
+        return __('enums.shipping_provider.'.$this->value);
     }
 
     /**

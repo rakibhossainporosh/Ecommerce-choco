@@ -25,12 +25,6 @@ enum PaymentMethod: string
      */
     public function label(): string
     {
-        return match ($this) {
-            self::Cod => 'Cash on Delivery',
-            self::Bkash => 'bKash',
-            self::Nagad => 'Nagad',
-            self::Rocket => 'Rocket',
-            self::BankTransfer => 'Bank Transfer',
-        };
+        return __('enums.payment_method.'.$this->value);
     }
 }

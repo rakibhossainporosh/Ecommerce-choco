@@ -18,16 +18,7 @@ enum ShipmentStatus: string
      */
     public function label(): string
     {
-        return match ($this) {
-            self::Pending => 'Pending Dispatch',
-            self::Packed => 'Packed / Ready to Ship',
-            self::InTransit => 'In Transit / Shipped',
-            self::OutForDelivery => 'Out for Delivery',
-            self::Delivered => 'Delivered',
-            self::FailedDelivery => 'Delivery Attempt Failed',
-            self::Returned => 'Returned to Origin',
-            self::Cancelled => 'Cancelled',
-        };
+        return __('enums.shipment_status.'.$this->value);
     }
 
     /**

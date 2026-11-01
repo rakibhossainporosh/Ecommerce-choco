@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\SetApplicationLocale;
 use App\Models\Setting;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -38,36 +39,36 @@ class AdminPanelProvider extends PanelProvider
         Table::configureUsing(function (Table $table): void {
             $table
                 ->emptyStateIcon(Heroicon::OutlinedInbox)
-                ->emptyStateHeading(fn (Table $table): string => 'No '.$table->getPluralModelLabel().' Found')
-                ->emptyStateDescription(fn (Table $table): string => 'There are currently no '.strtolower($table->getPluralModelLabel()).' recorded in the system. New entries will show up here.');
+                ->emptyStateHeading(fn (Table $table): string => __('No :label found', ['label' => $table->getPluralModelLabel()]))
+                ->emptyStateDescription(fn (Table $table): string => __('There are currently no :label recorded in the system. New entries will show up here.', ['label' => $table->getPluralModelLabel()]));
         });
 
         CreateAction::configureUsing(function (CreateAction $action): void {
-            $action->successNotificationTitle(fn (CreateAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' created successfully' : 'Created successfully');
+            $action->successNotificationTitle(fn (CreateAction $a): string => filled($m = $a->getModelLabel()) ? __(':label created successfully', ['label' => $m]) : __('Created successfully'));
         });
 
         EditAction::configureUsing(function (EditAction $action): void {
-            $action->successNotificationTitle(fn (EditAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' updated successfully' : 'Changes saved successfully');
+            $action->successNotificationTitle(fn (EditAction $a): string => filled($m = $a->getModelLabel()) ? __(':label updated successfully', ['label' => $m]) : __('Changes saved successfully'));
         });
 
         DeleteAction::configureUsing(function (DeleteAction $action): void {
-            $action->successNotificationTitle(fn (DeleteAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' deleted successfully' : 'Deleted successfully');
+            $action->successNotificationTitle(fn (DeleteAction $a): string => filled($m = $a->getModelLabel()) ? __(':label deleted successfully', ['label' => $m]) : __('Deleted successfully'));
         });
 
         DeleteBulkAction::configureUsing(function (DeleteBulkAction $action): void {
-            $action->successNotificationTitle(fn (DeleteBulkAction $a): string => filled($m = $a->getPluralModelLabel()) ? 'Selected '.strtolower($m).' deleted successfully' : 'Selected records deleted successfully');
+            $action->successNotificationTitle(fn (DeleteBulkAction $a): string => filled($m = $a->getPluralModelLabel()) ? __('Selected :label deleted successfully', ['label' => $m]) : __('Selected records deleted successfully'));
         });
 
         RestoreAction::configureUsing(function (RestoreAction $action): void {
-            $action->successNotificationTitle(fn (RestoreAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' restored successfully' : 'Restored successfully');
+            $action->successNotificationTitle(fn (RestoreAction $a): string => filled($m = $a->getModelLabel()) ? __(':label restored successfully', ['label' => $m]) : __('Restored successfully'));
         });
 
         ForceDeleteAction::configureUsing(function (ForceDeleteAction $action): void {
-            $action->successNotificationTitle(fn (ForceDeleteAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' permanently deleted' : 'Permanently deleted');
+            $action->successNotificationTitle(fn (ForceDeleteAction $a): string => filled($m = $a->getModelLabel()) ? __(':label permanently deleted', ['label' => $m]) : __('Permanently deleted'));
         });
 
         ReplicateAction::configureUsing(function (ReplicateAction $action): void {
-            $action->successNotificationTitle(fn (ReplicateAction $a): string => filled($m = $a->getModelLabel()) ? ucfirst($m).' duplicated successfully' : 'Duplicated successfully');
+            $action->successNotificationTitle(fn (ReplicateAction $a): string => filled($m = $a->getModelLabel()) ? __(':label duplicated successfully', ['label' => $m]) : __('Duplicated successfully'));
         });
     }
 
@@ -123,12 +124,16 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::TOPBAR_START,
                 fn (): string => Blade::render("@include('filament.components.topbar-heading')"),
             )
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_END,
+                fn (): string => Blade::render("@include('filament.components.locale-switcher')"),
+            )
             ->navigationGroups([
-                NavigationGroup::make('Sales'),
-                NavigationGroup::make('Catalog'),
-                NavigationGroup::make('Customers & Marketing'),
-                NavigationGroup::make('Shipping'),
-                NavigationGroup::make('System'),
+                NavigationGroup::make(fn (): string => __('Sales')),
+                NavigationGroup::make(fn (): string => __('Catalog')),
+                NavigationGroup::make(fn (): string => __('Customers & Marketing')),
+                NavigationGroup::make(fn (): string => __('Shipping')),
+                NavigationGroup::make(fn (): string => __('System')),
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
@@ -136,6 +141,7 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                SetApplicationLocale::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,

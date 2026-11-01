@@ -18,4 +18,9 @@ enum InventoryMovementType: string
     {
         return array_column(self::cases(), 'value');
     }
+
+    public function label(): string
+    {
+        return __('enums.inventory_movement.'.$this->value);
+    }
 }

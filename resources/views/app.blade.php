@@ -4,7 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Nobo Shop') }} - আপনার প্রতিদিনের পছন্দ</title>
+        <title inertia>{{ config('app.name', 'Nobo Shop') }}</title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- Google Fonts: Hind Siliguri (Bengali) & Plus Jakarta Sans -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +24,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @inertiaHead
     </head>
-    <body class="font-bengali antialiased bg-[#FAF7F2] text-[#1E293B] selection:bg-[#E86A28] selection:text-white">
+    <body class="{{ app()->getLocale() === 'bn' ? 'font-bengali' : 'font-sans' }} antialiased bg-[#FAF7F2] text-[#1E293B] selection:bg-[#E86A28] selection:text-white">
         @inertia
     </body>
 </html>

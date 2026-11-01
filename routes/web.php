@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\Admin\OrderInvoiceController;
+use App\Http\Controllers\Admin\SiteLocaleController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\StorefrontController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::get('/', [StorefrontController::class, 'index'])->name('home');
 Route::get('/search/suggestions', [StorefrontController::class, 'suggestions'])->name('search.suggestions');
@@ -32,6 +36,10 @@ Route::inertia('/return-policy', 'Static/ReturnPolicy')->name('page.return-polic
 Route::inertia('/privacy-policy', 'Static/PrivacyPolicy')->name('page.privacy-policy');
 Route::inertia('/terms-conditions', 'Static/Terms')->name('page.terms');
 Route::inertia('/faq', 'Static/Faq')->name('page.faq');
+
+Route::post('/admin/site-locale', [SiteLocaleController::class, 'update'])
+    ->middleware(['auth'])
+    ->name('admin.site-locale.update');
 
 // Admin Printable Order Invoice
 Route::get('/admin/orders/{order}/invoice', [OrderInvoiceController::class, 'show'])

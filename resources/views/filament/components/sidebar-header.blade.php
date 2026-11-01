@@ -18,7 +18,7 @@
         <button
             type="button"
             x-on:click="$store.sidebar.close()"
-            title="Collapse sidebar"
+            title="{{ __('Collapse sidebar') }}"
             class="custom-sidebar-toggle-btn"
         >
             <svg class="custom-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -34,7 +34,7 @@
         <button
             type="button"
             x-on:click="$store.sidebar.open()"
-            title="Expand sidebar"
+            title="{{ __('Expand sidebar') }}"
             class="custom-sidebar-toggle-btn"
         >
             <svg class="custom-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

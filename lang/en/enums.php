@@ -1,0 +1,73 @@
+<?php
+
+return [
+    'order_status' => [
+        'pending' => 'Pending',
+        'confirmed' => 'Confirmed',
+        'processing' => 'Processing',
+        'shipped' => 'Shipped',
+        'delivered' => 'Delivered',
+        'cancelled' => 'Cancelled',
+        'returned' => 'Returned',
+        'refunded' => 'Refunded',
+    ],
+    'payment_status' => [
+        'unpaid' => 'Unpaid',
+        'pending' => 'Pending',
+        'partial' => 'Partially Paid',
+        'paid' => 'Paid',
+        'failed' => 'Failed',
+        'refunded' => 'Refunded',
+        'partially_refunded' => 'Partially Refunded',
+    ],
+    'payment_method' => [
+        'cod' => 'Cash on Delivery',
+        'bkash' => 'bKash',
+        'nagad' => 'Nagad',
+        'rocket' => 'Rocket',
+        'bank_transfer' => 'Bank Transfer',
+    ],
+    'shipment_status' => [
+        'pending' => 'Pending Dispatch',
+        'packed' => 'Packed / Ready to Ship',
+        'in_transit' => 'In Transit / Shipped',
+        'out_for_delivery' => 'Out for Delivery',
+        'delivered' => 'Delivered',
+        'failed_delivery' => 'Delivery Attempt Failed',
+        'returned' => 'Returned to Origin',
+        'cancelled' => 'Cancelled',
+    ],
+    'courier_shipment_status' => [
+        'pending' => 'Pending',
+        'dispatched' => 'Dispatched',
+        'delivered' => 'Delivered',
+        'failed' => 'Failed',
+        'returned' => 'Returned',
+        'cancelled' => 'Cancelled',
+    ],
+    'shipping_provider' => [
+        'steadfast' => 'Steadfast Courier',
+        'pathao' => 'Pathao Courier',
+        'redx' => 'RedX Delivery',
+        'paperfly' => 'Paperfly',
+        'ecourier' => 'eCourier',
+        'sundarban' => 'Sundarban Courier',
+        'in_house' => 'In-House / Own Fleet',
+    ],
+    'coupon_type' => [
+        'percentage' => 'Percentage',
+        'fixed' => 'Fixed Amount',
+    ],
+    'return_status' => [
+        'pending' => 'Pending',
+        'approved' => 'Approved',
+        'rejected' => 'Rejected',
+        'completed' => 'Completed',
+    ],
+    'inventory_movement' => [
+        'opening' => 'Opening Stock',
+        'adjustment_in' => 'Stock In',
+        'adjustment_out' => 'Stock Out',
+        'sale' => 'Sale',
+    ],
+];

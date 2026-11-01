@@ -25,12 +25,7 @@ enum ReturnRequestStatus: string implements HasColor, HasIcon, HasLabel
 
     public function label(): string
     {
-        return match ($this) {
-            self::Pending => 'Pending',
-            self::Approved => 'Approved',
-            self::Rejected => 'Rejected',
-            self::Completed => 'Completed',
-        };
+        return __('enums.return_status.'.$this->value);
     }
 
     public function getColor(): string|array|null

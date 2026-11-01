@@ -4,8 +4,15 @@
     .fi-main {
         max-width: 100% !important;
         width: 100% !important;
-        padding-left: 1.5rem !important;
-        padding-right: 1.5rem !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    @media (min-width: 640px) {
+        .fi-main {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
     }
 
     @media (min-width: 1024px) {
@@ -13,6 +20,43 @@
             padding-left: 2rem !important;
             padding-right: 2rem !important;
         }
+    }
+
+    .admin-locale-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-inline-end: 0.75rem;
+        padding: 0.2rem;
+        border: 1px solid rgba(232, 106, 40, 0.28);
+        background: #fff7ed;
+        border-radius: 999px;
+    }
+    .admin-locale-switch-label {
+        padding-inline: 0.45rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        color: #9a3412;
+    }
+    .admin-locale-switch button {
+        border: 0;
+        background: transparent;
+        color: #9a3412;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.35rem 0.55rem;
+        border-radius: 999px;
+        cursor: pointer;
+    }
+    .admin-locale-switch button.is-active {
+        background: #e86a28;
+        color: #fff;
+    }
+    .dark .admin-locale-switch {
+        background: rgba(232, 106, 40, 0.12);
+        border-color: rgba(232, 106, 40, 0.35);
     }
 
     /* Topbar clean full-bleed styling */
@@ -646,7 +690,11 @@
         width: 100% !important;
     }
 
-    /* Prevent accidental horizontal table scrollbar on desktop */
+    /* Prevent accidental horizontal table scrollbar on desktop, but allow smooth horizontal scroll on mobile/tablet */
+    .fi-ta-content {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
 
     @media (min-width: 1024px) {
         .fi-ta-content {
@@ -1610,23 +1658,53 @@
         }
 
         .fi-ta-ctn .fi-ta-header-toolbar .fi-ta-search-field {
-            min-width: 14rem !important;
-            max-width: 20rem !important;
+            min-width: 16rem !important;
+            max-width: 22rem !important;
+            width: 18rem !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header-toolbar .fi-ta-search-field:focus-within {
+            max-width: 24rem !important;
+            width: 22rem !important;
+        }
+
+        .fi-ta-ctn .fi-ta-header-toolbar .fi-ta-search-field .fi-input-wrp {
+            border-radius: 0.625rem !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         }
     }
 
     /* Phone Version: Compact Spacing & Zero Extra Gap (Below 640px) */
     @media (max-width: 639px) {
+        .fi-ta-ctn .fi-ta-header-ctn {
+            padding: 0.75rem 0.85rem !important;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8) !important;
+        }
+        .dark .fi-ta-ctn .fi-ta-header-ctn {
+            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
         .fi-ta-ctn .fi-ta-header {
             padding-bottom: 0.5rem !important;
             border-bottom: none !important;
         }
 
         .fi-ta-ctn .fi-ta-header-toolbar {
-            padding-top: 0 !important;
-            padding-bottom: 0.75rem !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: nowrap !important;
+            padding: 0.75rem 0.85rem !important; /* Perfect top and bottom spacing so search never touches top border */
             border-top: none !important;
-            gap: 0 !important;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8) !important;
+            gap: 0.5rem !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .dark .fi-ta-ctn .fi-ta-header-toolbar {
+            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
         }
 
         .fi-ta-header-toolbar > .fi-ta-actions:empty,
@@ -1641,17 +1719,65 @@
 
         .fi-ta-header-toolbar > div:has(.fi-ta-search-field),
         .fi-ta-header-toolbar > div:last-child {
+            display: flex !important;
+            align-items: center !important;
             width: 100% !important;
+            gap: 0.65rem !important;
             min-height: auto !important;
-            margin-top: 0 !important;
-            margin-left: 0 !important;
-            margin-inline-start: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        .fi-ta-header-toolbar .fi-ta-search-field,
+        .fi-ta-header-toolbar .fi-ta-search-field {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            width: auto !important;
+            margin: 0 !important;
+        }
+
         .fi-ta-header-toolbar .fi-ta-search-field .fi-input-wrp {
             width: 100% !important;
-            margin-top: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Filter trigger and column manager buttons on mobile */
+        .fi-ta-header-toolbar .fi-ta-filters-dropdown,
+        .fi-ta-header-toolbar .fi-ta-col-manager-dropdown,
+        .fi-ta-header-toolbar .fi-icon-btn {
+            flex-shrink: 0 !important;
+        }
+
+        /* Order status tabs: smooth horizontal swipe on small devices */
+        .fi-tabs {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            white-space: nowrap !important;
+            scrollbar-width: none !important;
+        }
+        .fi-tabs::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        /* Pagination on mobile: compact and wraps cleanly */
+        .fi-pagination {
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            padding: 0.75rem 1rem !important;
+        }
+
+        .fi-pagination > div {
+            width: 100% !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+
+        /* Table container on mobile: prevent overflow blowout */
+        .fi-ta-ctn {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            border-radius: 0.75rem !important;
         }
     }
 </style>

@@ -17,6 +17,15 @@ class SettingSeeder extends Seeder
         $settings = [
             // General
             [
+                'key' => 'site_locale',
+                'label' => 'Site Language',
+                'value' => 'en',
+                'type' => SettingType::String,
+                'group' => 'general',
+                'is_public' => true,
+                'is_system' => false,
+            ],
+            [
                 'key' => 'site_name',
                 'label' => 'Site Name',
                 'value' => 'Nobo Shop',

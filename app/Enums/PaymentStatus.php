@@ -27,14 +27,6 @@ enum PaymentStatus: string
      */
     public function label(): string
     {
-        return match ($this) {
-            self::Unpaid => 'Unpaid',
-            self::Pending => 'Pending',
-            self::Partial => 'Partially Paid',
-            self::Paid => 'Paid',
-            self::Failed => 'Failed',
-            self::Refunded => 'Refunded',
-            self::PartiallyRefunded => 'Partially Refunded',
-        };
+        return __('enums.payment_status.'.$this->value);
     }
 }

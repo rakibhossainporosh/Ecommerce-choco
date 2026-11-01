@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Filament\Support\TranslateFilamentLabels;
 use App\Models\Order;
 use App\Models\ReturnRequest;
 use App\Models\User;
@@ -35,5 +36,7 @@ class AppServiceProvider extends ServiceProvider
 
         Order::observe(OrderObserver::class);
         ReturnRequest::observe(ReturnRequestObserver::class);
+
+        TranslateFilamentLabels::register();
     }
 }

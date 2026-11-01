@@ -13,14 +13,7 @@ enum CourierShipmentStatus: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Pending => 'Pending',
-            self::Dispatched => 'Dispatched',
-            self::Delivered => 'Delivered',
-            self::Failed => 'Failed',
-            self::Returned => 'Returned',
-            self::Cancelled => 'Cancelled',
-        };
+        return __('enums.courier_shipment_status.'.$this->value);
     }
 
     public function getColor(): string

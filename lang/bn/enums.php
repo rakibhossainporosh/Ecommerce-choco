@@ -1,0 +1,73 @@
+<?php
+
+return [
+    'order_status' => [
+        'pending' => 'অপেক্ষমাণ',
+        'confirmed' => 'নিশ্চিত',
+        'processing' => 'প্রস্তুত হচ্ছে',
+        'shipped' => 'পাঠানো হয়েছে',
+        'delivered' => 'ডেলিভারি হয়েছে',
+        'cancelled' => 'বাতিল',
+        'returned' => 'ফেরত',
+        'refunded' => 'টাকা ফেরত',
+    ],
+    'payment_status' => [
+        'unpaid' => 'অপরিশোধিত',
+        'pending' => 'পেমেন্ট যাচাই হচ্ছে',
+        'partial' => 'আংশিক পরিশোধ',
+        'paid' => 'পরিশোধিত',
+        'failed' => 'পেমেন্ট ব্যর্থ',
+        'refunded' => 'টাকা ফেরত',
+        'partially_refunded' => 'আংশিক টাকা ফেরত',
+    ],
+    'payment_method' => [
+        'cod' => 'ক্যাশ অন ডেলিভারি',
+        'bkash' => 'bKash',
+        'nagad' => 'Nagad',
+        'rocket' => 'Rocket',
+        'bank_transfer' => 'ব্যাংক ট্রান্সফার',
+    ],
+    'shipment_status' => [
+        'pending' => 'পাঠানোর অপেক্ষায়',
+        'packed' => 'প্যাক হয়েছে, পাঠানোর জন্য প্রস্তুত',
+        'in_transit' => 'পথে আছে',
+        'out_for_delivery' => 'ডেলিভারির জন্য বের হয়েছে',
+        'delivered' => 'ডেলিভারি হয়েছে',
+        'failed_delivery' => 'ডেলিভারি দেওয়া যায়নি',
+        'returned' => 'ফেরত এসেছে',
+        'cancelled' => 'বাতিল',
+    ],
+    'courier_shipment_status' => [
+        'pending' => 'অপেক্ষমাণ',
+        'dispatched' => 'পাঠানো হয়েছে',
+        'delivered' => 'ডেলিভারি হয়েছে',
+        'failed' => 'ব্যর্থ',
+        'returned' => 'ফেরত',
+        'cancelled' => 'বাতিল',
+    ],
+    'shipping_provider' => [
+        'steadfast' => 'Steadfast কুরিয়ার',
+        'pathao' => 'Pathao কুরিয়ার',
+        'redx' => 'RedX ডেলিভারি',
+        'paperfly' => 'Paperfly',
+        'ecourier' => 'eCourier',
+        'sundarban' => 'সুন্দরবন কুরিয়ার',
+        'in_house' => 'নিজস্ব ডেলিভারি',
+    ],
+    'coupon_type' => [
+        'percentage' => 'শতাংশ',
+        'fixed' => 'নির্দিষ্ট টাকা',
+    ],
+    'return_status' => [
+        'pending' => 'অপেক্ষমাণ',
+        'approved' => 'অনুমোদিত',
+        'rejected' => 'প্রত্যাখ্যাত',
+        'completed' => 'সম্পন্ন',
+    ],
+    'inventory_movement' => [
+        'opening' => 'শুরুর স্টক',
+        'adjustment_in' => 'স্টক বাড়ানো',
+        'adjustment_out' => 'স্টক কমানো',
+        'sale' => 'বিক্রি',
+    ],
+];
