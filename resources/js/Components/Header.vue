@@ -2,7 +2,7 @@
 import { ref, watch, useAttrs, onMounted, onUnmounted } from 'vue';
 import { Search, Heart, ShoppingBag, ChevronDown, ChevronRight, X, Loader2, User } from 'lucide-vue-next';
 import { Link, usePage, router } from '@inertiajs/vue3';
-import { useCart } from '../Composables/useCart';
+import { useCart, setCartCustomer } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
 
 const props = defineProps({
@@ -18,6 +18,10 @@ const attrs = useAttrs();
 const { totalCount, wishlistCount, openCart, openWishlist } = useCart();
 const { t, locale, locales, switchLocale } = useI18n();
 const page = usePage();
+
+watch(() => page.props.customer, (customer) => {
+    setCartCustomer(customer);
+}, { immediate: true });
 
 const getInitialSearch = () => {
     if (props.searchQuery) return props.searchQuery;

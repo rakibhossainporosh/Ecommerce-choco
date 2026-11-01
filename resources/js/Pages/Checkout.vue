@@ -1,11 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X, AlertCircle } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
-import { useCart } from '../Composables/useCart';
+import { useCart, setCartContact } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
 
 const page = usePage();
@@ -94,6 +94,17 @@ const updateShipping = () => {
     shippingCharge.value = form.shipping_city === 'Dhaka' ? shippingDhaka.value : shippingOutside.value;
     form.shipping_amount = shippingCharge.value;
 };
+
+watch(
+    () => [form.customer_name, form.customer_phone, form.customer_email],
+    () => {
+        setCartContact({
+            name: form.customer_name,
+            phone: form.customer_phone,
+            email: form.customer_email,
+        });
+    },
+);
 </script>
 
 <template>

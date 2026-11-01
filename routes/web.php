@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\OrderInvoiceController;
 use App\Http\Controllers\Admin\SiteLocaleController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\StorefrontController;
@@ -15,6 +16,8 @@ Route::get('/product/{slug}', [StorefrontController::class, 'show'])->name('prod
 Route::post('/product/{slug}/reviews', [StorefrontController::class, 'submitReview'])->middleware('throttle:15,1')->name('product.review.submit');
 Route::get('/checkout', [StorefrontController::class, 'checkout'])->name('checkout.index');
 Route::post('/checkout', [StorefrontController::class, 'processCheckout'])->middleware('throttle:15,1')->name('checkout.process');
+Route::post('/cart/remember', [CartController::class, 'remember'])->middleware('throttle:30,1')->name('cart.remember');
+Route::get('/cart/recover/{token}', [CartController::class, 'recover'])->where('token', '[A-Za-z0-9]{40}')->name('cart.recover');
 Route::post('/checkout/apply-coupon', [StorefrontController::class, 'applyCoupon'])->middleware('throttle:20,1')->name('checkout.apply-coupon');
 Route::get('/checkout/success', [StorefrontController::class, 'checkoutSuccess'])->name('checkout.success');
 Route::get('/track-order', [StorefrontController::class, 'trackOrder'])->name('track.order');

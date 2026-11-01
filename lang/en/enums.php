@@ -11,6 +11,12 @@ return [
         'returned' => 'Returned',
         'refunded' => 'Refunded',
     ],
+    'abandoned_cart_status' => [
+        'open' => 'Still open',
+        'reminded' => 'Reminded',
+        'recovered' => 'Ordered',
+        'closed' => 'Closed',
+    ],
     'payment_status' => [
         'unpaid' => 'Unpaid',
         'pending' => 'Pending',

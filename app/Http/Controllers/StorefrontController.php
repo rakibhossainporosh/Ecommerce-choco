@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\User;
+use App\Services\AbandonedCartService;
 use App\Support\CatalogTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -389,7 +390,7 @@ class StorefrontController extends Controller
     /**
      * Process checkout.
      */
-    public function processCheckout(Request $request)
+    public function processCheckout(Request $request, AbandonedCartService $carts)
     {
         $request->merge([
             'shipping_address_line' => $request->input('shipping_address_line', $request->input('shipping_address')),
@@ -427,7 +428,7 @@ class StorefrontController extends Controller
             }
         }
 
-        return DB::transaction(function () use ($validated, $request) {
+        return DB::transaction(function () use ($validated, $request, $carts) {
             $orderNumber = 'ORD-'.strtoupper(uniqid());
 
             // Link authenticated customer or create/find by phone
@@ -512,6 +513,8 @@ class StorefrontController extends Controller
                     'line_total' => $lineTotal,
                 ]);
             }
+
+            $carts->markRecovered($order);
 
             return redirect()->route('checkout.success', ['order_number' => $orderNumber]);
         });

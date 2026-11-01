@@ -18,8 +18,66 @@ const wishlistItems = ref(parsedWishlist);
 const saveCart = () => {
     if (typeof window !== 'undefined') {
         localStorage.setItem('nobo_cart', JSON.stringify(cartItems.value));
+        scheduleRemember();
     }
 };
+
+let rememberTimer = null;
+let cartContact = { name: '', phone: '', email: '' };
+
+const scheduleRemember = () => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    window.clearTimeout(rememberTimer);
+    rememberTimer = window.setTimeout(postRemember, 1500);
+};
+
+const postRemember = () => {
+    const customer = window.__noboCustomer || null;
+    const phone = String(cartContact.phone || customer?.phone || '').replace(/\D/g, '');
+    const hasIdentity = Boolean(customer?.id) || phone.length >= 10;
+
+    if (!hasIdentity) {
+        return;
+    }
+
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    fetch('/cart/remember', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': token,
+        },
+        body: JSON.stringify({
+            name: cartContact.name || customer?.name || '',
+            phone: cartContact.phone || customer?.phone || '',
+            email: cartContact.email || customer?.email || '',
+            items: cartItems.value.map((item) => ({
+                id: item.id,
+                variant_id: item.variant_id || item.id,
+                quantity: item.quantity,
+            })),
+        }),
+    }).catch(() => {});
+};
+
+export function setCartContact(next) {
+    cartContact = { ...cartContact, ...next };
+    scheduleRemember();
+}
+
+export function setCartCustomer(customer) {
+    const previousId = window.__noboCustomer?.id || null;
+    window.__noboCustomer = customer || null;
+
+    if (customer?.id && customer.id !== previousId && cartItems.value.length > 0) {
+        scheduleRemember();
+    }
+}
 
 const saveWishlist = () => {
     if (typeof window !== 'undefined') {

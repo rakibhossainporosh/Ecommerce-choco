@@ -11,6 +11,12 @@ return [
         'returned' => 'ফেরত',
         'refunded' => 'টাকা ফেরত',
     ],
+    'abandoned_cart_status' => [
+        'open' => 'এখনো খোলা',
+        'reminded' => 'মনে করানো হয়েছে',
+        'recovered' => 'অর্ডার হয়েছে',
+        'closed' => 'বন্ধ',
+    ],
     'payment_status' => [
         'unpaid' => 'অপরিশোধিত',
         'pending' => 'পেমেন্ট যাচাই হচ্ছে',

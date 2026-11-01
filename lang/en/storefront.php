@@ -162,6 +162,9 @@ return [
         'close' => 'Close',
         'items' => ':count items',
         'secure_checkout' => '100% secure checkout with cash on delivery.',
+        'recovering' => 'Putting your items back in the cart...',
+        'recover_empty' => 'This cart is no longer waiting.',
+        'recover_home' => 'Back to the shop',
     ],
     'wishlist' => [
         'title' => 'Wishlist',
