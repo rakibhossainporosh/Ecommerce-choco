@@ -764,6 +764,8 @@
         <!-- ==================================================== -->
         <div class="cov-col-right">
 
+            <livewire:order-fraud-check :order-id="$order->id" :key="'order-fraud-'.$order->id" />
+
             <!-- CARD: Customer Information -->
             <div class="cov-card">
                 <div class="cov-card-header">
