@@ -917,16 +917,74 @@
         color: #fbbf24 !important;
     }
 
-    /* Remove ugly browser link underlines on all table links and cells */
+    /* Remove all hover underlines across tables, action buttons, and links */
     .fi-ta-table a,
     .fi-ta-table a:hover,
     .fi-ta-table a:focus,
+    .fi-ta-table a:active,
+    .fi-ta-table button,
+    .fi-ta-table button:hover,
+    .fi-ta-table button:focus,
+    .fi-ta-table button:active,
+    .fi-ta-table .fi-link,
+    .fi-ta-table .fi-link:hover,
+    .fi-ta-table .fi-link:focus,
+    .fi-ta-table .fi-link:active,
+    .fi-ta-table .fi-link-label,
+    .fi-ta-table .fi-link-label:hover,
+    .fi-ta-table .fi-link-label:focus,
     .fi-ta-table .fi-ta-text-item a,
     .fi-ta-table .fi-ta-text-item a:hover,
     .fi-ta-table .fi-ta-text-item:hover,
-    .fi-ta-table .fi-ta-text a {
+    .fi-ta-table .fi-ta-text a,
+    .fi-ta-table .fi-ta-col-has-column-url .fi-ta-text-item,
+    .fi-ta-table .fi-ta-col-has-column-url .fi-ta-text-item:hover,
+    .fi-link,
+    .fi-link:hover,
+    .fi-link:focus,
+    .fi-link-label,
+    .fi-link-label:hover {
         text-decoration: none !important;
         text-decoration-line: none !important;
+        outline: none !important;
+    }
+
+    /* Modern, industry-standard micro-interaction for Table Action buttons (View, Invoice, Confirm, Cancel, etc.) */
+    .fi-ta-actions .fi-link {
+        padding: 0.35rem 0.65rem !important;
+        border-radius: 0.5rem !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background-color: transparent !important;
+    }
+
+    .fi-ta-actions .fi-link:hover {
+        background-color: rgba(241, 245, 249, 1) !important; /* Soft subtle pill background on hover */
+        transform: translateY(-1px) !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .dark .fi-ta-actions .fi-link:hover {
+        background-color: rgba(51, 65, 85, 0.6) !important;
+    }
+
+    /* Specific danger/cancel action modern hover styling */
+    .fi-ta-actions .fi-link.fi-color-danger:hover,
+    .fi-ta-actions .fi-link[class*="danger"]:hover {
+        background-color: rgba(254, 242, 242, 1) !important;
+    }
+    .dark .fi-ta-actions .fi-link.fi-color-danger:hover,
+    .dark .fi-ta-actions .fi-link[class*="danger"]:hover {
+        background-color: rgba(239, 68, 68, 0.15) !important;
+    }
+
+    /* Specific primary/info action modern hover styling */
+    .fi-ta-actions .fi-link.fi-color-primary:hover,
+    .fi-ta-actions .fi-link.fi-color-info:hover {
+        background-color: rgba(239, 246, 255, 1) !important;
+    }
+    .dark .fi-ta-actions .fi-link.fi-color-primary:hover,
+    .dark .fi-ta-actions .fi-link.fi-color-info:hover {
+        background-color: rgba(59, 130, 246, 0.15) !important;
     }
 
     /* 4. Last Column (Actions) keeps its precise right-aligned position */
