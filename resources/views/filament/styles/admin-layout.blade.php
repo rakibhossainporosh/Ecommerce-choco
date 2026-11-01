@@ -22,6 +22,61 @@
         }
     }
 
+    .sms-balance-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        padding: 1rem 1.25rem;
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        border-radius: 0.75rem;
+        background: #fff;
+    }
+
+    .dark .sms-balance-card {
+        background: rgb(17 24 39);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .sms-balance-kicker {
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .sms-balance-figure {
+        margin-top: 0.15rem;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sms-balance-note {
+        margin-top: 0.25rem;
+        max-width: 36rem;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        color: #6b7280;
+    }
+
+    .dark .sms-balance-note {
+        color: #9ca3af;
+    }
+
+    @media (max-width: 639px) {
+        .sms-balance-card {
+            align-items: flex-start;
+        }
+
+        .sms-balance-figure {
+            font-size: 1.5rem;
+        }
+    }
+
     .store-locale-choices.fi-btn-group {
         width: max-content;
         max-width: 100%;
@@ -41,10 +96,57 @@
         min-width: 0;
     }
 
+    .settings-choice-group.settings-choice-group-wide.fi-btn-group {
+        width: min(100%, 34rem);
+    }
+
     .settings-choice-group.fi-btn-group > .fi-btn {
         min-width: 0;
         justify-content: center;
+        overflow: hidden;
         padding-inline: 0.75rem;
+    }
+
+    .settings-choice-group.settings-choice-group-wide.fi-btn-group > .fi-btn {
+        height: auto;
+        min-height: 2.25rem;
+        overflow: visible;
+        white-space: normal;
+        line-height: 1.2;
+        text-align: center;
+        padding-block: 0.35rem;
+    }
+
+    @media (max-width: 639px) {
+        .fi-fo-toggle-buttons.settings-choice-group-wide.fi-btn-group {
+            display: grid;
+            grid-auto-flow: row;
+            grid-template-columns: minmax(0, 1fr);
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .fi-fo-toggle-buttons.settings-choice-group-wide.fi-btn-group > .fi-btn {
+            width: 100%;
+            min-width: 0;
+            margin-inline: 0;
+            overflow: hidden;
+            white-space: normal;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .fi-fo-toggle-buttons.settings-choice-group-wide.fi-btn-group > .fi-btn:nth-child(1 of .fi-btn) {
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .fi-fo-toggle-buttons.settings-choice-group-wide.fi-btn-group > .fi-btn:nth-last-child(1 of .fi-btn) {
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+
+        .fi-fo-toggle-buttons.settings-choice-group-wide.fi-btn-group > .fi-btn:not(:nth-child(1 of .fi-btn)) {
+            box-shadow: inset 0 1px 0 var(--color-gray-200);
+        }
     }
 
     .fi-grid-col:has(.settings-choice-group),
@@ -68,10 +170,70 @@
         min-height: 100%;
     }
 
-    .mail-audience-grid .fi-section {
+    .mail-audience-grid .fi-section,
+    .sms-audience-grid .fi-section {
         flex: 1 1 auto;
         width: 100%;
         height: 100%;
+    }
+
+    .sms-audience-grid > .fi-sc {
+        align-items: stretch;
+    }
+
+    .sms-audience-grid > .fi-sc > .fi-grid-col,
+    .sms-audience-grid > .fi-sc > .fi-grid-col > .fi-sc-component,
+    .sms-audience-grid .fi-sc-section {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        min-width: 0;
+        min-height: 100%;
+    }
+
+    .sms-audience-grid .fi-fo-field,
+    .sms-audience-grid .fi-input-wrp,
+    .sms-audience-grid textarea,
+    .sms-account-grid,
+    .sms-account-grid textarea {
+        width: 100%;
+        max-width: 100%;
+        margin-inline: 0;
+    }
+
+    .sms-phone-list {
+        width: min(100%, 16rem);
+        max-width: 100%;
+        margin-inline: 0;
+    }
+
+    .sms-phone-list .fi-fo-simple-repeater-add,
+    .sms-phone-list .fi-fo-repeater-add {
+        justify-content: flex-start;
+    }
+
+    .sms-phone-list .fi-fo-simple-repeater-item,
+    .sms-phone-list .fi-fo-simple-repeater-item-content,
+    .sms-phone-list .fi-input-wrp,
+    .sms-phone-list input {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+    .sms-doc-names .fi-fo-field,
+    .sms-doc-names .fi-input-wrp,
+    .sms-gateway-fields .fi-input-wrp {
+        max-width: 16rem;
+        min-width: 0;
+    }
+
+    .sms-gateway-fields,
+    .sms-gateway-fields .fi-fo-repeater-item,
+    .sms-gateway-fields .fi-input-wrp,
+    .sms-gateway-fields .fi-grid {
+        min-width: 0;
+        max-width: 100%;
     }
 
 

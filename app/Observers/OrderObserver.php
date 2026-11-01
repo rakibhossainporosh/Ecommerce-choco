@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\OrderMailer;
+use App\Services\OrderSmsNotifier;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,7 @@ class OrderObserver
                 ->sendToDatabase($users);
         }
 
-        $this->sendOrderMail($order, 'placed');
+        $this->notifyOrder($order, 'placed');
     }
 
     /**
@@ -49,10 +50,10 @@ class OrderObserver
 
         $status = $order->status;
 
-        $this->sendOrderMail($order, $status instanceof OrderStatus ? $status->value : (string) $status);
+        $this->notifyOrder($order, $status instanceof OrderStatus ? $status->value : (string) $status);
     }
 
-    private function sendOrderMail(Order $order, string $step): void
+    private function notifyOrder(Order $order, string $step): void
     {
         $orderId = $order->getKey();
 
@@ -67,6 +68,12 @@ class OrderObserver
                 app(OrderMailer::class)->send($fresh, $step);
             } catch (Throwable $exception) {
                 Log::error('Order email failed for order '.$orderId.': '.$exception->getMessage());
+            }
+
+            try {
+                app(OrderSmsNotifier::class)->send($fresh, $step);
+            } catch (Throwable $exception) {
+                Log::error('Order SMS failed for order '.$orderId.': '.$exception->getMessage());
             }
         };
 

@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\Order;
-use App\Models\Setting;
+use App\Support\OrderSmsSettings;
 use Exception;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -16,8 +19,7 @@ class SmsService
      */
     public function send(string $to, string $message): bool
     {
-        $enabled = (bool) Setting::get('sms_enabled', config('services.sms.enabled', true));
-        if (! $enabled) {
+        if (! OrderSmsSettings::enabled()) {
             return false;
         }
 
@@ -28,12 +30,13 @@ class SmsService
             return false;
         }
 
-        $driver = Setting::get('sms_driver', config('services.sms.driver', 'log'));
+        $driver = OrderSmsSettings::driver();
 
         try {
             return match ($driver) {
                 'greenweb' => $this->sendViaGreenweb($formattedTo, $message),
                 'bulksmsbd' => $this->sendViaBulkSmsBd($formattedTo, $message),
+                'custom' => $this->sendViaCustom($formattedTo, $message),
                 default => $this->sendViaLog($formattedTo, $message),
             };
         } catch (Exception $e) {
@@ -48,19 +51,7 @@ class SmsService
      */
     public function sendOrderPlacedSms(Order $order): bool
     {
-        $siteName = Setting::get('site_name', 'Nobo Shop');
-        $grandTotal = number_format((float) $order->grand_total);
-        $trackUrl = route('track.order', ['order_number' => $order->order_number]);
-
-        $message = __('sms.order_placed', [
-            'name' => $order->customer_name,
-            'shop' => $siteName,
-            'number' => $order->order_number,
-            'total' => $grandTotal,
-            'url' => $trackUrl,
-        ]);
-
-        return $this->send($order->customer_phone, $message);
+        return app(OrderSmsNotifier::class)->send($order, 'placed');
     }
 
     /**
@@ -68,18 +59,10 @@ class SmsService
      */
     public function sendOrderStatusUpdatedSms(Order $order, string $statusBengali): bool
     {
-        $siteName = Setting::get('site_name', 'Nobo Shop');
-        $trackUrl = route('track.order', ['order_number' => $order->order_number]);
+        $status = $order->status;
+        $step = $status instanceof OrderStatus ? $status->value : (string) $status;
 
-        $message = __('sms.status_updated', [
-            'name' => $order->customer_name,
-            'shop' => $siteName,
-            'number' => $order->order_number,
-            'status' => $statusBengali,
-            'url' => $trackUrl,
-        ]);
-
-        return $this->send($order->customer_phone, $message);
+        return app(OrderSmsNotifier::class)->send($order, $step, $statusBengali);
     }
 
     /**
@@ -87,14 +70,7 @@ class SmsService
      */
     public function sendCustomerRegistrationSms(Customer $customer): bool
     {
-        $siteName = Setting::get('site_name', 'Nobo Shop');
-        $message = __('sms.registered', [
-            'name' => $customer->name,
-            'shop' => $siteName,
-            'url' => url('/'),
-        ]);
-
-        return $this->send($customer->phone, $message);
+        return app(OrderSmsNotifier::class)->sendRegistered($customer);
     }
 
     /**
@@ -134,14 +110,14 @@ class SmsService
      */
     protected function sendViaGreenweb(string $to, string $message): bool
     {
-        $token = Setting::get('greenweb_token', config('services.greenweb.token'));
+        $token = OrderSmsSettings::credential('greenweb_token');
         if (! $token) {
             Log::warning('SmsService: Greenweb token is missing.');
 
             return false;
         }
 
-        $response = Http::asForm()->timeout(10)->post('https://api.greenweb.com.bd/api.php', [
+        $response = Http::asForm()->connectTimeout(3)->timeout(10)->post('https://api.greenweb.com.bd/api.php', [
             'token' => $token,
             'to' => $to,
             'message' => $message,
@@ -163,8 +139,8 @@ class SmsService
      */
     protected function sendViaBulkSmsBd(string $to, string $message): bool
     {
-        $apiKey = Setting::get('bulksmsbd_api_key', config('services.bulksmsbd.api_key'));
-        $senderId = Setting::get('bulksmsbd_sender_id', config('services.bulksmsbd.sender_id'));
+        $apiKey = OrderSmsSettings::credential('bulksmsbd_api_key');
+        $senderId = OrderSmsSettings::credential('bulksmsbd_sender_id');
 
         if (! $apiKey) {
             Log::warning('SmsService: BulkSMSBD API key is missing.');
@@ -172,7 +148,7 @@ class SmsService
             return false;
         }
 
-        $response = Http::timeout(10)->post('http://bulksmsbd.net/api/smsapi', [
+        $response = Http::connectTimeout(3)->timeout(10)->post('http://bulksmsbd.net/api/smsapi', [
             'api_key' => $apiKey,
             'type' => 'text',
             'number' => $to,
@@ -186,8 +162,271 @@ class SmsService
             return true;
         }
 
-        Log::error("SmsService: BulkSMSBD API error: {$response->body()}");
+        Log::error('SmsService: BulkSMSBD API error: status '.$response->status());
 
         return false;
+    }
+
+    /**
+     * Send SMS through the shop's own gateway URL.
+     */
+    protected function sendViaCustom(string $to, string $message): bool
+    {
+        $url = OrderSmsSettings::customUrl();
+        $payload = OrderSmsSettings::customRequest($to, $message);
+
+        if ($url === null || $payload === null || $payload['params'] === []) {
+            Log::warning('SmsService: Custom gateway URL or fields are missing.');
+
+            return false;
+        }
+
+        $request = Http::connectTimeout(3)->timeout(10);
+
+        if ($payload['headers'] !== []) {
+            $request = $request->withHeaders($payload['headers']);
+        }
+
+        $params = $payload['params'];
+        $response = match (OrderSmsSettings::customMethod()) {
+            'get' => $request->get($url, $params),
+            'json' => $request->acceptJson()->post($url, $params),
+            default => $request->asForm()->post($url, $params),
+        };
+
+        if ($response->successful()) {
+            Log::info("SmsService: Custom gateway SMS sent successfully to {$to}");
+
+            return true;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        Log::error('SmsService: Custom gateway failed for '.(is_string($host) ? $host : 'the SMS company').' with status '.$response->status());
+
+        return false;
+    }
+
+    /**
+     * @return array{state: 'ready'|'missing'|'unsupported'|'failed', amount: ?string}
+     */
+    public function balance(bool $fresh = false): array
+    {
+        $cacheKey = $this->balanceCacheKey();
+
+        if (! $fresh && is_string($cacheKey)) {
+            $cached = Cache::get($cacheKey);
+
+            if (is_array($cached) && ($cached['state'] ?? null) === 'ready') {
+                return [
+                    'state' => 'ready',
+                    'amount' => is_string($cached['amount'] ?? null) ? $cached['amount'] : null,
+                ];
+            }
+        }
+
+        $result = $this->fetchBalance();
+
+        if ($result['state'] === 'ready' && is_string($cacheKey)) {
+            Cache::put($cacheKey, $result, 60);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array{state: 'ready'|'missing'|'unsupported'|'failed', amount: ?string}
+     */
+    private function fetchBalance(): array
+    {
+        $driver = OrderSmsSettings::driver();
+
+        return match ($driver) {
+            'greenweb' => $this->balanceFromGreenweb(),
+            'bulksmsbd' => $this->balanceFromBulkSmsBd(),
+            'custom' => $this->balanceFromCustom(),
+            default => ['state' => 'missing', 'amount' => null],
+        };
+    }
+
+    /**
+     * @return array{state: 'ready'|'missing'|'unsupported'|'failed', amount: ?string}
+     */
+    private function balanceFromGreenweb(): array
+    {
+        $token = OrderSmsSettings::credential('greenweb_token');
+
+        if (! is_string($token) || $token === '') {
+            return ['state' => 'missing', 'amount' => null];
+        }
+
+        $url = 'https://api.greenweb.com.bd/g_api.php?'.http_build_query([
+            'token' => $token,
+            'json' => 1,
+        ]).'&balance';
+
+        return $this->readBalanceResponse('Greenweb', $url);
+    }
+
+    /**
+     * @return array{state: 'ready'|'missing'|'unsupported'|'failed', amount: ?string}
+     */
+    private function balanceFromBulkSmsBd(): array
+    {
+        $apiKey = OrderSmsSettings::credential('bulksmsbd_api_key');
+
+        if (! is_string($apiKey) || $apiKey === '') {
+            return ['state' => 'missing', 'amount' => null];
+        }
+
+        return $this->readBalanceResponse(
+            'BulkSMSBD',
+            'https://bulksmsbd.net/api/getBalanceApi?'.http_build_query(['api_key' => $apiKey]),
+            requireAcceptedCode: true,
+        );
+    }
+
+    /**
+     * @return array{state: 'ready'|'missing'|'unsupported'|'failed', amount: ?string}
+     */
+    private function balanceFromCustom(): array
+    {
+        $url = OrderSmsSettings::customBalanceRequestUrl();
+
+        if ($url === null) {
+            return ['state' => 'unsupported', 'amount' => null];
+        }
+
+        return $this->readBalanceResponse('Custom gateway', $url);
+    }
+
+    /**
+     * @return array{state: 'ready'|'failed', amount: ?string}
+     */
+    private function readBalanceResponse(string $company, string $url, bool $requireAcceptedCode = false): array
+    {
+        try {
+            $response = Http::withOptions(['allow_redirects' => false])
+                ->connectTimeout(3)
+                ->timeout(8)
+                ->get($url);
+        } catch (ConnectionException) {
+            Log::warning("SmsService: {$company} balance check could not connect.");
+
+            return ['state' => 'failed', 'amount' => null];
+        } catch (Exception) {
+            Log::warning("SmsService: {$company} balance check failed.");
+
+            return ['state' => 'failed', 'amount' => null];
+        }
+
+        if (! $response->successful()) {
+            Log::warning("SmsService: {$company} balance check failed with status ".$response->status());
+
+            return ['state' => 'failed', 'amount' => null];
+        }
+
+        $payload = $response->json();
+
+        if ($requireAcceptedCode) {
+            $code = is_array($payload) ? ($payload['response_code'] ?? null) : null;
+
+            if ((string) $code !== '202') {
+                Log::warning("SmsService: {$company} balance check was refused.");
+
+                return ['state' => 'failed', 'amount' => null];
+            }
+        }
+
+        $amount = $this->extractBalance($response->body());
+
+        if ($amount === null) {
+            Log::warning("SmsService: {$company} balance check returned no number.");
+
+            return ['state' => 'failed', 'amount' => null];
+        }
+
+        return ['state' => 'ready', 'amount' => $amount];
+    }
+
+    private function extractBalance(string $body): ?string
+    {
+        $body = trim($body);
+
+        if ($body === '') {
+            return null;
+        }
+
+        $json = json_decode($body, true);
+
+        if (is_array($json)) {
+            return $this->findBalanceValue($json);
+        }
+
+        if (preg_match('/^[\d,]+(?:\.\d+)?$/', $body) === 1) {
+            return str_replace(',', '', $body);
+        }
+
+        if (preg_match('/balance[^0-9]{0,20}([\d,]+(?:\.\d+)?)/i', $body, $matches) === 1) {
+            return str_replace(',', '', $matches[1]);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<mixed>  $data
+     */
+    private function findBalanceValue(array $data, int $depth = 0): ?string
+    {
+        foreach (['balance', 'Balance', 'sms_balance', 'credit', 'credits'] as $key) {
+            if (! array_key_exists($key, $data)) {
+                continue;
+            }
+
+            $value = $data[$key];
+
+            if (is_int($value) || is_float($value)) {
+                return (string) $value;
+            }
+
+            if (is_string($value) && preg_match('/^[\d,]+(?:\.\d+)?$/', trim($value)) === 1) {
+                return str_replace(',', '', trim($value));
+            }
+        }
+
+        if ($depth >= 2) {
+            return null;
+        }
+
+        foreach ($data as $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+
+            $found = $this->findBalanceValue($value, $depth + 1);
+
+            if ($found !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    }
+
+    private function balanceCacheKey(): ?string
+    {
+        $driver = OrderSmsSettings::driver();
+        $secret = match ($driver) {
+            'greenweb' => OrderSmsSettings::credential('greenweb_token'),
+            'bulksmsbd' => OrderSmsSettings::credential('bulksmsbd_api_key'),
+            'custom' => (OrderSmsSettings::credential('sms_custom_api_key') ?? '').'|'.(OrderSmsSettings::customBalanceUrl() ?? ''),
+            default => null,
+        };
+
+        if (! is_string($secret) || $secret === '' || $secret === '|') {
+            return null;
+        }
+
+        return 'sms-balance.'.$driver.'.'.hash('sha256', $secret);
     }
 }

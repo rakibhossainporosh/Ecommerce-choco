@@ -13,12 +13,10 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\User;
-use App\Services\SmsService;
 use App\Support\CatalogTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -513,13 +511,6 @@ class StorefrontController extends Controller
                     'quantity' => $item['quantity'],
                     'line_total' => $lineTotal,
                 ]);
-            }
-
-            // Send order placement confirmation SMS
-            try {
-                app(SmsService::class)->sendOrderPlacedSms($order);
-            } catch (\Throwable $e) {
-                Log::error('Order SMS notification error: '.$e->getMessage());
             }
 
             return redirect()->route('checkout.success', ['order_number' => $orderNumber]);
