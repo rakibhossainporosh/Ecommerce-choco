@@ -22,6 +22,7 @@ const loggedInCustomer = page.props.customer;
 const form = useForm({
     customer_name: loggedInCustomer ? loggedInCustomer.name : '',
     customer_phone: loggedInCustomer ? loggedInCustomer.phone : '',
+    customer_email: loggedInCustomer?.email || '',
     shipping_city: 'Dhaka',
     shipping_address_line: '',
     shipping_amount: shippingCharge.value,
@@ -133,6 +134,12 @@ const updateShipping = () => {
                                 <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.phone') }} *</label>
                                 <input v-model="form.customer_phone" type="text" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" placeholder="01XXX-XXXXXX">
                                 <span v-if="form.errors.customer_phone" class="text-red-500 text-xs mt-1">{{ form.errors.customer_phone }}</span>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.email') }}</label>
+                                <input v-model="form.customer_email" type="email" class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.email_placeholder')">
+                                <p class="text-xs text-[#94A3B8] mt-1">{{ t('checkout.email_hint') }}</p>
+                                <span v-if="form.errors.customer_email" class="text-red-500 text-xs mt-1">{{ form.errors.customer_email }}</span>
                             </div>
                         </div>
 

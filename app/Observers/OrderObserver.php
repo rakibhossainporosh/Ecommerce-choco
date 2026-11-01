@@ -2,10 +2,15 @@
 
 namespace App\Observers;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\OrderMailer;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class OrderObserver
 {
@@ -29,6 +34,8 @@ class OrderObserver
                 ])
                 ->sendToDatabase($users);
         }
+
+        $this->sendOrderMail($order, 'placed');
     }
 
     /**
@@ -36,7 +43,42 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
-        //
+        if (! $order->wasChanged('status')) {
+            return;
+        }
+
+        $status = $order->status;
+
+        $this->sendOrderMail($order, $status instanceof OrderStatus ? $status->value : (string) $status);
+    }
+
+    private function sendOrderMail(Order $order, string $step): void
+    {
+        $orderId = $order->getKey();
+
+        $send = function () use ($orderId, $step): void {
+            $fresh = Order::query()->with(['items', 'customer'])->find($orderId);
+
+            if (! $fresh) {
+                return;
+            }
+
+            try {
+                app(OrderMailer::class)->send($fresh, $step);
+            } catch (Throwable $exception) {
+                Log::error('Order email failed for order '.$orderId.': '.$exception->getMessage());
+            }
+        };
+
+        if (app()->runningUnitTests()) {
+            $send();
+
+            return;
+        }
+
+        DB::afterCommit(function () use ($send): void {
+            defer($send);
+        });
     }
 
     /**

@@ -402,6 +402,7 @@ class StorefrontController extends Controller
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
+            'customer_email' => 'nullable|email|max:255',
             'shipping_address_line' => 'required|string',
             'shipping_city' => 'required|string',
             'shipping_amount' => 'required|numeric',
@@ -443,6 +444,11 @@ class StorefrontController extends Controller
                 );
             }
 
+            if (filled($validated['customer_email'] ?? null) && blank($customer->email)) {
+                $customer->email = $validated['customer_email'];
+                $customer->save();
+            }
+
             $subtotal = 0;
             foreach ($validated['cart_items'] as $item) {
                 $variant = ProductVariant::find($item['variant_id']);
@@ -478,6 +484,7 @@ class StorefrontController extends Controller
                 'customer_id' => $customer->id,
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
+                'customer_email' => $validated['customer_email'] ?? null,
                 'shipping_address_line' => $validated['shipping_address_line'],
                 'shipping_city' => $validated['shipping_city'],
                 'shipping_area' => $validated['shipping_city'], // fallback for area

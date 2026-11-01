@@ -32,6 +32,49 @@
         justify-content: center;
     }
 
+    .settings-choice-group.fi-btn-group {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
+        width: min(100%, 15rem);
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .settings-choice-group.fi-btn-group > .fi-btn {
+        min-width: 0;
+        justify-content: center;
+        padding-inline: 0.75rem;
+    }
+
+    .fi-grid-col:has(.settings-choice-group),
+    .fi-sc-component:has(.settings-choice-group),
+    .fi-fo-field:has(.settings-choice-group) {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .mail-audience-grid > .fi-sc {
+        align-items: stretch;
+    }
+
+    .mail-audience-grid > .fi-sc > .fi-grid-col,
+    .mail-audience-grid > .fi-sc > .fi-grid-col > .fi-sc-component,
+    .mail-audience-grid .fi-sc-section {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 100%;
+    }
+
+    .mail-audience-grid .fi-section {
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+    }
+
+
     .fi-topbar-end .admin-locale {
         display: flex;
         align-items: center;
