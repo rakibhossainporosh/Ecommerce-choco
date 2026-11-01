@@ -664,8 +664,7 @@
         white-space: nowrap !important;
     }
 
-    /* 2. Primary Identifier Column (Order #, Name, Log name, etc.)
-          Ensure the header and cell content start at the exact same horizontal position! */
+    /* 2. Primary Identifier Column (Order #, Name, Log name, etc.) */
     .fi-ta-table th.fi-ta-header-cell:not(.fi-ta-selection-cell):not(.fi-ta-actions-header-cell):first-of-type,
     .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child):first-of-type,
     .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:nth-child(2),
@@ -673,8 +672,8 @@
     .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:first-child,
     .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:first-child {
         text-align: left !important;
-        padding-left: 1.5rem !important;
-        padding-right: 1.25rem !important;
+        padding-left: 1.25rem !important;
+        padding-right: 1rem !important;
     }
 
     /* Reset internal padding inside first data cell so it flushes exactly with the header text */
@@ -705,93 +704,190 @@
         padding-left: 0 !important;
     }
 
-    /* 3. Middle Columns: Data and Headers CENTER-ALIGNED with Equal Gaps */
+    /* 3. Middle Columns: Data and Headers CENTER-ALIGNED with Equal Gaps across every field */
     .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child),
     .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child),
     .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child),
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) {
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child),
+    .fi-ta-table th.fi-ta-header-cell.fi-align-center,
+    .fi-ta-table td.fi-ta-cell.fi-align-center,
+    .fi-ta-header-cell-customer-name,
+    .fi-ta-header-cell-items-count,
+    .fi-ta-header-cell-status,
+    .fi-ta-header-cell-payment-status,
+    .fi-ta-header-cell-payment-method,
+    .fi-ta-header-cell-grand-total,
+    .fi-ta-header-cell-placed-at,
+    .fi-ta-cell-customer-name,
+    .fi-ta-cell-items-count,
+    .fi-ta-cell-status,
+    .fi-ta-cell-payment-status,
+    .fi-ta-cell-payment-method,
+    .fi-ta-cell-grand-total,
+    .fi-ta-cell-placed-at {
         text-align: center !important;
-        padding-left: 1.25rem !important;
-        padding-right: 1.25rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
 
-    /* Header sort button, container and label perfectly centered */
-    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > button,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > span,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > div,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) .fi-ta-header-cell-sort-btn,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) > button,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) > span,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) > div {
+    /* Equalized internal text container padding */
+    .fi-ta-table td.fi-ta-cell .fi-ta-text:not(.fi-inline) {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Force table header cell text-center */
+    .fi-ta-table th.fi-ta-header-cell.fi-align-center,
+    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child),
+    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) {
+        text-align: center !important;
+    }
+
+    /* Middle Columns: Header Sort Button dead-centering with zero offset */
+    .fi-ta-table th.fi-ta-header-cell.fi-align-center .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-customer-name .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-customer-phone .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-items-count .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-status .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-payment-status .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-payment-method .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-grand-total .fi-ta-header-cell-sort-btn,
+    .fi-ta-header-cell-placed-at .fi-ta-header-cell-sort-btn {
         display: inline-flex !important;
+        position: relative !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        width: 100% !important;
+        width: auto !important;
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important; /* Symmetrical padding so text stays 100% dead center */
     }
 
-    /* Ensure sort button icon doesn't push label off-center */
-    .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-header-cell-sort-btn,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) th.fi-ta-header-cell:not(:first-child):not(:last-child) .fi-ta-header-cell-sort-btn {
+    .fi-ta-table th.fi-ta-header-cell.fi-align-center .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-customer-name .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-customer-phone .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-items-count .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-status .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-payment-status .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-payment-method .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-grand-total .fi-ta-header-cell-sort-btn svg,
+    .fi-ta-header-cell-placed-at .fi-ta-header-cell-sort-btn svg {
+        position: absolute !important;
+        right: 0 !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        margin: 0 !important;
+    }
+
+    /* Target SVG and Images inside middle cells */
+    .fi-ta-table td.fi-align-center svg,
+    .fi-ta-table td.fi-align-center img {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        display: block !important;
+    }
+
+    /* All centered table data cells (.fi-align-center and targeted columns) */
+    .fi-ta-table td.fi-align-center,
+    .fi-ta-table th.fi-align-center,
+    .fi-ta-header-cell-customer-name,
+    .fi-ta-header-cell-customer-phone,
+    .fi-ta-header-cell-items-count,
+    .fi-ta-header-cell-status,
+    .fi-ta-header-cell-payment-status,
+    .fi-ta-header-cell-payment-method,
+    .fi-ta-header-cell-grand-total,
+    .fi-ta-header-cell-placed-at,
+    .fi-ta-cell-customer-name,
+    .fi-ta-cell-customer-phone,
+    .fi-ta-cell-items-count,
+    .fi-ta-cell-status,
+    .fi-ta-cell-payment-status,
+    .fi-ta-cell-payment-method,
+    .fi-ta-cell-grand-total,
+    .fi-ta-cell-placed-at {
+        text-align: center !important;
+    }
+
+    /* Ensure .fi-ta-col stretches full width and centers its content */
+    .fi-ta-table td.fi-align-center .fi-ta-col,
+    .fi-ta-cell-customer-name .fi-ta-col,
+    .fi-ta-cell-customer-phone .fi-ta-col,
+    .fi-ta-cell-items-count .fi-ta-col,
+    .fi-ta-cell-status .fi-ta-col,
+    .fi-ta-cell-payment-status .fi-ta-col,
+    .fi-ta-cell-payment-method .fi-ta-col,
+    .fi-ta-cell-grand-total .fi-ta-col,
+    .fi-ta-cell-placed-at .fi-ta-col {
+        display: flex !important;
+        align-items: center !important;
         justify-content: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
     }
 
-    /* Cell content, text, badges, icons, images, and descriptions strictly centered */
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-col,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-icon,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-image,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-item,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-badge,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) .fi-ta-text-description,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > div,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > p,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > a,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td.fi-ta-cell:not(:first-child):not(:nth-child(2)):not(:last-child) > span,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-col,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-icon,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-image,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text-item,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-badge,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text-description,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > div,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > p,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > a,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) > span {
+    /* Inner containers and text (.fi-ta-text) */
+    .fi-ta-table td.fi-align-center .fi-ta-text,
+    .fi-ta-cell-customer-name .fi-ta-text,
+    .fi-ta-cell-customer-phone .fi-ta-text,
+    .fi-ta-cell-items-count .fi-ta-text,
+    .fi-ta-cell-status .fi-ta-text,
+    .fi-ta-cell-payment-status .fi-ta-text,
+    .fi-ta-cell-payment-method .fi-ta-text,
+    .fi-ta-cell-grand-total .fi-ta-text,
+    .fi-ta-cell-placed-at .fi-ta-text {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
         width: 100% !important;
+        margin: 0 auto !important;
     }
 
-    /* Centering inline elements like badges, spans, and icons inside the wrapper */
-    .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child) .fi-badge,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-text-item > span,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td.fi-ta-cell:not(:first-child):not(:last-child) .fi-ta-placeholder {
+    /* Single-item divs inside .fi-ta-text (e.g. optimized render or default div) */
+    .fi-ta-table td.fi-align-center .fi-ta-text > div,
+    .fi-ta-table td.fi-align-center .fi-ta-text > p,
+    .fi-ta-table td.fi-align-center .fi-ta-text > span,
+    .fi-ta-cell-customer-name .fi-ta-text-item,
+    .fi-ta-cell-customer-phone .fi-ta-text-item,
+    .fi-ta-cell-items-count .fi-ta-text-item,
+    .fi-ta-cell-status .fi-ta-text-item,
+    .fi-ta-cell-payment-status .fi-ta-text-item,
+    .fi-ta-cell-payment-method .fi-ta-text-item,
+    .fi-ta-cell-grand-total .fi-ta-text-item,
+    .fi-ta-cell-placed-at .fi-ta-text-item {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
+        margin: 0 auto !important;
+        width: auto !important;
     }
 
-    /* Target SVG and Images inside middle cells */
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td:not(:first-child):not(:nth-child(2)):not(:last-child) svg,
-    .fi-ta-table tr:has(.fi-ta-selection-cell) td:not(:first-child):not(:nth-child(2)):not(:last-child) img,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td:not(:first-child):not(:last-child) svg,
-    .fi-ta-table tr:not(:has(.fi-ta-selection-cell)) td:not(:first-child):not(:last-child) img {
-        margin-left: auto !important;
-        margin-right: auto !important;
-        display: block !important;
+    /* Badges & placeholders inside centered cells: strictly inline-flex center */
+    .fi-ta-table td.fi-align-center .fi-badge,
+    .fi-ta-cell-customer-name .fi-badge,
+    .fi-ta-cell-customer-phone .fi-badge,
+    .fi-ta-cell-items-count .fi-badge,
+    .fi-ta-cell-status .fi-badge,
+    .fi-ta-cell-payment-status .fi-badge,
+    .fi-ta-cell-customer-name .fi-ta-placeholder,
+    .fi-ta-cell-customer-phone .fi-ta-placeholder,
+    .fi-ta-cell-items-count .fi-ta-placeholder,
+    .fi-ta-cell-status .fi-ta-placeholder,
+    .fi-ta-cell-payment-status .fi-ta-placeholder,
+    .fi-ta-cell-payment-method .fi-ta-placeholder,
+    .fi-ta-cell-grand-total .fi-ta-placeholder,
+    .fi-ta-cell-placed-at .fi-ta-placeholder {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        margin: 0 auto !important;
     }
 
     /* Highlight interactive clickable table rows with distinct background, border indicator, and pointer cursor */

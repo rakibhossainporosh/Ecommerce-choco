@@ -35,11 +35,13 @@ class OrdersTable
                 TextColumn::make('customer_name')
                     ->label('Customer Name')
                     ->searchable()
+                    ->alignCenter()
                     ->sortable(),
 
                 TextColumn::make('customer_phone')
                     ->label('Customer Phone')
                     ->searchable()
+                    ->alignCenter()
                     ->copyable()
                     ->copyMessage('Phone number copied!'),
 
@@ -54,11 +56,13 @@ class OrdersTable
                     ->label('Items')
                     ->badge()
                     ->color('gray')
+                    ->alignCenter()
                     ->sortable(),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
+                    ->alignCenter()
                     ->formatStateUsing(fn (?OrderStatus $state): ?string => $state?->label()
                         ?? (is_string($state) ? OrderStatus::tryFrom($state)?->label() : null)
                         ?? $state?->value
@@ -79,6 +83,7 @@ class OrdersTable
                 TextColumn::make('payment_status')
                     ->label('Payment Status')
                     ->badge()
+                    ->alignCenter()
                     ->formatStateUsing(fn (?PaymentStatus $state): ?string => $state?->label()
                         ?? (is_string($state) ? PaymentStatus::tryFrom($state)?->label() : null)
                         ?? $state?->value
@@ -95,6 +100,7 @@ class OrdersTable
 
                 TextColumn::make('payment_method')
                     ->label('Payment Method')
+                    ->alignCenter()
                     ->formatStateUsing(fn (?PaymentMethod $state): ?string => $state?->label()
                         ?? (is_string($state) ? PaymentMethod::tryFrom($state)?->label() : null)
                         ?? (string) $state
@@ -103,6 +109,7 @@ class OrdersTable
 
                 TextColumn::make('grand_total')
                     ->label('Grand Total')
+                    ->alignCenter()
                     ->formatStateUsing(fn ($state): string => config('currency.symbol', '৳').' '.number_format(
                         (float) $state,
                         (int) config('currency.decimals', 2),
@@ -113,6 +120,7 @@ class OrdersTable
 
                 TextColumn::make('placed_at')
                     ->label('Placed At')
+                    ->alignCenter()
                     ->dateTime('d M Y, h:i A')
                     ->sortable()
                     ->placeholder('—'),
