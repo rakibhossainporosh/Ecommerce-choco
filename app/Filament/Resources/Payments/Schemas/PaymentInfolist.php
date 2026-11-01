@@ -41,7 +41,7 @@ class PaymentInfolist
 
                         TextEntry::make('customer.name')
                             ->label('Customer')
-                            ->placeholder('Walk-in / Guest'),
+                            ->placeholder(__('Walk-in / Guest')),
 
                         TextEntry::make('amount')
                             ->label('Amount')
@@ -72,21 +72,21 @@ class PaymentInfolist
 
                         TextEntry::make('transaction_id')
                             ->label('TrxID / Gateway Ref')
-                            ->placeholder('—')
+                            ->placeholder(__('—'))
                             ->copyable(),
 
                         TextEntry::make('account_number')
                             ->label('Sender Account / Phone')
-                            ->placeholder('—'),
+                            ->placeholder(__('—')),
 
                         TextEntry::make('paid_at')
                             ->label('Payment Date')
                             ->dateTime('M j, Y H:i')
-                            ->placeholder('Pending verification'),
+                            ->placeholder(__('Pending verification')),
 
                         TextEntry::make('recordedBy.name')
                             ->label('Recorded By')
-                            ->placeholder('Storefront / Customer Checkout'),
+                            ->placeholder(__('Storefront / Customer Checkout')),
 
                         TextEntry::make('created_at')
                             ->label('Recorded At')

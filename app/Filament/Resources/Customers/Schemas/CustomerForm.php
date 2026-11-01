@@ -19,14 +19,14 @@ class CustomerForm
             ->components([
                 TextInput::make('name')
                     ->label('Customer Name')
-                    ->placeholder('e.g. Rahim Ahmed')
+                    ->placeholder(__('e.g. Rahim Ahmed'))
                     ->prefixIcon(Heroicon::OutlinedUser)
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('phone')
                     ->label('Phone Number')
-                    ->placeholder('017XXXXXXXX')
+                    ->placeholder(__('017XXXXXXXX'))
                     ->prefixIcon(Heroicon::OutlinedPhone)
                     ->required()
                     ->tel()
@@ -35,7 +35,7 @@ class CustomerForm
 
                 TextInput::make('email')
                     ->label('Email Address')
-                    ->placeholder('customer@example.com')
+                    ->placeholder(__('customer@example.com'))
                     ->prefixIcon(Heroicon::OutlinedEnvelope)
                     ->email()
                     ->nullable()
@@ -44,7 +44,7 @@ class CustomerForm
 
                 Select::make('user_id')
                     ->label('Linked User Account')
-                    ->placeholder('None (Guest / Walk-in)')
+                    ->placeholder(__('None (Guest / Walk-in)'))
                     ->prefixIcon(Heroicon::OutlinedGlobeAlt)
                     ->relationship('user', 'email')
                     ->searchable()
@@ -54,14 +54,14 @@ class CustomerForm
 
                 Textarea::make('notes')
                     ->label('Internal Merchant Notes')
-                    ->placeholder('Special preferences, delivery instructions, VIP notes...')
+                    ->placeholder(__('Special preferences, delivery instructions, VIP notes...'))
                     ->nullable()
                     ->rows(3)
                     ->columnSpanFull(),
 
                 Toggle::make('is_active')
                     ->label('Active Customer')
-                    ->helperText('Active customers can place orders and receive notifications.')
+                    ->helperText(__('Active customers can place orders and receive notifications.'))
                     ->default(true)
                     ->required()
                     ->columnSpanFull(),

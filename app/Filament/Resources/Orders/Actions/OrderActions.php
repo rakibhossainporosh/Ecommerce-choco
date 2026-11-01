@@ -24,8 +24,8 @@ class OrderActions
             ->icon(Heroicon::OutlinedCheckCircle)
             ->color('info')
             ->requiresConfirmation()
-            ->modalHeading(fn (Order $record): string => "Confirm Order #{$record->order_number}")
-            ->modalDescription('Are you sure you want to confirm this order?')
+            ->modalHeading(fn (Order $record): string => __('Confirm Order #:number', ['number' => $record->order_number]))
+            ->modalDescription(__('Are you sure you want to confirm this order?'))
             ->visible(fn (?Order $record): bool => $record instanceof Order
                 && (auth()->user()?->can('confirm', $record) ?? false)
                 && $record->canTransitionTo(OrderStatus::Confirmed)
@@ -40,13 +40,13 @@ class OrderActions
                     $record->confirm();
 
                     Notification::make()
-                        ->title('Order Confirmed')
-                        ->body("Order #{$record->order_number} has been confirmed.")
+                        ->title(__('Order Confirmed'))
+                        ->body(__('Order #:number has been confirmed.', ['number' => $record->order_number]))
                         ->success()
                         ->send();
                 } catch (InvalidOrderTransitionException|InventoryException $e) {
                     Notification::make()
-                        ->title('Transition Failed')
+                        ->title(__('Transition Failed'))
                         ->body($e->getMessage())
                         ->danger()
                         ->send();
@@ -64,8 +64,8 @@ class OrderActions
             ->icon(Heroicon::OutlinedArrowPath)
             ->color('primary')
             ->requiresConfirmation()
-            ->modalHeading(fn (Order $record): string => "Start Processing Order #{$record->order_number}")
-            ->modalDescription('Are you sure you want to mark this order as processing?')
+            ->modalHeading(fn (Order $record): string => __('Start Processing Order #:number', ['number' => $record->order_number]))
+            ->modalDescription(__('Are you sure you want to mark this order as processing?'))
             ->visible(fn (?Order $record): bool => $record instanceof Order
                 && (auth()->user()?->can('process', $record) ?? false)
                 && $record->canTransitionTo(OrderStatus::Processing)
@@ -80,13 +80,13 @@ class OrderActions
                     $record->startProcessing();
 
                     Notification::make()
-                        ->title('Order Processing Started')
-                        ->body("Order #{$record->order_number} is now being processed.")
+                        ->title(__('Order Processing Started'))
+                        ->body(__('Order #:number is now being processed.', ['number' => $record->order_number]))
                         ->success()
                         ->send();
                 } catch (InvalidOrderTransitionException $e) {
                     Notification::make()
-                        ->title('Transition Failed')
+                        ->title(__('Transition Failed'))
                         ->body($e->getMessage())
                         ->danger()
                         ->send();
@@ -104,8 +104,8 @@ class OrderActions
             ->icon(Heroicon::OutlinedTruck)
             ->color('purple')
             ->requiresConfirmation()
-            ->modalHeading(fn (Order $record): string => "Ship Order #{$record->order_number}")
-            ->modalDescription('Are you sure you want to mark this order as shipped?')
+            ->modalHeading(fn (Order $record): string => __('Ship Order #:number', ['number' => $record->order_number]))
+            ->modalDescription(__('Are you sure you want to mark this order as shipped?'))
             ->visible(fn (?Order $record): bool => $record instanceof Order
                 && (auth()->user()?->can('ship', $record) ?? false)
                 && $record->canTransitionTo(OrderStatus::Shipped)
@@ -120,13 +120,13 @@ class OrderActions
                     $record->ship();
 
                     Notification::make()
-                        ->title('Order Shipped')
-                        ->body("Order #{$record->order_number} has been marked as shipped.")
+                        ->title(__('Order Shipped'))
+                        ->body(__('Order #:number has been marked as shipped.', ['number' => $record->order_number]))
                         ->success()
                         ->send();
                 } catch (InvalidOrderTransitionException $e) {
                     Notification::make()
-                        ->title('Transition Failed')
+                        ->title(__('Transition Failed'))
                         ->body($e->getMessage())
                         ->danger()
                         ->send();
@@ -144,8 +144,8 @@ class OrderActions
             ->icon(Heroicon::OutlinedCheckBadge)
             ->color('success')
             ->requiresConfirmation()
-            ->modalHeading(fn (Order $record): string => "Deliver Order #{$record->order_number}")
-            ->modalDescription('Are you sure you want to mark this order as delivered?')
+            ->modalHeading(fn (Order $record): string => __('Deliver Order #:number', ['number' => $record->order_number]))
+            ->modalDescription(__('Are you sure you want to mark this order as delivered?'))
             ->visible(fn (?Order $record): bool => $record instanceof Order
                 && (auth()->user()?->can('deliver', $record) ?? false)
                 && $record->canTransitionTo(OrderStatus::Delivered)
@@ -160,13 +160,13 @@ class OrderActions
                     $record->deliver();
 
                     Notification::make()
-                        ->title('Order Delivered')
-                        ->body("Order #{$record->order_number} has been marked as delivered.")
+                        ->title(__('Order Delivered'))
+                        ->body(__('Order #:number has been marked as delivered.', ['number' => $record->order_number]))
                         ->success()
                         ->send();
                 } catch (InvalidOrderTransitionException $e) {
                     Notification::make()
-                        ->title('Transition Failed')
+                        ->title(__('Transition Failed'))
                         ->body($e->getMessage())
                         ->danger()
                         ->send();
@@ -184,13 +184,13 @@ class OrderActions
             ->icon(Heroicon::OutlinedXCircle)
             ->color('danger')
             ->requiresConfirmation()
-            ->modalHeading(fn (Order $record): string => "Cancel Order #{$record->order_number}")
-            ->modalDescription('Please provide a reason for cancelling this order.')
+            ->modalHeading(fn (Order $record): string => __('Cancel Order #:number', ['number' => $record->order_number]))
+            ->modalDescription(__('Please provide a reason for cancelling this order.'))
             ->modalSubmitActionLabel('Confirm Cancellation')
             ->form([
                 Textarea::make('cancellation_reason')
                     ->label('Cancellation Reason')
-                    ->placeholder('e.g. Customer requested cancellation / Out of stock')
+                    ->placeholder(__('e.g. Customer requested cancellation / Out of stock'))
                     ->required()
                     ->rows(3)
                     ->maxLength(255)
@@ -211,8 +211,8 @@ class OrderActions
 
                     if ($reason === '') {
                         Notification::make()
-                            ->title('Validation Error')
-                            ->body('Cancellation reason cannot be empty.')
+                            ->title(__('Validation Error'))
+                            ->body(__('Cancellation reason cannot be empty.'))
                             ->danger()
                             ->send();
 
@@ -224,13 +224,13 @@ class OrderActions
                     $record->cancel($reason, $user);
 
                     Notification::make()
-                        ->title('Order Cancelled')
-                        ->body("Order #{$record->order_number} has been cancelled.")
+                        ->title(__('Order Cancelled'))
+                        ->body(__('Order #:number has been cancelled.', ['number' => $record->order_number]))
                         ->success()
                         ->send();
                 } catch (InvalidOrderTransitionException $e) {
                     Notification::make()
-                        ->title('Cancellation Failed')
+                        ->title(__('Cancellation Failed'))
                         ->body($e->getMessage())
                         ->danger()
                         ->send();

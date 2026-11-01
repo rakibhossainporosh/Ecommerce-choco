@@ -1,41 +1,27 @@
 <?php
 
 return [
+    'title' => ':label বদলান',
 
-    'title' => ':label সম্পাদন',
-
-    'breadcrumb' => 'সম্পাদন করুন',
+    'breadcrumb' => 'বদলান',
 
     'form' => [
-
         'actions' => [
-
-            'cancel' => [
-                'label' => 'বাতিল',
-            ],
-
             'save' => [
-                'label' => 'সম্পাদন করুন',
+                'label' => 'সেভ করুন',
             ],
-
         ],
-
     ],
 
     'content' => [
-
         'tab' => [
-            'label' => 'সম্পাদন',
+            'label' => 'বদলান',
         ],
-
     ],
 
     'notifications' => [
-
         'saved' => [
-            'title' => 'সম্পাদন করা হয়েছে',
+            'title' => 'সেভ হয়েছে',
         ],
-
     ],
-
 ];

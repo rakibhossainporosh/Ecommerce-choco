@@ -10,12 +10,14 @@ import {
     MapPin
 } from 'lucide-vue-next';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useI18n } from '../Composables/useI18n';
 
 const page = usePage();
+const { t } = useI18n();
 const settings = computed(() => page.props.site_settings || {});
 
 const copyrightText = computed(() => {
-    const text = settings.value.footer_copyright || '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।';
+    const text = settings.value.footer_copyright || t('footer.copyright_fallback');
     return text.replace('{year}', new Date().getFullYear());
 });
 
@@ -57,7 +59,7 @@ const getGmailComposeUrl = (email) => {
                         </template>
                     </a>
                     <p class="text-[15px] text-[#64748B] leading-relaxed mt-2 whitespace-pre-line">
-                        {{ settings.footer_about || (settings.site_tagline ? settings.site_tagline + ' — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান।' : 'আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।') }}
+                        {{ settings.footer_about || (settings.site_tagline ? settings.site_tagline + ' — ' + t('footer.about_fallback') : t('footer.about_fallback')) }}
                     </p>
                     <div class="flex items-center gap-4 mt-2">
                         <a 
@@ -66,7 +68,7 @@ const getGmailComposeUrl = (email) => {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
-                            title="Facebook"
+                            :title="t('footer.facebook')"
                         >
                             <Facebook class="w-4 h-4" />
                         </a>
@@ -76,7 +78,7 @@ const getGmailComposeUrl = (email) => {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
-                            title="Twitter / X"
+                            :title="t('footer.twitter')"
                         >
                             <Twitter class="w-4 h-4" />
                         </a>
@@ -86,7 +88,7 @@ const getGmailComposeUrl = (email) => {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
-                            title="Instagram"
+                            :title="t('footer.instagram')"
                         >
                             <Instagram class="w-4 h-4" />
                         </a>
@@ -96,7 +98,7 @@ const getGmailComposeUrl = (email) => {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="w-9 h-9 rounded-full bg-[#F6F1E9] flex items-center justify-center text-[#475569] hover:bg-[#E86A28] hover:text-white transition-colors" 
-                            title="YouTube"
+                            :title="t('footer.youtube')"
                         >
                             <Youtube class="w-4 h-4" />
                         </a>
@@ -106,7 +108,7 @@ const getGmailComposeUrl = (email) => {
                 <!-- Column 2: Useful Links -->
                 <div>
                     <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">
-                        {{ settings.footer_col2_title || 'প্রয়োজনীয় লিংক' }}
+                        {{ settings.footer_col2_title || t('footer.useful_links') }}
                     </h3>
                     <ul class="flex flex-col gap-3">
                         <li v-for="(link, idx) in (settings.footer_col2_links || [])" :key="idx">
@@ -131,7 +133,7 @@ const getGmailComposeUrl = (email) => {
                 <!-- Column 3: Customer Service -->
                 <div>
                     <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">
-                        {{ settings.footer_col3_title || 'গ্রাহক সেবা' }}
+                        {{ settings.footer_col3_title || t('footer.customer_service') }}
                     </h3>
                     <ul class="flex flex-col gap-3">
                         <li v-for="(link, idx) in (settings.footer_col3_links || [])" :key="idx">
@@ -156,19 +158,19 @@ const getGmailComposeUrl = (email) => {
                 <!-- Column 4: Contact Info -->
                 <div>
                     <h3 class="text-[17px] font-bold text-[#1E293B] mb-5">
-                        {{ settings.footer_col4_title || 'যোগাযোগ' }}
+                        {{ settings.footer_col4_title || t('footer.contact') }}
                     </h3>
                     <ul class="flex flex-col gap-4">
                         <li class="flex items-start gap-3">
                             <MapPin class="w-5 h-5 text-[#E86A28] shrink-0 mt-0.5" />
                             <span class="text-[#64748B] text-[15px] leading-relaxed">
-                                {{ settings.contact_address || '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ' }}
+                                {{ settings.contact_address || t('footer.default_address') }}
                             </span>
                         </li>
                         <li class="flex items-center gap-3">
                             <Phone class="w-5 h-5 text-[#E86A28] shrink-0" />
-                            <a :href="'tel:' + (settings.contact_phone || '+8805234567890')" class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors">
-                                {{ settings.contact_phone || '+৮৮০ ৫২৩৪ ৫৬৭৮৯০' }}
+                            <a :href="'tel:' + (settings.contact_phone_tel || '+8805234567890')" class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors">
+                                {{ settings.contact_phone }}
                             </a>
                         </li>
                         <li class="flex items-center gap-3">
@@ -177,7 +179,7 @@ const getGmailComposeUrl = (email) => {
                                 :href="getGmailComposeUrl(settings.contact_email)" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                title="Gmail-এ ইমেইল পাঠান"
+                                :title="t('footer.compose_email')"
                                 class="text-[#64748B] hover:text-[#E86A28] text-[15px] transition-colors"
                             >
                                 {{ settings.contact_email || 'support@noboshop.com' }}

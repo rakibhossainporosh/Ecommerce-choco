@@ -50,7 +50,7 @@ class ProductsTable
                     ->state(fn (Product $record): string => $record->defaultVariant?->sku ?? $record->variants->first()?->sku ?? '—')
                     ->searchable(query: fn (Builder $query, string $search) => $query->whereHas('variants', fn ($q) => $q->where('sku', 'like', "%{$search}%")))
                     ->copyable()
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
 
                 TextColumn::make('categories.name')
                     ->label('Categories')
@@ -91,33 +91,49 @@ class ProductsTable
                     ->label('Stock')
                     ->state(function (Product $record): string {
                         $variants = $record->variants;
+
                         if ($variants->isEmpty()) {
-                            return 'No Variants';
+                            return __('No Variants');
                         }
 
                         $totalStock = $variants->sum(fn ($v) => $v->inventory?->quantity ?? 0);
+
                         if ($totalStock <= 0) {
-                            return 'Out of Stock (0)';
+                            return __('Out of Stock (:count)', ['count' => 0]);
                         }
 
                         $hasLowStock = $variants->contains(fn ($v) => $v->inventory && $v->inventory->isLowStock());
+
                         if ($hasLowStock) {
-                            return "Low Stock ({$totalStock})";
+                            return __('Low Stock (:count)', ['count' => $totalStock]);
                         }
 
-                        return "In Stock ({$totalStock})";
+                        return __('In Stock (:count)', ['count' => $totalStock]);
                     })
                     ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        str_starts_with($state, 'In Stock') => 'success',
-                        str_starts_with($state, 'Low Stock') => 'warning',
-                        str_starts_with($state, 'Out of Stock') => 'danger',
-                        default => 'gray',
+                    ->color(function (Product $record): string {
+                        $variants = $record->variants;
+
+                        if ($variants->isEmpty()) {
+                            return 'gray';
+                        }
+
+                        $totalStock = $variants->sum(fn ($v) => $v->inventory?->quantity ?? 0);
+
+                        if ($totalStock <= 0) {
+                            return 'danger';
+                        }
+
+                        if ($variants->contains(fn ($v) => $v->inventory && $v->inventory->isLowStock())) {
+                            return 'warning';
+                        }
+
+                        return 'success';
                     }),
 
                 TextColumn::make('brand.name')
                     ->label('Brand')
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->sortable()
                     ->toggleable(),
 

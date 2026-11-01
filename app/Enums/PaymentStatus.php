@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum PaymentStatus: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum PaymentStatus: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Unpaid = 'unpaid';
     case Pending = 'pending';
     case Partial = 'partial';

@@ -70,4 +70,17 @@ return [
         'adjustment_out' => 'স্টক কমানো',
         'sale' => 'বিক্রি',
     ],
+    'payment_transaction' => [
+        'pending' => 'অপেক্ষমাণ',
+        'completed' => 'সম্পন্ন',
+        'failed' => 'ব্যর্থ',
+        'refunded' => 'টাকা ফেরত',
+    ],
+    'setting_type' => [
+        'string' => 'লেখা',
+        'boolean' => 'হ্যাঁ বা না',
+        'integer' => 'পূর্ণ সংখ্যা',
+        'float' => 'দশমিক সংখ্যা',
+        'json' => 'JSON',
+    ],
 ];

@@ -20,14 +20,17 @@ class ViewOrder extends ViewRecord
 
     public function getTitle(): string
     {
-        return "Order #{$this->record->order_number}";
+        return __('Order #:number', ['number' => $this->record->order_number]);
     }
 
     public function getSubheading(): ?string
     {
-        $date = $this->record->placed_at?->format('M d, Y h:i A') ?? $this->record->created_at->format('M d, Y h:i A');
+        $placedAt = $this->record->placed_at ?? $this->record->created_at;
 
-        return "Placed on {$date} • Customer: {$this->record->customer_name}";
+        return __('Placed on :date • Customer: :name', [
+            'date' => $placedAt->translatedFormat('d M Y, h:i A'),
+            'name' => $this->record->customer_name,
+        ]);
     }
 
     protected function getHeaderActions(): array

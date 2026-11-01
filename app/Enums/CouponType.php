@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum CouponType: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum CouponType: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Percentage = 'percentage';
     case Fixed = 'fixed';
 

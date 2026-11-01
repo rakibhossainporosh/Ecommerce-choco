@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum InventoryMovementType: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum InventoryMovementType: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Opening = 'opening';
     case AdjustmentIn = 'adjustment_in';
     case AdjustmentOut = 'adjustment_out';

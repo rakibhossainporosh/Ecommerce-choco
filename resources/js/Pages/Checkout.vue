@@ -6,8 +6,10 @@ import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X, AlertCircle } fro
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import { useCart } from '../Composables/useCart';
+import { useI18n } from '../Composables/useI18n';
 
 const page = usePage();
+const { t } = useI18n();
 const { cartItems, totalAmount, totalCount, clearCart } = useCart();
 
 const shippingDhaka = computed(() => Number(page.props.site_settings?.shipping_inside_dhaka || 60));
@@ -54,7 +56,7 @@ const applyCoupon = async () => {
         form.coupon_code = response.data.code;
         couponCode.value = ''; 
     } catch (error) {
-        couponError.value = error.response?.data?.message || 'কুপন অ্যাপ্লাই করতে সমস্যা হচ্ছে।';
+        couponError.value = error.response?.data?.message || t('checkout.coupon_error');
         appliedCoupon.value = null;
         discountAmount.value = 0;
         form.coupon_code = null;
@@ -94,58 +96,58 @@ const updateShipping = () => {
 </script>
 
 <template>
-    <Head title="Checkout - Nobo Shop" />
+    <Head :title="t('meta.checkout')" />
 
     <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
         <Header />
 
         <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <nav class="flex items-center gap-2 text-sm text-[#64748B] mb-8">
-                <Link href="/" class="hover:text-[#E86A28] transition-colors">হোম</Link>
+                <Link href="/" class="hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
                 <ChevronRight class="w-4 h-4" />
-                <span class="text-[#1E293B] font-medium">চেকআউট</span>
+                <span class="text-[#1E293B] font-medium">{{ t('checkout.title') }}</span>
             </nav>
 
             <div v-if="cartItems.length === 0" class="text-center py-20">
                 <ShoppingBag class="w-16 h-16 mx-auto text-[#DCCFC0] mb-4" />
-                <h2 class="text-2xl font-bold text-[#1E293B] mb-2">আপনার কার্ট খালি!</h2>
-                <p class="text-[#64748B] mb-6">দয়া করে কিছু প্রোডাক্ট কার্টে যোগ করুন।</p>
+                <h2 class="text-2xl font-bold text-[#1E293B] mb-2">{{ t('checkout.empty') }}</h2>
+                <p class="text-[#64748B] mb-6">{{ t('checkout.empty_hint') }}</p>
                 <Link href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-[#E86A28] text-white rounded-xl font-bold">
-                    শপে ফিরে যান
+                    {{ t('checkout.back_home') }}
                 </Link>
             </div>
 
             <div v-else class="flex flex-col lg:flex-row gap-8">
                 <!-- Checkout Form -->
                 <div class="w-full lg:w-2/3 bg-white p-6 md:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm">
-                    <h2 class="text-2xl font-bold text-[#1E293B] mb-6 border-b border-[#F0EAE1] pb-4">ডেলিভারি ইনফরমেশন</h2>
+                    <h2 class="text-2xl font-bold text-[#1E293B] mb-6 border-b border-[#F0EAE1] pb-4">{{ t('checkout.delivery_info') }}</h2>
                     
                     <form @submit.prevent="submitOrder" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-semibold text-[#475569] mb-2">আপনার নাম *</label>
-                                <input v-model="form.customer_name" type="text" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" placeholder="যেমন: রহিম মিয়া">
+                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.name') }} *</label>
+                                <input v-model="form.customer_name" type="text" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.name_placeholder')">
                                 <span v-if="form.errors.customer_name" class="text-red-500 text-xs mt-1">{{ form.errors.customer_name }}</span>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-[#475569] mb-2">মোবাইল নাম্বার *</label>
+                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.phone') }} *</label>
                                 <input v-model="form.customer_phone" type="text" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" placeholder="01XXX-XXXXXX">
                                 <span v-if="form.errors.customer_phone" class="text-red-500 text-xs mt-1">{{ form.errors.customer_phone }}</span>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-[#475569] mb-2">শহর *</label>
+                            <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.city') }} *</label>
                             <select v-model="form.shipping_city" @change="updateShipping" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all">
-                                <option value="Dhaka">ঢাকা (চার্জ: ৳ {{ shippingDhaka }})</option>
-                                <option value="Outside Dhaka">ঢাকার বাইরে (চার্জ: ৳ {{ shippingOutside }})</option>
+                                <option value="Dhaka">{{ t('checkout.city_dhaka_option', { charge: shippingDhaka }) }}</option>
+                                <option value="Outside Dhaka">{{ t('checkout.city_outside_option', { charge: shippingOutside }) }}</option>
                             </select>
                             <span v-if="form.errors.shipping_city" class="text-red-500 text-xs mt-1">{{ form.errors.shipping_city }}</span>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-[#475569] mb-2">সম্পূর্ণ ঠিকানা *</label>
-                            <textarea v-model="form.shipping_address_line" required rows="3" class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" placeholder="বাসা নং, রাস্তা নং, এরিয়া"></textarea>
+                            <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.full_address') }} *</label>
+                            <textarea v-model="form.shipping_address_line" required rows="3" class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.address_placeholder')"></textarea>
                             <span v-if="form.errors.shipping_address_line" class="text-red-500 text-xs mt-1">{{ form.errors.shipping_address_line }}</span>
                         </div>
 
@@ -155,10 +157,10 @@ const updateShipping = () => {
                                 <span>{{ form.errors.stock }}</span>
                             </div>
                             <div v-else-if="Object.keys(form.errors).length > 0" class="mb-4 p-3 bg-red-50 text-red-500 rounded-xl text-sm font-semibold">
-                                কিছু তথ্য ভুল বা অসম্পূর্ণ আছে। দয়া করে ফর্মটি সঠিকভাবে পূরণ করুন।
+                                {{ t('checkout.form_errors') }}
                             </div>
                             <button type="submit" :disabled="form.processing" class="w-full py-4 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer">
-                                <span>অর্ডার কনফার্ম করুন</span>
+                                <span>{{ form.processing ? t('checkout.placing') : t('checkout.confirm_order') }}</span>
                                 <ArrowRight class="w-5 h-5" />
                             </button>
                         </div>
@@ -168,7 +170,7 @@ const updateShipping = () => {
                 <!-- Order Summary -->
                 <div class="w-full lg:w-1/3">
                     <div class="bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm sticky top-8">
-                        <h3 class="text-lg font-bold text-[#1E293B] mb-4">অর্ডার সামারি</h3>
+                        <h3 class="text-lg font-bold text-[#1E293B] mb-4">{{ t('checkout.order_summary') }}</h3>
                         
                         <div class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
                             <div v-for="item in cartItems" :key="item.cartItemId || item.id" class="flex gap-4">
@@ -183,7 +185,7 @@ const updateShipping = () => {
 
                         <div class="mt-4 mb-6">
                             <div v-if="!appliedCoupon">
-                                <label class="block text-sm font-medium text-[#475569] mb-2">কুপন কোড</label>
+                                <label class="block text-sm font-medium text-[#475569] mb-2">{{ t('checkout.coupon') }}</label>
                                 <div class="flex gap-2">
                                     <div class="relative flex-1">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -193,7 +195,7 @@ const updateShipping = () => {
                                             v-model="couponCode" 
                                             type="text" 
                                             class="block w-full pl-9 pr-3 py-2.5 bg-[#F6F1E9] border border-transparent rounded-xl text-sm uppercase placeholder:normal-case placeholder-[#94A3B8] focus:bg-white focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-none transition-all"
-                                            placeholder="কুপন কোড লিখুন"
+                                            :placeholder="t('checkout.coupon_placeholder')"
                                             @keyup.enter="applyCoupon"
                                         />
                                     </div>
@@ -203,7 +205,7 @@ const updateShipping = () => {
                                         :disabled="applyingCoupon || !couponCode.trim()"
                                         class="px-4 py-2.5 bg-[#1E293B] text-white text-sm font-semibold rounded-xl hover:bg-[#334155] transition-colors disabled:opacity-50"
                                     >
-                                        {{ applyingCoupon ? 'হচ্ছে...' : 'অ্যাপ্লাই' }}
+                                        {{ applyingCoupon ? t('checkout.applying_short') : t('checkout.apply') }}
                                     </button>
                                 </div>
                                 <p v-if="couponError" class="mt-2 text-[13px] text-red-500">{{ couponError }}</p>
@@ -215,7 +217,7 @@ const updateShipping = () => {
                                     </div>
                                     <div>
                                         <p class="text-[13px] font-medium text-green-800 uppercase">{{ appliedCoupon }}</p>
-                                        <p class="text-[12px] text-green-600">কুপন সফলভাবে অ্যাপ্লাই হয়েছে</p>
+                                        <p class="text-[12px] text-green-600">{{ t('checkout.coupon_applied_msg') }}</p>
                                     </div>
                                 </div>
                                 <button @click="removeCoupon" type="button" class="p-1.5 text-green-600 hover:bg-green-100 rounded-full transition-colors">
@@ -226,26 +228,26 @@ const updateShipping = () => {
 
                         <div class="border-t border-[#F0EAE1] pt-4 space-y-3">
                             <div class="flex justify-between text-sm font-medium text-[#64748B]">
-                                <span>সাবটোটাল ({{ totalCount }} আইটেম)</span>
+                                <span>{{ t('checkout.subtotal_items', { count: totalCount }) }}</span>
                                 <span>{{ formatPrice(totalAmount) }}</span>
                             </div>
                             <div class="flex justify-between text-sm font-medium text-[#64748B]">
-                                <span>ডেলিভারি চার্জ</span>
+                                <span>{{ t('checkout.shipping') }}</span>
                                 <span>{{ formatPrice(shippingCharge) }}</span>
                             </div>
                             <div v-if="discountAmount > 0" class="flex justify-between text-sm font-medium text-green-600">
-                                <span>ডিসকাউন্ট ({{ appliedCoupon }})</span>
+                                <span>{{ t('checkout.discount') }} ({{ appliedCoupon }})</span>
                                 <span>- {{ formatPrice(discountAmount) }}</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold text-[#1E293B] pt-3 border-t border-[#F0EAE1]">
-                                <span>সর্বমোট</span>
+                                <span>{{ t('checkout.grand_total') }}</span>
                                 <span class="text-[#E86A28]">{{ formatPrice(grandTotal) }}</span>
                             </div>
                         </div>
 
                         <div class="mt-6 flex items-center gap-3 text-sm text-[#475569] bg-[#FAF7F2] p-4 rounded-xl">
                             <Truck class="w-5 h-5 text-[#E86A28]" />
-                            <span>ক্যাশ অন ডেলিভারি (পণ্য হাতে পেয়ে টাকা দিন)</span>
+                            <span>{{ t('checkout.cod_note') }}</span>
                         </div>
                     </div>
                 </div>

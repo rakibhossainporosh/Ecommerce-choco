@@ -6,15 +6,15 @@
                 {{ $variant->name ? $variant->name . ' (' . $variant->sku . ')' : $variant->sku }}
             </h3>
             <p class="text-xs text-gray-500 dark:text-gray-400">
-                Inventory Movement Ledger &bull; Immutable audit history
+                {{ __('Stock change history. These rows are kept and are not deleted.') }}
             </p>
         </div>
         <div class="flex items-center gap-2 text-xs">
             <span class="inline-flex items-center px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                Current Stock: <strong class="ml-1">{{ $variant->inventory?->quantity ?? 0 }}</strong>
+                {{ __('Current Stock:') }} <strong class="ml-1">{{ $variant->inventory?->quantity ?? 0 }}</strong>
             </span>
             <span class="inline-flex items-center px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                Threshold: <strong class="ml-1">{{ $variant->inventory?->low_stock_threshold ?? 0 }}</strong>
+                {{ __('Threshold:') }} <strong class="ml-1">{{ $variant->inventory?->low_stock_threshold ?? 0 }}</strong>
             </span>
         </div>
     </div>
@@ -24,15 +24,15 @@
         <table class="w-full text-left text-xs divide-y divide-gray-200 dark:divide-gray-800">
             <thead class="bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                    <th scope="col" class="px-3.5 py-3">Date</th>
-                    <th scope="col" class="px-3.5 py-3">Type</th>
-                    <th scope="col" class="px-3.5 py-3 text-right">Before</th>
-                    <th scope="col" class="px-3.5 py-3 text-right">Change</th>
-                    <th scope="col" class="px-3.5 py-3 text-right">After</th>
-                    <th scope="col" class="px-3.5 py-3">Reason</th>
-                    <th scope="col" class="px-3.5 py-3">Note</th>
-                    <th scope="col" class="px-3.5 py-3">User</th>
-                    <th scope="col" class="px-3.5 py-3">Reference</th>
+                    <th scope="col" class="px-3.5 py-3">{{ __('Date') }}</th>
+                    <th scope="col" class="px-3.5 py-3">{{ __('Type') }}</th>
+                    <th scope="col" class="px-3.5 py-3 text-right">{{ __('Before') }}</th>
+                    <th scope="col" class="px-3.5 py-3 text-right">{{ __('Change') }}</th>
+                    <th scope="col" class="px-3.5 py-3 text-right">{{ __('After') }}</th>
+                    <th scope="col" class="px-3.5 py-3">{{ __('Reason') }}</th>
+                    <th scope="col" class="px-3.5 py-3">{{ __('Note') }}</th>
+                    <th scope="col" class="px-3.5 py-3">{{ __('User') }}</th>
+                    <th scope="col" class="px-3.5 py-3">{{ __('Reference') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
@@ -54,15 +54,15 @@
 
                             @if ($isOpening)
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                    Opening Stock
+                                    {{ \App\Enums\InventoryMovementType::Opening->label() }}
                                 </span>
                             @elseif ($isAdjustIn)
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                    Stock In
+                                    {{ \App\Enums\InventoryMovementType::AdjustmentIn->label() }}
                                 </span>
                             @elseif ($isAdjustOut)
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                                    Stock Out
+                                    {{ \App\Enums\InventoryMovementType::AdjustmentOut->label() }}
                                 </span>
                             @else
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
@@ -105,9 +105,9 @@
                             @if ($movement->creator)
                                 <span class="font-medium">{{ $movement->creator->name }}</span>
                             @elseif ($movement->created_by)
-                                <span class="text-gray-400 dark:text-gray-500">User #{{ $movement->created_by }}</span>
+                                <span class="text-gray-400 dark:text-gray-500">{{ __('User #:id', ['id' => $movement->created_by]) }}</span>
                             @else
-                                <span class="text-gray-400 dark:text-gray-500">System</span>
+                                <span class="text-gray-400 dark:text-gray-500">{{ __('System') }}</span>
                             @endif
                         </td>
 
@@ -129,7 +129,7 @@
                                 <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <p class="text-sm font-medium">No inventory movements recorded yet for this variant.</p>
+                                <p class="text-sm font-medium">{{ __('No inventory movements recorded yet for this variant.') }}</p>
                             </div>
                         </td>
                     </tr>

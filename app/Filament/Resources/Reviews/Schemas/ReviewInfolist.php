@@ -20,8 +20,8 @@ class ReviewInfolist
                     TextEntry::make('rating'),
                 ]),
                 Grid::make(1)->schema([
-                    TextEntry::make('title')->placeholder('No Title'),
-                    TextEntry::make('body')->placeholder('No Review Body'),
+                    TextEntry::make('title')->placeholder(__('No Title')),
+                    TextEntry::make('body')->placeholder(__('No Review Body')),
                 ]),
                 Grid::make(2)->schema([
                     IconEntry::make('is_approved')->boolean(),

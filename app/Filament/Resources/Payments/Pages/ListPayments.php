@@ -21,8 +21,8 @@ class ListPayments extends ListRecords
         return [
             CreateAction::make()
                 ->label('Record Payment')
-                ->modalHeading('Record Payment Transaction')
-                ->modalDescription('Enter transaction details to record and reconcile payments against an order.')
+                ->modalHeading(__('Record Payment Transaction'))
+                ->modalDescription(__('Enter transaction details to record and reconcile payments against an order.'))
                 ->modalIcon(Heroicon::OutlinedBanknotes)
                 ->modalWidth(Width::TwoExtraLarge),
         ];

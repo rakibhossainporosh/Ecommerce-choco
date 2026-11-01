@@ -14,6 +14,7 @@ use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\User;
 use App\Services\SmsService;
+use App\Support\CatalogTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,13 @@ class StorefrontController extends Controller
             ->where('is_active', true)
             ->whereNull('parent_id')
             ->orderBy('sort_order')
-            ->get(['id', 'name', 'slug']);
+            ->get(['id', 'name', 'slug'])
+            ->map(fn (Category $category): array => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'display_name' => CatalogTranslator::category($category->slug, $category->name),
+            ]);
 
         $productsQuery = Product::query()
             ->where('products.is_active', true)
@@ -106,13 +113,18 @@ class StorefrontController extends Controller
                 'id' => $product->id,
                 'default_variant_id' => $variant?->id,
                 'name' => $product->name,
+                'display_name' => CatalogTranslator::product($product->slug, 'name', $product->name),
                 'slug' => $product->slug,
-                'category_name' => $product->categories->first()?->name ?? 'সাধারণ',
+                'category_name' => $product->categories->first()?->name ?? __('storefront.product.general'),
+                'category_display_name' => $product->categories->first()
+                    ? CatalogTranslator::category($product->categories->first()->slug, $product->categories->first()->name)
+                    : __('storefront.product.general'),
                 'category_slug' => $product->categories->first()?->slug ?? 'general',
                 'price' => (float) ($variant?->selling_price ?? 0),
                 'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
                 'image' => $image,
                 'short_description' => $product->short_description,
+                'display_short_description' => CatalogTranslator::product($product->slug, 'short_description', $product->short_description),
                 'is_featured' => (bool) $product->is_featured,
                 'rating' => round((float) ($product->reviews_avg_rating ?? 5.0), 1),
                 'reviews_count' => (int) ($product->reviews_count ?? 0),
@@ -173,8 +185,12 @@ class StorefrontController extends Controller
             return [
                 'id' => $product->id,
                 'name' => $product->name,
+                'display_name' => CatalogTranslator::product($product->slug, 'name', $product->name),
                 'slug' => $product->slug,
-                'category_name' => $product->categories->first()?->name ?? 'ফ্যাশন',
+                'category_name' => $product->categories->first()?->name ?? __('storefront.product.general'),
+                'category_display_name' => $product->categories->first()
+                    ? CatalogTranslator::category($product->categories->first()->slug, $product->categories->first()->name)
+                    : __('storefront.product.general'),
                 'price' => (float) ($variant?->selling_price ?? 0),
                 'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
                 'image' => $image,
@@ -190,19 +206,25 @@ class StorefrontController extends Controller
      */
     protected function applySearchCondition($query, string $search)
     {
-        return $query->where(function ($q) use ($search) {
-            $q->where('products.name', 'like', "%{$search}%")
-                ->orWhere('products.slug', 'like', "%{$search}%")
-                ->orWhere('products.short_description', 'like', "%{$search}%")
-                ->orWhere('products.description', 'like', "%{$search}%")
-                ->orWhereHas('categories', function ($catQuery) use ($search) {
-                    $catQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%");
-                })
-                ->orWhereHas('variants', function ($varQuery) use ($search) {
-                    $varQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%");
+        $needles = CatalogTranslator::searchNeedles($search);
+
+        return $query->where(function ($q) use ($needles) {
+            foreach ($needles as $needle) {
+                $q->orWhere(function ($inner) use ($needle) {
+                    $inner->where('products.name', 'like', "%{$needle}%")
+                        ->orWhere('products.slug', 'like', "%{$needle}%")
+                        ->orWhere('products.short_description', 'like', "%{$needle}%")
+                        ->orWhere('products.description', 'like', "%{$needle}%")
+                        ->orWhereHas('categories', function ($catQuery) use ($needle) {
+                            $catQuery->where('name', 'like', "%{$needle}%")
+                                ->orWhere('slug', 'like', "%{$needle}%");
+                        })
+                        ->orWhereHas('variants', function ($varQuery) use ($needle) {
+                            $varQuery->where('name', 'like', "%{$needle}%")
+                                ->orWhere('sku', 'like', "%{$needle}%");
+                        });
                 });
+            }
         });
     }
 
@@ -295,7 +317,7 @@ class StorefrontController extends Controller
                 'rating' => (int) $review->rating,
                 'title' => $review->title,
                 'body' => $review->body,
-                'reviewer_name' => $review->user?->name ?? 'সন্তুষ্ট গ্রাহক',
+                'reviewer_name' => $review->user?->name ?? __('storefront.reviews.satisfied_customer'),
                 'created_at' => $review->created_at->format('d M Y'),
             ];
         });
@@ -322,8 +344,12 @@ class StorefrontController extends Controller
             'id' => $product->id,
             'default_variant_id' => $variant?->id,
             'name' => $product->name,
+            'display_name' => CatalogTranslator::product($product->slug, 'name', $product->name),
             'slug' => $product->slug,
-            'category_name' => $product->categories->first()?->name ?? 'সাধারণ পণ্য',
+            'category_name' => $product->categories->first()?->name ?? __('storefront.product.general'),
+            'category_display_name' => $product->categories->first()
+                ? CatalogTranslator::category($product->categories->first()->slug, $product->categories->first()->name)
+                : __('storefront.product.general'),
             'category_slug' => $product->categories->first()?->slug ?? 'general',
             'brand_name' => $product->brand?->name,
             'price' => (float) ($variant?->selling_price ?? 0),
@@ -336,7 +362,9 @@ class StorefrontController extends Controller
             'reviews' => $reviews,
             'images' => $mediaImages,
             'short_description' => $product->short_description,
+            'display_short_description' => CatalogTranslator::product($product->slug, 'short_description', $product->short_description),
             'description' => $product->description,
+            'display_description' => CatalogTranslator::product($product->slug, 'description', $product->description),
             'is_featured' => (bool) $product->is_featured,
             'stock_quantity' => $stockQuantity,
             'is_in_stock' => $isInStock,
@@ -387,10 +415,15 @@ class StorefrontController extends Controller
         foreach ($validated['cart_items'] as $item) {
             $variant = ProductVariant::with('inventory', 'product')->find($item['variant_id']);
             if ($variant && $variant->inventory && $variant->inventory->quantity < $item['quantity']) {
-                $pName = $variant->product?->name ?? 'পণ্য';
+                $productName = $variant->product
+                    ? CatalogTranslator::product($variant->product->slug, 'name', $variant->product->name)
+                    : __('storefront.product.general');
 
                 return back()->withErrors([
-                    'stock' => "দুঃখিত, \"{$pName}\" পণ্যের জন্য পর্যাপ্ত স্টক নেই (বর্তমান স্টক: {$variant->inventory->quantity} টি)।",
+                    'stock' => __('storefront.checkout.insufficient_stock', [
+                        'product' => $productName,
+                        'stock' => $variant->inventory->quantity,
+                    ]),
                 ]);
             }
         }
@@ -521,7 +554,7 @@ class StorefrontController extends Controller
                 ->log('Storefront contact form message received');
         }
 
-        return back()->with('success', 'আপনার বার্তাটি সফলভাবে পাঠানো হয়েছে। আমরা শীঘ্রই যোগাযোগ করবো।');
+        return back()->with('success', __('storefront.contact.success'));
     }
 
     /**
@@ -596,7 +629,7 @@ class StorefrontController extends Controller
                 'is_approved' => false,
             ]);
 
-            return back()->with('success', 'আপনার মূল্যবান রিভিউ প্রদানের জন্য ধন্যবাদ!');
+            return back()->with('success', __('storefront.reviews.thanks'));
         }
 
         Review::create([
@@ -608,7 +641,7 @@ class StorefrontController extends Controller
             'is_approved' => false,
         ]);
 
-        return back()->with('success', 'আপনার মূল্যবান রিভিউ প্রদানের জন্য ধন্যবাদ!');
+        return back()->with('success', __('storefront.reviews.thanks'));
     }
 
     /**
@@ -632,15 +665,15 @@ class StorefrontController extends Controller
             ->first();
 
         if (! $coupon) {
-            return response()->json(['message' => 'কুপন কোডটি সঠিক নয় বা মেয়াদোত্তীর্ণ।'], 400);
+            return response()->json(['message' => __('storefront.coupon.invalid')], 400);
         }
 
         if ($coupon->usage_limit && $coupon->used_count >= $coupon->usage_limit) {
-            return response()->json(['message' => 'এই কুপনের ব্যবহারের সীমা শেষ হয়ে গেছে।'], 400);
+            return response()->json(['message' => __('storefront.coupon.limit')], 400);
         }
 
         if ($request->subtotal < $coupon->minimum_order_amount) {
-            return response()->json(['message' => 'এই কুপনটি ব্যবহার করতে নূন্যতম '.$coupon->minimum_order_amount.' টাকার অর্ডার করতে হবে।'], 400);
+            return response()->json(['message' => __('storefront.coupon.minimum', ['amount' => $coupon->minimum_order_amount])], 400);
         }
 
         $discount = 0;
@@ -654,7 +687,7 @@ class StorefrontController extends Controller
         }
 
         return response()->json([
-            'message' => 'কুপন সফলভাবে অ্যাপ্লাই করা হয়েছে!',
+            'message' => __('storefront.coupon.applied'),
             'discount' => $discount,
             'code' => $coupon->code,
         ]);

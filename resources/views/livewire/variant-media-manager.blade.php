@@ -6,7 +6,7 @@
                 {{ $variant->name ? $variant->name . ' (' . $variant->sku . ')' : $variant->sku }}
             </h3>
             <p class="text-xs text-gray-500 dark:text-gray-400">
-                Variant Media Gallery &bull; Managed independently from product media
+                {{ __('Variant photos, separate from the product photos') }}
             </p>
         </div>
         <div class="text-xs">
@@ -16,7 +16,7 @@
                 </span>
             @else
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                    Using Product Fallback
+                    {{ __('Using the product photos') }}
                 </span>
             @endif
         </div>
@@ -29,7 +29,7 @@
                 <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                Upload Variant Images
+                {{ __('Upload variant photos') }}
             </h4>
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <input
@@ -45,12 +45,12 @@
                     wire:loading.attr="disabled"
                     class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none disabled:opacity-50 transition"
                 >
-                    <span wire:loading.remove wire:target="upload">Upload</span>
-                    <span wire:loading wire:target="upload">Uploading...</span>
+                    <span wire:loading.remove wire:target="upload">{{ __('Upload') }}</span>
+                    <span wire:loading wire:target="upload">{{ __('Uploading...') }}</span>
                 </button>
             </div>
             <p class="text-xs text-gray-400 dark:text-gray-500">
-                Allowed formats: JPEG, JPG, PNG, WEBP. Maximum: 5 MB per image. First uploaded image automatically becomes primary.
+                {{ __('JPEG, JPG, PNG or WEBP. Each photo can be up to 5 MB. The first photo becomes the main photo.') }}
             </p>
             @error('uploads')
                 <p class="text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -70,17 +70,17 @@
                 </svg>
                 <div>
                     <h5 class="text-sm font-semibold text-amber-900 dark:text-amber-200">
-                        No Dedicated Variant Images
+                        {{ __('No photos for this variant yet') }}
                     </h5>
                     <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
-                        This variant does not have its own images. Storefront will fall back to the product's media gallery.
+                        {{ __('This variant has no photos of its own. The shop will show the product photos instead.') }}
                     </p>
                 </div>
             </div>
 
             @if ($fallbackMedia->isNotEmpty())
                 <div class="pt-2">
-                    <p class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">Active Fallback Images (from Product):</p>
+                    <p class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('Photos from the product') }}</p>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         @foreach ($fallbackMedia as $fb)
                             <div class="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -90,7 +90,7 @@
                                 </div>
                                 @if ($fb->is_primary)
                                     <span class="absolute top-1 left-1 bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded font-medium shadow-sm">
-                                        Product Primary
+                                        {{ __('Main product photo') }}
                                     </span>
                                 @endif
                             </div>
@@ -103,8 +103,8 @@
         {{-- Own Media Gallery --}}
         <div class="space-y-3">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center justify-between">
-                <span>Variant Images ({{ $ownMedia->count() }})</span>
-                <span class="text-xs font-normal text-gray-500">Order by sort order</span>
+                <span>{{ __('Variant photos (:count)', ['count' => $ownMedia->count()]) }}</span>
+                <span class="text-xs font-normal text-gray-500">{{ __('Use the arrows to change the order.') }}</span>
             </h4>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -120,11 +120,11 @@
                             {{-- Primary badge --}}
                             @if ($media->is_primary)
                                 <span class="absolute top-2 left-2 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-600 text-white shadow-sm">
-                                    Primary Image
+                                    {{ __('Main photo') }}
                                 </span>
                             @else
                                 <span class="absolute top-2 left-2 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-900/60 text-white backdrop-blur-sm">
-                                    Gallery
+                                    {{ __('Extra photo') }}
                                 </span>
                             @endif
 
@@ -139,12 +139,12 @@
                             <div>
                                 @if ($editingMediaId === $media->id)
                                     <div class="space-y-1.5">
-                                        <label class="text-[11px] font-medium text-gray-700 dark:text-gray-300">Edit Alt Text</label>
+                                        <label class="text-[11px] font-medium text-gray-700 dark:text-gray-300">{{ __('Photo description') }}</label>
                                         <input
                                             type="text"
                                             wire:model="editingAltText"
                                             class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white"
-                                            placeholder="Descriptive alt text"
+                                            placeholder="{{ __('Short description of the photo') }}"
                                         />
                                         <div class="flex items-center gap-1.5 pt-1">
                                             <button
@@ -152,28 +152,28 @@
                                                 wire:click="saveAltText({{ $media->id }})"
                                                 class="px-2 py-1 text-[11px] font-medium rounded bg-primary-600 text-white hover:bg-primary-700"
                                             >
-                                                Save
+                                                {{ __('Save') }}
                                             </button>
                                             <button
                                                 type="button"
                                                 wire:click="cancelEditAltText"
                                                 class="px-2 py-1 text-[11px] font-medium rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                             >
-                                                Cancel
+                                                {{ __('Cancel') }}
                                             </button>
                                         </div>
                                     </div>
                                 @else
                                     <div class="flex items-start justify-between gap-1">
                                         <p class="text-xs text-gray-600 dark:text-gray-300 italic line-clamp-2">
-                                            {{ $media->alt_text ? '"' . $media->alt_text . '"' : 'No alt text' }}
+                                            {{ $media->alt_text ? '"' . $media->alt_text . '"' : __('No photo description') }}
                                         </p>
                                         @can('products.update')
                                             <button
                                                 type="button"
                                                 wire:click="startEditAltText({{ $media->id }}, '{{ addslashes($media->alt_text ?? '') }}')"
                                                 class="text-gray-400 hover:text-primary-600 shrink-0 p-1"
-                                                title="Edit alt text"
+                                                title="{{ __('Edit photo description') }}"
                                             >
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -197,14 +197,14 @@
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                                             </svg>
-                                            Set Primary
+                                            {{ __('Make this the main photo') }}
                                         </button>
                                     @else
                                         <span class="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                             </svg>
-                                            Primary
+                                            {{ __('Main photo') }}
                                         </span>
                                     @endif
 
@@ -215,7 +215,7 @@
                                                 type="button"
                                                 wire:click="moveUp({{ $media->id }})"
                                                 class="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                                                title="Move up"
+                                                title="{{ __('Move up') }}"
                                             >
                                                 &uarr;
                                             </button>
@@ -225,7 +225,7 @@
                                                 type="button"
                                                 wire:click="moveDown({{ $media->id }})"
                                                 class="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                                                title="Move down"
+                                                title="{{ __('Move down') }}"
                                             >
                                                 &darr;
                                             </button>
@@ -233,9 +233,9 @@
                                         <button
                                             type="button"
                                             wire:click="deleteMedia({{ $media->id }})"
-                                            wire:confirm="Are you sure you want to delete this media item? If this is the primary image, the next image will become primary."
+                                            wire:confirm="{{ __('Delete this photo? If it is the main photo, the next one will become the main photo.') }}"
                                             class="text-rose-500 hover:text-rose-700 p-1"
-                                            title="Delete media"
+                                            title="{{ __('Delete photo') }}"
                                         >
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

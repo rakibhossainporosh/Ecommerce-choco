@@ -17,8 +17,8 @@ class ListCustomers extends ListRecords
         return [
             CreateAction::make()
                 ->label('New Customer')
-                ->modalHeading('Create Customer')
-                ->modalDescription('Enter the customer details to register their profile.')
+                ->modalHeading(__('Create Customer'))
+                ->modalDescription(__('Enter the customer details to register their profile.'))
                 ->modalIcon(Heroicon::OutlinedUserPlus)
                 ->modalWidth(Width::TwoExtraLarge),
         ];

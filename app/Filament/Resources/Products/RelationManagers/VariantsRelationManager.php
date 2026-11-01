@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\RelationManagers;
 
 use App\Exceptions\InventoryException;
+use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Filament\Resources\Products\Schemas\ProductForm;
 use App\Models\Attribute;
 use App\Models\Inventory;
@@ -34,9 +35,13 @@ use Illuminate\Support\Facades\DB;
 
 class VariantsRelationManager extends RelationManager
 {
+    use TranslatesRelationManagerTitle;
+
     protected static string $relationship = 'variants';
 
     protected static ?string $title = 'Product Variants';
+
+    protected static ?string $modelLabel = 'Product Variant';
 
     public function form(Schema $schema): Schema
     {
@@ -44,7 +49,7 @@ class VariantsRelationManager extends RelationManager
             ->components([
                 TextInput::make('name')
                     ->label('Variant Name (Optional)')
-                    ->placeholder('e.g. Standard, 100g Bar')
+                    ->placeholder(__('e.g. Standard, 100g Bar'))
                     ->nullable()
                     ->maxLength(255),
 
@@ -62,7 +67,7 @@ class VariantsRelationManager extends RelationManager
 
                             $unit = Unit::withTrashed()->find($value);
                             if (! $unit || $unit->trashed() || ! $unit->is_active) {
-                                $fail('Cannot assign an invalid, inactive, or soft-deleted unit.');
+                                $fail(__('Cannot assign an invalid, inactive, or soft-deleted unit.'));
                             }
                         },
                     ]),
@@ -105,7 +110,7 @@ class VariantsRelationManager extends RelationManager
                             if ($value !== null && $value !== '') {
                                 $selling = $get('selling_price');
                                 if ($selling !== null && $selling !== '' && (float) $value < (float) $selling) {
-                                    $fail('The compare at price must be greater than or equal to the selling price.');
+                                    $fail(__('The compare at price must be greater than or equal to the selling price.'));
                                 }
                             }
                         },
@@ -123,7 +128,7 @@ class VariantsRelationManager extends RelationManager
                     ->default(true),
 
                 Section::make('Variant Attributes')
-                    ->description('Configure dynamic attributes for this variant.')
+                    ->description(__('Configure dynamic attributes for this variant.'))
                     ->components(fn () => ProductForm::getVariantAttributeComponents('variant_attributes')),
             ]);
     }
@@ -146,7 +151,7 @@ class VariantsRelationManager extends RelationManager
 
                 TextColumn::make('name')
                     ->label('Variant Name')
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->searchable()
                     ->sortable(),
 
@@ -171,7 +176,7 @@ class VariantsRelationManager extends RelationManager
 
                 TextColumn::make('inventory.quantity')
                     ->label('Stock')
-                    ->placeholder('0')
+                    ->placeholder(__('0'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('quantity')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
@@ -180,7 +185,7 @@ class VariantsRelationManager extends RelationManager
 
                 TextColumn::make('inventory.low_stock_threshold')
                     ->label('Threshold')
-                    ->placeholder('0')
+                    ->placeholder(__('0'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('low_stock_threshold')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
@@ -191,22 +196,30 @@ class VariantsRelationManager extends RelationManager
                     ->label('Status')
                     ->state(function (ProductVariant $record): string {
                         $inventory = $record->inventory;
+
                         if (! $inventory || $inventory->quantity <= 0) {
-                            return 'Out of Stock';
+                            return __('Out of Stock');
                         }
 
                         if ($inventory->quantity <= $inventory->low_stock_threshold) {
-                            return 'Low Stock';
+                            return __('Low Stock');
                         }
 
-                        return 'In Stock';
+                        return __('In Stock');
                     })
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'In Stock' => 'success',
-                        'Low Stock' => 'warning',
-                        'Out of Stock' => 'danger',
-                        default => 'gray',
+                    ->color(function (ProductVariant $record): string {
+                        $inventory = $record->inventory;
+
+                        if (! $inventory || $inventory->quantity <= 0) {
+                            return 'danger';
+                        }
+
+                        if ($inventory->quantity <= $inventory->low_stock_threshold) {
+                            return 'warning';
+                        }
+
+                        return 'success';
                     })
                     ->visible(fn () => auth()->user()?->can('viewAny', Inventory::class)),
 
@@ -249,7 +262,7 @@ class VariantsRelationManager extends RelationManager
                     ->icon('heroicon-o-photo')
                     ->badge(fn (ProductVariant $record): ?int => $record->media()->count() ?: null)
                     ->color(fn (ProductVariant $record): string => $record->media()->count() > 0 ? 'success' : 'gray')
-                    ->modalHeading(fn (ProductVariant $record): string => 'Variant Media: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalHeading(fn (ProductVariant $record): string => __('Variant Media: :name', ['name' => $record->name ? "{$record->name} ({$record->sku})" : $record->sku]))
                     ->modalWidth(Width::FourExtraLarge)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
@@ -259,15 +272,15 @@ class VariantsRelationManager extends RelationManager
                     ->label('Adjust Stock')
                     ->icon('heroicon-o-arrows-up-down')
                     ->color('primary')
-                    ->modalHeading(fn (ProductVariant $record): string => 'Adjust Stock: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalHeading(fn (ProductVariant $record): string => __('Adjust Stock: :name', ['name' => $record->name ? "{$record->name} ({$record->sku})" : $record->sku]))
                     ->modalWidth(Width::Medium)
                     ->authorize(fn () => auth()->user()?->can('adjust', Inventory::class))
                     ->form([
                         Select::make('type')
                             ->label('Adjustment Type')
                             ->options([
-                                'in' => 'Stock In',
-                                'out' => 'Stock Out',
+                                'in' => __('Stock In'),
+                                'out' => __('Stock Out'),
                             ])
                             ->default('in')
                             ->required()
@@ -279,25 +292,25 @@ class VariantsRelationManager extends RelationManager
                             ->integer()
                             ->minValue(1)
                             ->required()
-                            ->helperText('Enter a positive whole number.')
+                            ->helperText(__('Enter a positive whole number.'))
                             ->rules(['required', 'integer', 'min:1']),
 
                         Select::make('reason')
                             ->label('Reason')
                             ->options(fn (Get $get): array => match ($get('type')) {
                                 'out' => [
-                                    'Damaged' => 'Damaged',
-                                    'Correction' => 'Correction',
-                                    'Expired' => 'Expired',
-                                    'Lost' => 'Lost',
-                                    'Other' => 'Other',
+                                    'Damaged' => __('Damaged'),
+                                    'Correction' => __('Correction'),
+                                    'Expired' => __('Expired'),
+                                    'Lost' => __('Lost'),
+                                    'Other' => __('Other'),
                                 ],
                                 default => [
-                                    'Opening Stock' => 'Opening Stock',
-                                    'Restock' => 'Restock',
-                                    'Purchase' => 'Purchase',
-                                    'Correction' => 'Correction',
-                                    'Other' => 'Other',
+                                    'Opening Stock' => __('Opening Stock'),
+                                    'Restock' => __('Restock'),
+                                    'Purchase' => __('Purchase'),
+                                    'Correction' => __('Correction'),
+                                    'Other' => __('Other'),
                                 ],
                             })
                             ->required()
@@ -305,14 +318,14 @@ class VariantsRelationManager extends RelationManager
 
                         TextInput::make('custom_reason')
                             ->label('Custom Reason')
-                            ->placeholder('Specify custom reason')
+                            ->placeholder(__('Specify custom reason'))
                             ->visible(fn (Get $get): bool => $get('reason') === 'Other')
                             ->required(fn (Get $get): bool => $get('reason') === 'Other')
                             ->maxLength(255),
 
                         TextInput::make('note')
                             ->label('Note (Optional)')
-                            ->placeholder('e.g., Received from supplier, damage notes, etc.')
+                            ->placeholder(__('e.g., Received from supplier, damage notes, etc.'))
                             ->nullable()
                             ->maxLength(1000),
                     ])
@@ -358,13 +371,13 @@ class VariantsRelationManager extends RelationManager
                             }
 
                             Notification::make()
-                                ->title('Stock adjusted successfully.')
-                                ->body("New stock level: {$inventory->fresh()->quantity}")
+                                ->title(__('Stock adjusted successfully.'))
+                                ->body(__('New stock level: :quantity', ['quantity' => $inventory->fresh()->quantity]))
                                 ->success()
                                 ->send();
                         } catch (InventoryException $e) {
                             Notification::make()
-                                ->title('Stock Adjustment Failed')
+                                ->title(__('Stock Adjustment Failed'))
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
@@ -373,8 +386,8 @@ class VariantsRelationManager extends RelationManager
                         } catch (\Throwable $e) {
                             report($e);
                             Notification::make()
-                                ->title('Stock Adjustment Error')
-                                ->body('An unexpected error occurred while adjusting stock: '.$e->getMessage())
+                                ->title(__('Stock Adjustment Error'))
+                                ->body(__('An unexpected error occurred while adjusting stock: :message', ['message' => $e->getMessage()]))
                                 ->danger()
                                 ->send();
 
@@ -386,7 +399,7 @@ class VariantsRelationManager extends RelationManager
                     ->label('Set Threshold')
                     ->icon('heroicon-o-adjustments-horizontal')
                     ->color('gray')
-                    ->modalHeading(fn (ProductVariant $record): string => 'Low Stock Threshold: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalHeading(fn (ProductVariant $record): string => __('Low Stock Threshold: :name', ['name' => $record->name ? "{$record->name} ({$record->sku})" : $record->sku]))
                     ->modalWidth(Width::Medium)
                     ->authorize(fn () => auth()->user()?->can('adjust', Inventory::class))
                     ->fillForm(fn (ProductVariant $record): array => [
@@ -395,7 +408,7 @@ class VariantsRelationManager extends RelationManager
                     ->form([
                         TextInput::make('low_stock_threshold')
                             ->label('Low Stock Threshold')
-                            ->helperText('Alert threshold when stock drops to or below this level.')
+                            ->helperText(__('Alert threshold when stock drops to or below this level.'))
                             ->numeric()
                             ->integer()
                             ->minValue(0)
@@ -416,14 +429,14 @@ class VariantsRelationManager extends RelationManager
                             }
 
                             Notification::make()
-                                ->title('Low stock threshold updated successfully.')
+                                ->title(__('Low stock threshold updated successfully.'))
                                 ->success()
                                 ->send();
                         } catch (\Throwable $e) {
                             report($e);
                             Notification::make()
-                                ->title('Threshold Update Error')
-                                ->body('An unexpected error occurred while updating threshold: '.$e->getMessage())
+                                ->title(__('Threshold Update Error'))
+                                ->body(__('An unexpected error occurred while updating threshold: :message', ['message' => $e->getMessage()]))
                                 ->danger()
                                 ->send();
 
@@ -492,7 +505,7 @@ class VariantsRelationManager extends RelationManager
                         if (! $record->canBeDeleted()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Cannot delete this variant because it is the only variant or active default.')
+                                ->title(__('Cannot delete this variant because it is the only variant or active default.'))
                                 ->send();
 
                             $action->halt();

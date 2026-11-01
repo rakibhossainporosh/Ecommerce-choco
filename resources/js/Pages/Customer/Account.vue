@@ -2,11 +2,12 @@
 import { ref } from 'vue';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
 import { 
-    User, Package, ShoppingBag, LogOut, Phone, Mail, Calendar, 
-    Truck, ChevronRight, CheckCircle2, Clock, AlertCircle, Edit3, Key 
+    Package, ShoppingBag, LogOut, Phone, Mail, Calendar, 
+    Truck, ChevronRight, CheckCircle2, Edit3
 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
+import { useI18n } from '../../Composables/useI18n';
 
 const props = defineProps({
     customer: {
@@ -24,7 +25,8 @@ const props = defineProps({
 });
 
 const page = usePage();
-const activeTab = ref('orders'); // 'orders' | 'profile'
+const { t } = useI18n();
+const activeTab = ref('orders');
 
 const profileForm = useForm({
     name: props.customer.name,
@@ -53,43 +55,44 @@ const formatPrice = (val) => {
 
 const getStatusBadge = (status) => {
     const badges = {
-        'pending': { text: 'অপেক্ষমাণ', class: 'bg-amber-100 text-amber-800' },
-        'confirmed': { text: 'নিশ্চিত', class: 'bg-blue-100 text-blue-800' },
-        'processing': { text: 'প্রসেসিং', class: 'bg-indigo-100 text-indigo-800' },
-        'shipped': { text: 'শিপড', class: 'bg-purple-100 text-purple-800' },
-        'delivered': { text: 'ডেলিভার্ড', class: 'bg-emerald-100 text-emerald-800' },
-        'cancelled': { text: 'বাতিল', class: 'bg-rose-100 text-rose-800' },
+        pending: { text: t('account.status_pending'), class: 'bg-amber-100 text-amber-800' },
+        confirmed: { text: t('account.status_confirmed'), class: 'bg-blue-100 text-blue-800' },
+        processing: { text: t('account.status_processing'), class: 'bg-indigo-100 text-indigo-800' },
+        shipped: { text: t('account.status_shipped'), class: 'bg-purple-100 text-purple-800' },
+        delivered: { text: t('account.status_delivered'), class: 'bg-emerald-100 text-emerald-800' },
+        cancelled: { text: t('account.status_cancelled'), class: 'bg-rose-100 text-rose-800' },
     };
     return badges[status] || { text: status, class: 'bg-gray-100 text-gray-800' };
+};
+
+const paymentLabel = (method) => {
+    return method === 'cod' ? t('account.payment_cod') : method;
 };
 </script>
 
 <template>
-    <Head title="আমার অ্যাকাউন্ট - Nobo Shop" />
+    <Head :title="t('meta.account')" />
 
     <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col justify-between">
         <Header />
 
         <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <!-- Breadcrumbs -->
             <nav class="flex items-center gap-2 text-sm text-[#64748B] mb-6">
-                <Link href="/" class="hover:text-[#E86A28] transition-colors">হোম</Link>
+                <Link href="/" class="hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
                 <ChevronRight class="w-4 h-4" />
-                <span class="text-[#1E293B] font-medium">আমার অ্যাকাউন্ট</span>
+                <span class="text-[#1E293B] font-medium">{{ t('account.title') }}</span>
             </nav>
 
-            <!-- Flash Alert -->
             <div v-if="page.props.flash?.success" class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3">
                 <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
                 <span class="text-sm font-semibold">{{ page.props.flash.success }}</span>
             </div>
 
-            <!-- Profile Header Card -->
             <div class="bg-white rounded-3xl border border-[#EAE3D6] p-6 sm:p-8 shadow-sm mb-8">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 rounded-2xl bg-[#FAF7F2] text-[#E86A28] border border-[#EAE3D6] font-bold text-2xl flex items-center justify-center shrink-0 shadow-2xs">
-                            {{ customer.name ? customer.name.charAt(0) : 'ক' }}
+                            {{ customer.name ? customer.name.charAt(0) : t('reviews.satisfied_customer').charAt(0) }}
                         </div>
                         <div>
                             <h1 class="text-2xl font-bold text-[#1E293B]">{{ customer.name }}</h1>
@@ -104,7 +107,7 @@ const getStatusBadge = (status) => {
                                 </span>
                                 <span class="flex items-center gap-1.5">
                                     <Calendar class="w-3.5 h-3.5 text-[#94A3B8]" />
-                                    যুক্ত হয়েছেন: {{ customer.member_since }}
+                                    {{ t('account.member_since', { date: customer.member_since }) }}
                                 </span>
                             </div>
                         </div>
@@ -117,25 +120,23 @@ const getStatusBadge = (status) => {
                             class="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-sm font-semibold flex items-center gap-2 transition-colors cursor-pointer"
                         >
                             <LogOut class="w-4 h-4" />
-                            <span>লগআউট</span>
+                            <span>{{ t('account.logout') }}</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Quick Stats -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-[#F0EAE1]">
                     <div class="bg-[#FAF7F2] p-4 rounded-2xl border border-[#EAE3D6]">
-                        <span class="text-xs font-semibold text-[#64748B] block mb-1">মোট অর্ডার</span>
-                        <span class="text-2xl font-bold text-[#1E293B]">{{ stats.total_orders }} টি</span>
+                        <span class="text-xs font-semibold text-[#64748B] block mb-1">{{ t('account.total_orders') }}</span>
+                        <span class="text-2xl font-bold text-[#1E293B]">{{ stats.total_orders }}</span>
                     </div>
                     <div class="bg-[#FAF7F2] p-4 rounded-2xl border border-[#EAE3D6]">
-                        <span class="text-xs font-semibold text-[#64748B] block mb-1">মোট কেনাকাটা</span>
+                        <span class="text-xs font-semibold text-[#64748B] block mb-1">{{ t('account.total_spent') }}</span>
                         <span class="text-2xl font-bold text-[#E86A28]">{{ formatPrice(stats.total_spent) }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Tab Navigation -->
             <div class="flex items-center gap-2 mb-6 border-b border-[#EAE3D6] pb-2">
                 <button
                     @click="activeTab = 'orders'"
@@ -144,7 +145,7 @@ const getStatusBadge = (status) => {
                     :class="activeTab === 'orders' ? 'bg-[#E86A28] text-white shadow-sm' : 'bg-white text-[#64748B] hover:text-[#1E293B] border border-[#EAE3D6]'"
                 >
                     <Package class="w-4 h-4" />
-                    <span>আমার অর্ডারসমূহ ({{ orders.length }})</span>
+                    <span>{{ t('account.orders_tab', { count: orders.length }) }}</span>
                 </button>
 
                 <button
@@ -154,22 +155,20 @@ const getStatusBadge = (status) => {
                     :class="activeTab === 'profile' ? 'bg-[#E86A28] text-white shadow-sm' : 'bg-white text-[#64748B] hover:text-[#1E293B] border border-[#EAE3D6]'"
                 >
                     <Edit3 class="w-4 h-4" />
-                    <span>প্রোফাইল সেটিংস</span>
+                    <span>{{ t('account.profile_settings') }}</span>
                 </button>
             </div>
 
-            <!-- TAB 1: ORDERS LIST -->
             <div v-if="activeTab === 'orders'" class="space-y-6">
                 <div
                     v-for="order in orders"
                     :key="order.id"
                     class="bg-white rounded-3xl border border-[#EAE3D6] p-6 sm:p-8 shadow-sm transition-all hover:border-[#DCCFC0]"
                 >
-                    <!-- Order Header -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F0EAE1]">
                         <div>
                             <div class="flex items-center gap-3">
-                                <h3 class="text-lg font-bold text-[#1E293B]">অর্ডার #{{ order.order_number }}</h3>
+                                <h3 class="text-lg font-bold text-[#1E293B]">{{ t('account.order') }} #{{ order.order_number }}</h3>
                                 <span 
                                     class="text-xs font-bold px-2.5 py-0.5 rounded-full"
                                     :class="getStatusBadge(order.status).class"
@@ -178,7 +177,7 @@ const getStatusBadge = (status) => {
                                 </span>
                             </div>
                             <span class="text-xs text-[#64748B] mt-1 block">
-                                অর্ডার তারিখ: {{ order.created_at }}
+                                {{ t('account.order_date', { date: order.created_at }) }}
                             </span>
                         </div>
 
@@ -191,12 +190,11 @@ const getStatusBadge = (status) => {
                                 class="px-4 py-2 bg-[#FAF7F2] hover:bg-[#E86A28] text-[#1E293B] hover:text-white border border-[#EAE3D6] hover:border-[#E86A28] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs"
                             >
                                 <Truck class="w-3.5 h-3.5" />
-                                <span>ট্র্যাক করুন</span>
+                                <span>{{ t('account.track_order') }}</span>
                             </Link>
                         </div>
                     </div>
 
-                    <!-- Items List -->
                     <div class="py-4 space-y-3">
                         <div 
                             v-for="(item, idx) in order.items" 
@@ -212,34 +210,31 @@ const getStatusBadge = (status) => {
                         </div>
                     </div>
 
-                    <!-- Footer Info -->
                     <div class="pt-4 border-t border-[#F0EAE1] flex flex-wrap items-center justify-between gap-2 text-xs text-[#64748B]">
-                        <span>ঠিকানা: {{ order.shipping_address }}</span>
-                        <span>পেমেন্ট: {{ order.payment_method === 'cod' ? 'ক্যাশ অন ডেলিভারি (COD)' : order.payment_method }}</span>
+                        <span>{{ t('account.shipping_address', { address: order.shipping_address }) }}</span>
+                        <span>{{ t('account.payment_line', { method: paymentLabel(order.payment_method) }) }}</span>
                     </div>
                 </div>
 
-                <!-- Empty Orders State -->
                 <div v-if="orders.length === 0" class="bg-white rounded-3xl border border-[#EAE3D6] p-12 text-center shadow-sm">
                     <ShoppingBag class="w-16 h-16 text-[#CBD5E1] mx-auto mb-4" />
-                    <h3 class="text-xl font-bold text-[#1E293B]">আপনার কোনো পূর্ববর্তী অর্ডার নেই</h3>
-                    <p class="text-sm text-[#64748B] mt-1 mb-6">আমাদের আকর্ষণীয় কালেকশন থেকে এখনই অর্ডার করুন</p>
+                    <h3 class="text-xl font-bold text-[#1E293B]">{{ t('account.empty_orders_title') }}</h3>
+                    <p class="text-sm text-[#64748B] mt-1 mb-6">{{ t('account.empty_orders_body') }}</p>
                     <Link
                         href="/"
                         class="inline-flex items-center gap-2 px-6 py-3 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl font-bold text-sm shadow-md transition-all"
                     >
-                        <span>কেনাকাটা শুরু করুন</span>
+                        <span>{{ t('account.shop') }}</span>
                     </Link>
                 </div>
             </div>
 
-            <!-- TAB 2: PROFILE SETTINGS -->
             <div v-if="activeTab === 'profile'" class="max-w-2xl bg-white rounded-3xl border border-[#EAE3D6] p-8 shadow-sm">
-                <h2 class="text-xl font-bold text-[#1E293B] mb-6 pb-3 border-b border-[#F0EAE1]">প্রোফাইল তথ্য আপডেট করুন</h2>
+                <h2 class="text-xl font-bold text-[#1E293B] mb-6 pb-3 border-b border-[#F0EAE1]">{{ t('account.update_profile_title') }}</h2>
 
                 <form @submit.prevent="updateProfile" class="space-y-5">
                     <div>
-                        <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">আপনার নাম *</label>
+                        <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.name') }} *</label>
                         <input
                             v-model="profileForm.name"
                             type="text"
@@ -250,7 +245,7 @@ const getStatusBadge = (status) => {
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">মোবাইল নম্বর (পরিবর্তনযোগ্য নয়)</label>
+                        <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('account.phone_locked') }}</label>
                         <input
                             :value="customer.phone"
                             disabled
@@ -260,7 +255,7 @@ const getStatusBadge = (status) => {
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">ইমেইল ঠিকানা</label>
+                        <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.email') }}</label>
                         <input
                             v-model="profileForm.email"
                             type="email"
@@ -271,11 +266,11 @@ const getStatusBadge = (status) => {
                     </div>
 
                     <div class="pt-4 border-t border-[#F0EAE1]">
-                        <h3 class="text-sm font-bold text-[#1E293B] mb-4">পাসওয়ার্ড পরিবর্তন করুন (ঐচ্ছিক)</h3>
+                        <h3 class="text-sm font-bold text-[#1E293B] mb-4">{{ t('account.change_password') }}</h3>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">বর্তমান পাসওয়ার্ড</label>
+                                <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('account.current_password') }}</label>
                                 <input
                                     v-model="profileForm.current_password"
                                     type="password"
@@ -286,7 +281,7 @@ const getStatusBadge = (status) => {
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">নতুন পাসওয়ার্ড</label>
+                                <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('account.new_password') }}</label>
                                 <input
                                     v-model="profileForm.new_password"
                                     type="password"
@@ -297,7 +292,7 @@ const getStatusBadge = (status) => {
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">নতুন পাসওয়ার্ড নিশ্চিত করুন</label>
+                                <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('account.confirm_new_password') }}</label>
                                 <input
                                     v-model="profileForm.new_password_confirmation"
                                     type="password"
@@ -314,7 +309,7 @@ const getStatusBadge = (status) => {
                             :disabled="profileForm.processing"
                             class="px-6 py-2.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-50 cursor-pointer"
                         >
-                            {{ profileForm.processing ? 'সংরক্ষণ হচ্ছে...' : 'পরিবর্তন সংরক্ষণ করুন' }}
+                            {{ profileForm.processing ? t('account.saving') : t('account.save') }}
                         </button>
                     </div>
                 </form>

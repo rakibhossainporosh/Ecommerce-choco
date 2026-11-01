@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Customers\Pages\EditCustomer;
 use App\Filament\Resources\Customers\Pages\ListCustomers;
 use App\Filament\Resources\Customers\Pages\ViewCustomer;
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Customer::class;
 
     protected static ?string $recordTitleAttribute = 'name';

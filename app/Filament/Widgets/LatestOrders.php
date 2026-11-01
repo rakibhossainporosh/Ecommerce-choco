@@ -24,10 +24,10 @@ class LatestOrders extends BaseWidget
             ->query(
                 Order::query()->withCount('items')->latest()->limit(8)
             )
-            ->heading('Latest Orders')
+            ->heading(__('Latest Orders'))
             ->headerActions([
                 Action::make('view_all')
-                    ->label('View All Orders')
+                    ->label(__('View All Orders'))
                     ->icon('heroicon-m-arrow-right')
                     ->url('/admin/orders'),
             ])
@@ -46,7 +46,7 @@ class LatestOrders extends BaseWidget
                     ->label('Items')
                     ->badge()
                     ->color('gray')
-                    ->suffix(' items')
+                    ->formatStateUsing(fn ($state): string => __(':count items', ['count' => $state]))
                     ->alignCenter(),
 
                 TextColumn::make('payment_method')
@@ -55,7 +55,7 @@ class LatestOrders extends BaseWidget
                         ?? (is_string($state) ? PaymentMethod::tryFrom($state)?->label() : null)
                         ?? (string) $state
                     )
-                    ->description(fn (Order $record): string => strtoupper($record->payment_status?->value ?? (string) $record->payment_status)),
+                    ->description(fn (Order $record): string => $record->payment_status?->label() ?? (string) $record->payment_status),
 
                 TextColumn::make('status')
                     ->label('Order Status')
@@ -85,7 +85,7 @@ class LatestOrders extends BaseWidget
                     ->label('Placed At')
                     ->since()
                     ->sortable()
-                    ->tooltip(fn (Order $record): string => $record->created_at?->format('M d, Y h:i A') ?? ''),
+                    ->tooltip(fn (Order $record): string => $record->created_at?->translatedFormat('M d, Y h:i A') ?? ''),
             ])
             ->actions([
                 ViewAction::make()

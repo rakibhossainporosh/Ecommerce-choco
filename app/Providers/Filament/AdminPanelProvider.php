@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Http\Middleware\SetApplicationLocale;
 use App\Models\Setting;
+use App\Support\UiText;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -11,6 +12,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ReplicateAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -70,6 +73,23 @@ class AdminPanelProvider extends PanelProvider
         ReplicateAction::configureUsing(function (ReplicateAction $action): void {
             $action->successNotificationTitle(fn (ReplicateAction $a): string => filled($m = $a->getModelLabel()) ? __(':label duplicated successfully', ['label' => $m]) : __('Duplicated successfully'));
         });
+
+        FileUpload::configureUsing(function (FileUpload $upload): void {
+            if (app()->getLocale() !== 'bn' || filled($upload->getPlaceholder())) {
+                return;
+            }
+
+            $upload->placeholder('ফাইল এখানে টেনে আনুন অথবা <span class="filepond--label-action">বেছে নিন</span>');
+        });
+
+        DateTimePicker::configureUsing(function (DateTimePicker $picker): void {
+            $picker
+                ->native(false)
+                ->displayFormat(fn (DateTimePicker $component): string => $component->hasTime() ? 'd/m/Y H:i' : 'd/m/Y')
+                ->placeholder(fn (DateTimePicker $component): string => app()->getLocale() === 'bn'
+                    ? ($component->hasTime() ? 'দিন/মাস/বছর, সময়' : 'দিন/মাস/বছর')
+                    : ($component->hasTime() ? 'dd/mm/yyyy, time' : 'dd/mm/yyyy'));
+        });
     }
 
     public function panel(Panel $panel): Panel
@@ -124,16 +144,12 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::TOPBAR_START,
                 fn (): string => Blade::render("@include('filament.components.topbar-heading')"),
             )
-            ->renderHook(
-                PanelsRenderHook::TOPBAR_END,
-                fn (): string => Blade::render("@include('filament.components.locale-switcher')"),
-            )
             ->navigationGroups([
-                NavigationGroup::make(fn (): string => __('Sales')),
-                NavigationGroup::make(fn (): string => __('Catalog')),
-                NavigationGroup::make(fn (): string => __('Customers & Marketing')),
-                NavigationGroup::make(fn (): string => __('Shipping')),
-                NavigationGroup::make(fn (): string => __('System')),
+                NavigationGroup::make(fn (): string => UiText::line('Sales')),
+                NavigationGroup::make(fn (): string => UiText::line('Catalog')),
+                NavigationGroup::make(fn (): string => UiText::line('Customers & Marketing')),
+                NavigationGroup::make(fn (): string => UiText::line('Shipping')),
+                NavigationGroup::make(fn (): string => UiText::line('System')),
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')

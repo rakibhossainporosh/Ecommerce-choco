@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CategoryResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Category::class;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -39,7 +42,7 @@ class CategoryResource extends Resource
             $details['Parent'] = $record->parent->name;
         }
 
-        $details['Status'] = $record->is_active ? 'Active' : 'Inactive';
+        $details['Status'] = $record->is_active ? __('Active') : __('Inactive');
 
         return $details;
     }

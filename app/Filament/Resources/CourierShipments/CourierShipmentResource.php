@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CourierShipments;
 
 use App\Enums\CourierShipmentStatus;
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Models\CourierShipment;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -19,6 +20,8 @@ use Filament\Tables\Table;
 
 class CourierShipmentResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = CourierShipment::class;
 
     protected static \BackedEnum|string|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
@@ -28,6 +31,10 @@ class CourierShipmentResource extends Resource
     protected static ?int $navigationSort = 20;
 
     protected static ?string $navigationLabel = 'Courier Shipments';
+
+    protected static ?string $modelLabel = 'Courier Shipment';
+
+    protected static ?string $pluralModelLabel = 'Courier Shipments';
 
     public static function form(Schema $schema): Schema
     {
@@ -72,7 +79,7 @@ class CourierShipmentResource extends Resource
                     ->label('Courier'),
                 TextColumn::make('tracking_number')
                     ->searchable()
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn ($state) => $state->getColor())

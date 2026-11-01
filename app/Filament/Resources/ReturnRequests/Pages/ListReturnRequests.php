@@ -21,8 +21,8 @@ class ListReturnRequests extends ListRecords
         return [
             CreateAction::make()
                 ->label('New Return Request')
-                ->modalHeading('Submit Return Request')
-                ->modalDescription('Enter transaction and defect details to record a return request against an order.')
+                ->modalHeading(__('Submit Return Request'))
+                ->modalDescription(__('Enter transaction and defect details to record a return request against an order.'))
                 ->modalIcon(Heroicon::OutlinedArrowUturnLeft)
                 ->modalWidth(Width::TwoExtraLarge),
         ];

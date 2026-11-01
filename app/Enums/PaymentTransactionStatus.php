@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum PaymentTransactionStatus: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum PaymentTransactionStatus: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Pending = 'pending';
     case Completed = 'completed';
     case Failed = 'failed';
@@ -24,11 +29,6 @@ enum PaymentTransactionStatus: string
      */
     public function label(): string
     {
-        return match ($this) {
-            self::Pending => 'Pending',
-            self::Completed => 'Completed',
-            self::Failed => 'Failed',
-            self::Refunded => 'Refunded',
-        };
+        return __('enums.payment_transaction.'.$this->value);
     }
 }

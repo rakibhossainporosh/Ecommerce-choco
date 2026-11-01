@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Exceptions\InventoryException;
+use App\Filament\Concerns\TranslatesPageNavigation;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Inventory;
 use App\Models\Product;
@@ -27,6 +28,7 @@ use UnitEnum;
 class StockOverview extends Page implements HasTable
 {
     use InteractsWithTable;
+    use TranslatesPageNavigation;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
 
@@ -142,6 +144,8 @@ class StockOverview extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
+            ->modelLabel(__('Product Variant'))
+            ->pluralModelLabel(__('Product Variants'))
             ->query(
                 ProductVariant::query()->with(['product', 'inventory'])
             )
@@ -158,7 +162,7 @@ class StockOverview extends Page implements HasTable
 
                 TextColumn::make('name')
                     ->label('Variant')
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->searchable()
                     ->sortable(),
 
@@ -169,7 +173,7 @@ class StockOverview extends Page implements HasTable
 
                 TextColumn::make('inventory.quantity')
                     ->label('Stock')
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('quantity')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
@@ -177,7 +181,7 @@ class StockOverview extends Page implements HasTable
 
                 TextColumn::make('inventory.low_stock_threshold')
                     ->label('Threshold')
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('low_stock_threshold')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
@@ -187,33 +191,44 @@ class StockOverview extends Page implements HasTable
                     ->label('Status')
                     ->state(function (ProductVariant $record): string {
                         $inventory = $record->inventory;
+
                         if (! $inventory) {
-                            return 'Not Initialized';
+                            return __('Not Initialized');
                         }
 
                         if ($inventory->quantity <= 0) {
-                            return 'Out of Stock';
+                            return __('Out of Stock');
                         }
 
                         if ($inventory->quantity <= $inventory->low_stock_threshold) {
-                            return 'Low Stock';
+                            return __('Low Stock');
                         }
 
-                        return 'In Stock';
+                        return __('In Stock');
                     })
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'In Stock' => 'success',
-                        'Low Stock' => 'warning',
-                        'Out of Stock' => 'danger',
-                        'Not Initialized' => 'gray',
-                        default => 'gray',
+                    ->color(function (ProductVariant $record): string {
+                        $inventory = $record->inventory;
+
+                        if (! $inventory) {
+                            return 'gray';
+                        }
+
+                        if ($inventory->quantity <= 0) {
+                            return 'danger';
+                        }
+
+                        if ($inventory->quantity <= $inventory->low_stock_threshold) {
+                            return 'warning';
+                        }
+
+                        return 'success';
                     }),
 
                 TextColumn::make('inventory.updated_at')
                     ->label('Updated')
                     ->dateTime()
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('updated_at')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
@@ -223,10 +238,10 @@ class StockOverview extends Page implements HasTable
                 SelectFilter::make('variant_status')
                     ->label('Variant Status')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'active' => __('Active'),
+                        'inactive' => __('Inactive'),
                     ])
-                    ->placeholder('All')
+                    ->placeholder(__('All'))
                     ->query(function (Builder $query, array $data): Builder {
                         return match ($data['value'] ?? null) {
                             'active' => $query->where('is_active', true),
@@ -238,12 +253,12 @@ class StockOverview extends Page implements HasTable
                 SelectFilter::make('stock_status')
                     ->label('Stock Status')
                     ->options([
-                        'in_stock' => 'In Stock',
-                        'low_stock' => 'Low Stock',
-                        'out_of_stock' => 'Out of Stock',
-                        'not_initialized' => 'Not Initialized',
+                        'in_stock' => __('In Stock'),
+                        'low_stock' => __('Low Stock'),
+                        'out_of_stock' => __('Out of Stock'),
+                        'not_initialized' => __('Not Initialized'),
                     ])
-                    ->placeholder('All')
+                    ->placeholder(__('All'))
                     ->query(function (Builder $query, array $data): Builder {
                         return match ($data['value'] ?? null) {
                             'in_stock' => $query->whereHas('inventory', fn (Builder $q) => $q->whereColumn('quantity', '>', 'low_stock_threshold')),
@@ -265,15 +280,15 @@ class StockOverview extends Page implements HasTable
                     ->label('Adjust Stock')
                     ->icon(Heroicon::OutlinedArrowsUpDown)
                     ->color('primary')
-                    ->modalHeading(fn (ProductVariant $record): string => 'Adjust Stock: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalHeading(fn (ProductVariant $record): string => __('Adjust Stock: :name', ['name' => $record->name ? "{$record->name} ({$record->sku})" : $record->sku]))
                     ->modalWidth(Width::Medium)
                     ->authorize(fn () => auth()->user()?->can('adjust', Inventory::class))
                     ->form([
                         Select::make('type')
                             ->label('Adjustment Type')
                             ->options([
-                                'in' => 'Stock In',
-                                'out' => 'Stock Out',
+                                'in' => __('Stock In'),
+                                'out' => __('Stock Out'),
                             ])
                             ->default('in')
                             ->required()
@@ -285,25 +300,25 @@ class StockOverview extends Page implements HasTable
                             ->integer()
                             ->minValue(1)
                             ->required()
-                            ->helperText('Enter a positive whole number.')
+                            ->helperText(__('Enter a positive whole number.'))
                             ->rules(['required', 'integer', 'min:1']),
 
                         Select::make('reason')
                             ->label('Reason')
                             ->options(fn (Get $get): array => match ($get('type')) {
                                 'out' => [
-                                    'Damaged' => 'Damaged',
-                                    'Correction' => 'Correction',
-                                    'Expired' => 'Expired',
-                                    'Lost' => 'Lost',
-                                    'Other' => 'Other',
+                                    'Damaged' => __('Damaged'),
+                                    'Correction' => __('Correction'),
+                                    'Expired' => __('Expired'),
+                                    'Lost' => __('Lost'),
+                                    'Other' => __('Other'),
                                 ],
                                 default => [
-                                    'Opening Stock' => 'Opening Stock',
-                                    'Restock' => 'Restock',
-                                    'Purchase' => 'Purchase',
-                                    'Correction' => 'Correction',
-                                    'Other' => 'Other',
+                                    'Opening Stock' => __('Opening Stock'),
+                                    'Restock' => __('Restock'),
+                                    'Purchase' => __('Purchase'),
+                                    'Correction' => __('Correction'),
+                                    'Other' => __('Other'),
                                 ],
                             })
                             ->required()
@@ -311,14 +326,14 @@ class StockOverview extends Page implements HasTable
 
                         TextInput::make('custom_reason')
                             ->label('Custom Reason')
-                            ->placeholder('Specify custom reason')
+                            ->placeholder(__('Specify custom reason'))
                             ->visible(fn (Get $get): bool => $get('reason') === 'Other')
                             ->required(fn (Get $get): bool => $get('reason') === 'Other')
                             ->maxLength(255),
 
                         TextInput::make('note')
                             ->label('Note (Optional)')
-                            ->placeholder('e.g., Received from supplier, damage notes, etc.')
+                            ->placeholder(__('e.g., Received from supplier, damage notes, etc.'))
                             ->nullable()
                             ->maxLength(1000),
                     ])
@@ -364,13 +379,13 @@ class StockOverview extends Page implements HasTable
                             }
 
                             Notification::make()
-                                ->title('Stock adjusted successfully.')
-                                ->body("New stock level: {$inventory->fresh()->quantity}")
+                                ->title(__('Stock adjusted successfully.'))
+                                ->body(__('New stock level: :quantity', ['quantity' => $inventory->fresh()->quantity]))
                                 ->success()
                                 ->send();
                         } catch (InventoryException $e) {
                             Notification::make()
-                                ->title('Stock Adjustment Failed')
+                                ->title(__('Stock Adjustment Failed'))
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
@@ -379,8 +394,8 @@ class StockOverview extends Page implements HasTable
                         } catch (\Throwable $e) {
                             report($e);
                             Notification::make()
-                                ->title('Stock Adjustment Error')
-                                ->body('An unexpected error occurred while adjusting stock: '.$e->getMessage())
+                                ->title(__('Stock Adjustment Error'))
+                                ->body(__('An unexpected error occurred while adjusting stock: :message', ['message' => $e->getMessage()]))
                                 ->danger()
                                 ->send();
 
@@ -392,7 +407,7 @@ class StockOverview extends Page implements HasTable
                     ->label('Set Threshold')
                     ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
                     ->color('gray')
-                    ->modalHeading(fn (ProductVariant $record): string => 'Set Low Stock Threshold: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalHeading(fn (ProductVariant $record): string => __('Set Low Stock Threshold: :name', ['name' => $record->name ? "{$record->name} ({$record->sku})" : $record->sku]))
                     ->modalWidth(Width::Small)
                     ->authorize(fn () => auth()->user()?->can('adjust', Inventory::class))
                     ->fillForm(fn (ProductVariant $record): array => [
@@ -401,7 +416,7 @@ class StockOverview extends Page implements HasTable
                     ->form([
                         TextInput::make('low_stock_threshold')
                             ->label('Low Stock Alert Threshold')
-                            ->helperText('Trigger warning badge when quantity falls to or below this number.')
+                            ->helperText(__('Trigger warning badge when quantity falls to or below this number.'))
                             ->numeric()
                             ->integer()
                             ->minValue(0)
@@ -421,8 +436,8 @@ class StockOverview extends Page implements HasTable
                         }
 
                         Notification::make()
-                            ->title('Threshold updated successfully.')
-                            ->body("Low stock alert threshold set to {$threshold}.")
+                            ->title(__('Threshold updated successfully.'))
+                            ->body(__('Low stock alert threshold set to :quantity.', ['quantity' => $threshold]))
                             ->success()
                             ->send();
                     }),
@@ -431,7 +446,7 @@ class StockOverview extends Page implements HasTable
                     ->label('Stock History')
                     ->icon(Heroicon::OutlinedClock)
                     ->color('gray')
-                    ->modalHeading(fn (ProductVariant $record): string => 'Stock History: '.($record->name ? "{$record->name} ({$record->sku})" : $record->sku))
+                    ->modalHeading(fn (ProductVariant $record): string => __('Stock History: :name', ['name' => $record->name ? "{$record->name} ({$record->sku})" : $record->sku]))
                     ->modalWidth(Width::FiveExtraLarge)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')

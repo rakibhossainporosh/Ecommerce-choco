@@ -4,6 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Models\Category;
 use App\Models\Setting;
+use App\Support\CatalogTranslator;
+use App\Support\LocaleManager;
+use App\Support\LocalizedContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
@@ -40,6 +43,9 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'locale' => fn (): string => app()->getLocale(),
+            'locales' => fn (): array => LocaleManager::options(),
+            'translations' => fn (): array => $this->storefrontTranslations(),
             'global_categories' => function () {
                 if (! Schema::hasTable('categories')) {
                     return [];
@@ -53,7 +59,9 @@ class HandleInertiaRequests extends Middleware
                     ->whereNull('parent_id')
                     ->where('is_active', true)
                     ->orderBy('sort_order')
-                    ->get(['id', 'name', 'slug']);
+                    ->get(['id', 'name', 'slug'])
+                    ->map(fn (Category $category): array => $this->presentCategory($category))
+                    ->all();
             },
             'site_settings' => function () {
                 $defaultCol2Links = [
@@ -77,7 +85,8 @@ class HandleInertiaRequests extends Middleware
                         'site_name' => 'Nobo Shop',
                         'site_tagline' => 'আপনার প্রতিদিনের পছন্দ',
                         'footer_about' => 'আপনার প্রতিদিনের পছন্দ — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।',
-                        'contact_phone' => '+৮৮০ ৫২৩৪ ৫৬৭৮৯০',
+                        'contact_phone' => LocalizedContent::digits('+৮৮০ ৫২৩৪ ৫৬৭৮৯০'),
+                        'contact_phone_tel' => LocalizedContent::asciiDigits('+৮৮০ ৫২৩৪ ৫৬৭৮৯০'),
                         'contact_email' => 'support@noboshop.com',
                         'contact_address' => '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ',
                         'facebook_url' => 'https://facebook.com',
@@ -114,25 +123,29 @@ class HandleInertiaRequests extends Middleware
                 $logo = Setting::get('site_logo');
                 $favicon = Setting::get('site_favicon');
 
+                $defaults = LocalizedContent::settingDefaults();
+                $contactPhone = (string) Setting::get('contact_phone', '+৮৮০ ৫২৩৪ ৫৬৭৮৯০');
+
                 return [
                     'site_name' => Setting::get('site_name', 'Nobo Shop'),
-                    'site_tagline' => Setting::get('site_tagline', 'আপনার প্রতিদিনের পছন্দ'),
+                    'site_tagline' => LocalizedContent::text((string) Setting::get('site_tagline', $defaults['site_tagline']['bn']), $defaults['site_tagline']),
                     'site_logo' => $logo ? asset('storage/'.ltrim($logo, '/')) : null,
                     'site_favicon' => $favicon ? asset('storage/'.ltrim($favicon, '/')) : null,
-                    'footer_about' => Setting::get('footer_about', 'আপনার প্রতিদিনের পছন্দ — আপনার প্রতিদিনের কেনাকাটার নির্ভরযোগ্য প্রতিষ্ঠান। আমরা দিচ্ছি সেরা মানের পণ্যের নিশ্চয়তা।'),
-                    'contact_phone' => Setting::get('contact_phone', '+৮৮০ ৫২৩৪ ৫৬৭৮৯০'),
+                    'footer_about' => LocalizedContent::text((string) Setting::get('footer_about', $defaults['footer_about']['bn']), $defaults['footer_about']),
+                    'contact_phone' => LocalizedContent::digits($contactPhone),
+                    'contact_phone_tel' => LocalizedContent::asciiDigits($contactPhone),
                     'contact_email' => Setting::get('contact_email', 'support@noboshop.com'),
-                    'contact_address' => Setting::get('contact_address', '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ'),
+                    'contact_address' => LocalizedContent::text((string) Setting::get('contact_address', $defaults['contact_address']['bn']), $defaults['contact_address']),
                     'facebook_url' => Setting::get('facebook_url', 'https://facebook.com'),
                     'twitter_url' => Setting::get('twitter_url', 'https://twitter.com'),
                     'instagram_url' => Setting::get('instagram_url', 'https://instagram.com'),
                     'youtube_url' => Setting::get('youtube_url', 'https://youtube.com'),
-                    'footer_col2_title' => Setting::get('footer_col2_title', 'প্রয়োজনীয় লিংক'),
-                    'footer_col2_links' => $col2Links,
-                    'footer_col3_title' => Setting::get('footer_col3_title', 'গ্রাহক সেবা'),
-                    'footer_col3_links' => $col3Links,
-                    'footer_col4_title' => Setting::get('footer_col4_title', 'যোগাযোগ'),
-                    'footer_copyright' => Setting::get('footer_copyright', '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।'),
+                    'footer_col2_title' => LocalizedContent::text((string) Setting::get('footer_col2_title', $defaults['footer_col2_title']['bn']), $defaults['footer_col2_title']),
+                    'footer_col2_links' => LocalizedContent::links($col2Links, LocalizedContent::linkDefaults()),
+                    'footer_col3_title' => LocalizedContent::text((string) Setting::get('footer_col3_title', $defaults['footer_col3_title']['bn']), $defaults['footer_col3_title']),
+                    'footer_col3_links' => LocalizedContent::links($col3Links, LocalizedContent::linkDefaults()),
+                    'footer_col4_title' => LocalizedContent::text((string) Setting::get('footer_col4_title', $defaults['footer_col4_title']['bn']), $defaults['footer_col4_title']),
+                    'footer_copyright' => LocalizedContent::text((string) Setting::get('footer_copyright', $defaults['footer_copyright']['bn']), $defaults['footer_copyright']),
                     'footer_payment_methods' => $paymentMethods,
                     'shipping_inside_dhaka' => (float) Setting::get('shipping_inside_dhaka', 60),
                     'shipping_outside_dhaka' => (float) Setting::get('shipping_outside_dhaka', 120),
@@ -155,5 +168,38 @@ class HandleInertiaRequests extends Middleware
                 ] : null;
             },
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function presentCategory(Category $category): array
+    {
+        return [
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'display_name' => CatalogTranslator::category($category->slug, $category->name),
+            'children' => $category->children
+                ->map(fn (Category $child): array => $this->presentCategory($child))
+                ->values()
+                ->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function storefrontTranslations(): array
+    {
+        $path = lang_path(app()->getLocale().'/storefront.php');
+
+        if (! is_file($path)) {
+            $path = lang_path('en/storefront.php');
+        }
+
+        $lines = require $path;
+
+        return is_array($lines) ? $lines : [];
     }
 }

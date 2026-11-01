@@ -59,7 +59,7 @@ class ReturnRequestInfolist
 
                     TextEntry::make('admin_note')
                         ->label('Admin Note / Rejection Reason')
-                        ->placeholder('No internal note recorded yet.'),
+                        ->placeholder(__('No internal note recorded yet.')),
                 ]),
             ]),
         ]);

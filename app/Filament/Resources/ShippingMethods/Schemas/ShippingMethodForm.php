@@ -21,7 +21,7 @@ class ShippingMethodForm
             ->components([
                 TextInput::make('name')
                     ->label('Method / Zone Name')
-                    ->placeholder('e.g. Inside Dhaka (Standard)')
+                    ->placeholder(__('e.g. Inside Dhaka (Standard)'))
                     ->prefixIcon(Heroicon::OutlinedTruck)
                     ->required()
                     ->maxLength(100)
@@ -34,7 +34,7 @@ class ShippingMethodForm
 
                 TextInput::make('code')
                     ->label('Internal Identifier / Code')
-                    ->placeholder('e.g. inside_dhaka_std')
+                    ->placeholder(__('e.g. inside_dhaka_std'))
                     ->prefixIcon(Heroicon::OutlinedTag)
                     ->required()
                     ->maxLength(50)
@@ -61,8 +61,8 @@ class ShippingMethodForm
                     ->numeric()
                     ->minValue(0)
                     ->nullable()
-                    ->placeholder('Optional threshold (e.g. 2000.00)')
-                    ->helperText('Customers enjoy free delivery when their order subtotal meets this amount.'),
+                    ->placeholder(__('Optional threshold (e.g. 2000.00)'))
+                    ->helperText(__('Customers enjoy free delivery when their order subtotal meets this amount.')),
 
                 TextInput::make('estimated_days_min')
                     ->label('Min Delivery Days')
@@ -85,7 +85,7 @@ class ShippingMethodForm
 
                 Textarea::make('description')
                     ->label('Customer Display Description')
-                    ->placeholder('e.g. Standard home delivery within Dhaka metro.')
+                    ->placeholder(__('e.g. Standard home delivery within Dhaka metro.'))
                     ->rows(3)
                     ->nullable()
                     ->columnSpanFull(),

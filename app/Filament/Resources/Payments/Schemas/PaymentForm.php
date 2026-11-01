@@ -42,7 +42,7 @@ class PaymentForm
                     ->searchable()
                     ->preload()
                     ->nullable()
-                    ->placeholder('Walk-in / Guest')
+                    ->placeholder(__('Walk-in / Guest'))
                     ->prefixIcon(Heroicon::OutlinedUser),
 
                 Select::make('payment_method')
@@ -65,18 +65,18 @@ class PaymentForm
                     ->numeric()
                     ->minValue(0.01)
                     ->required()
-                    ->placeholder('0.00'),
+                    ->placeholder(__('0.00')),
 
                 TextInput::make('transaction_id')
                     ->label('Transaction ID / TrxID')
-                    ->placeholder('e.g. 9J2834K1')
+                    ->placeholder(__('e.g. 9J2834K1'))
                     ->maxLength(100)
                     ->nullable()
                     ->prefixIcon(Heroicon::OutlinedIdentification),
 
                 TextInput::make('account_number')
                     ->label('Sender Account / Phone Number')
-                    ->placeholder('e.g. 017XXXXXXXX')
+                    ->placeholder(__('e.g. 017XXXXXXXX'))
                     ->maxLength(50)
                     ->nullable()
                     ->tel()
@@ -90,7 +90,7 @@ class PaymentForm
 
                 Textarea::make('notes')
                     ->label('Merchant / Transaction Notes')
-                    ->placeholder('Verification details, transaction notes...')
+                    ->placeholder(__('Verification details, transaction notes...'))
                     ->rows(3)
                     ->columnSpanFull()
                     ->nullable(),

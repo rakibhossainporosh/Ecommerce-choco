@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\RelationManagers;
 
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentTransactionStatus;
+use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Filament\Resources\Payments\PaymentResource;
 use App\Models\Customer;
 use App\Models\Order;
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentsRelationManager extends RelationManager
 {
+    use TranslatesRelationManagerTitle;
+
     protected static string $relationship = 'payments';
 
     protected static ?string $title = 'Payment History';
@@ -77,29 +80,29 @@ class PaymentsRelationManager extends RelationManager
                 TextColumn::make('transaction_id')
                     ->label('TrxID')
                     ->copyable()
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
 
                 TextColumn::make('account_number')
                     ->label('Account / Phone')
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
 
                 TextColumn::make('paid_at')
                     ->label('Paid At')
                     ->dateTime('M j, Y H:i')
-                    ->placeholder('Pending')
+                    ->placeholder(__('Pending'))
                     ->sortable(),
 
                 TextColumn::make('recordedBy.name')
                     ->label('Recorded By')
-                    ->placeholder('System')
+                    ->placeholder(__('System'))
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make()
                     ->label('Record Payment')
-                    ->modalHeading('Record Payment for this Order')
-                    ->modalDescription('Enter transaction details to record a payment against this order.')
+                    ->modalHeading(__('Record Payment for this Order'))
+                    ->modalDescription(__('Enter transaction details to record a payment against this order.'))
                     ->modalIcon(Heroicon::OutlinedBanknotes)
                     ->modalWidth(Width::TwoExtraLarge)
                     ->visible(fn (): bool => auth()->user()?->can('payments.create') ?? false)
@@ -133,14 +136,14 @@ class PaymentsRelationManager extends RelationManager
 
                         TextInput::make('transaction_id')
                             ->label('Transaction ID / TrxID')
-                            ->placeholder('e.g. 9J2834K1')
+                            ->placeholder(__('e.g. 9J2834K1'))
                             ->maxLength(100)
                             ->nullable()
                             ->prefixIcon(Heroicon::OutlinedIdentification),
 
                         TextInput::make('account_number')
                             ->label('Sender Account / Phone Number')
-                            ->placeholder('e.g. 017XXXXXXXX')
+                            ->placeholder(__('e.g. 017XXXXXXXX'))
                             ->maxLength(50)
                             ->nullable()
                             ->tel()
@@ -154,7 +157,7 @@ class PaymentsRelationManager extends RelationManager
 
                         Textarea::make('notes')
                             ->label('Notes')
-                            ->placeholder('e.g. Received via bKash Merchant account')
+                            ->placeholder(__('e.g. Received via bKash Merchant account'))
                             ->rows(3)
                             ->columnSpanFull()
                             ->nullable(),
@@ -186,8 +189,8 @@ class PaymentsRelationManager extends RelationManager
                         $record->markAsCompleted(actor: auth()->user());
                         Notification::make()
                             ->success()
-                            ->title('Payment Verified')
-                            ->body("Payment {$record->payment_number} has been marked as completed.")
+                            ->title(__('Payment Verified'))
+                            ->body(__('Payment :number has been marked as completed.', ['number' => $record->payment_number]))
                             ->send();
                     }),
 
@@ -196,21 +199,24 @@ class PaymentsRelationManager extends RelationManager
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->modalHeading('Process Refund')
-                    ->modalDescription(fn (Payment $record): string => "Are you sure you want to refund payment {$record->payment_number} for ৳".number_format((float) $record->amount, 2).'?')
+                    ->modalHeading(__('Process Refund'))
+                    ->modalDescription(fn (Payment $record): string => __('Are you sure you want to refund payment :number for ৳:amount?', [
+                        'number' => $record->payment_number,
+                        'amount' => number_format((float) $record->amount, 2),
+                    ]))
                     ->visible(fn (Payment $record): bool => $record->canBeRefunded() && auth()->user()?->can('payments.refund'))
                     ->form([
                         TextInput::make('reason')
                             ->label('Refund Reason')
-                            ->placeholder('e.g. Return of items / Overpayment')
+                            ->placeholder(__('e.g. Return of items / Overpayment'))
                             ->required(),
                     ])
                     ->action(function (Payment $record, array $data): void {
                         $record->refund(reason: $data['reason'], actor: auth()->user());
                         Notification::make()
                             ->success()
-                            ->title('Payment Refunded')
-                            ->body("Payment {$record->payment_number} has been successfully refunded.")
+                            ->title(__('Payment Refunded'))
+                            ->body(__('Payment :number has been successfully refunded.', ['number' => $record->payment_number]))
                             ->send();
                     }),
             ]);

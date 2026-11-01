@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum OrderStatus: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum OrderStatus: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Pending = 'pending';
     case Confirmed = 'confirmed';
     case Processing = 'processing';

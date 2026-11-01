@@ -3,6 +3,7 @@ import { ref, watch, useAttrs, onMounted, onUnmounted } from 'vue';
 import { Search, Heart, ShoppingBag, ChevronDown, ChevronRight, X, Loader2, User } from 'lucide-vue-next';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { useCart } from '../Composables/useCart';
+import { useI18n } from '../Composables/useI18n';
 
 const props = defineProps({
     searchQuery: {
@@ -15,6 +16,7 @@ const emit = defineEmits(['search']);
 const attrs = useAttrs();
 
 const { totalCount, wishlistCount, openCart, openWishlist } = useCart();
+const { t, locale, locales, switchLocale } = useI18n();
 const page = usePage();
 
 const getInitialSearch = () => {
@@ -210,7 +212,7 @@ onUnmounted(() => {
                                 {{ page.props.site_settings?.site_name || 'Nobo Shop' }}
                             </span>
                             <span class="text-[12px] text-[#64748B] font-medium leading-none mt-0.5">
-                                {{ page.props.site_settings?.site_tagline || 'আপনার প্রতিদিনের পছন্দ' }}
+                                {{ page.props.site_settings?.site_tagline || t('header.tagline_fallback') }}
                             </span>
                         </div>
                     </template>
@@ -221,7 +223,7 @@ onUnmounted(() => {
                     <form @submit.prevent="handleSearch" class="relative flex items-center">
                         <button
                             type="submit"
-                            title="অনুসন্ধান করুন"
+                            :title="t('header.search')"
                             class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#94A3B8] hover:text-[#E86A28] transition-colors cursor-pointer"
                         >
                             <Search class="w-4 h-4" />
@@ -231,14 +233,14 @@ onUnmounted(() => {
                             @input="onSearchInput"
                             @focus="onSearchFocus"
                             type="text"
-                            placeholder="পণ্য খুঁজুন (যেমন: শার্ট, ঘড়ি, জুতো...)"
+                            :placeholder="t('header.search_placeholder')"
                             class="w-full pl-10 pr-9 py-2.5 bg-[#F6F1E9] border border-transparent rounded-full text-sm text-[#1E293B] placeholder-[#94A3B8] focus:bg-white focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 transition-all outline-none"
                         />
                         <button
                             v-if="searchInput"
                             @click="clearSearch"
                             type="button"
-                            title="মুছুন"
+                            :title="t('header.clear')"
                             class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#94A3B8] hover:text-[#E86A28] transition-colors"
                         >
                             <X class="w-4 h-4" />
@@ -253,14 +255,14 @@ onUnmounted(() => {
                         <!-- Loading State -->
                         <div v-if="isLoadingSuggestions" class="py-6 flex items-center justify-center gap-2.5 text-sm text-[#64748B]">
                             <Loader2 class="w-4 h-4 text-[#E86A28] animate-spin" />
-                            <span>পণ্য অনুসন্ধান করা হচ্ছে...</span>
+                            <span>{{ t('header.searching') }}</span>
                         </div>
 
                         <!-- Results List -->
                         <div v-else-if="suggestions.length > 0" class="flex flex-col">
                             <div class="px-4 pt-3 pb-1.5 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
-                                <span>পণ্যসমূহ</span>
-                                <span>{{ suggestions.length }} টি পণ্য পাওয়া গেছে</span>
+                                <span>{{ t('header.products') }}</span>
+                                <span>{{ t('header.found', { count: suggestions.length }) }}</span>
                             </div>
                             <div class="max-h-[380px] overflow-y-auto divide-y divide-[#F6F1E9]">
                                 <Link
@@ -272,15 +274,15 @@ onUnmounted(() => {
                                 >
                                     <img
                                         :src="item.image"
-                                        :alt="item.name"
+                                        :alt="item.display_name || item.name"
                                         class="w-12 h-12 rounded-xl object-cover bg-[#F6F1E9] border border-[#EAE3D6] shrink-0 group-hover:scale-105 transition-transform"
                                     />
                                     <div class="flex-1 min-w-0">
                                         <div class="text-sm font-semibold text-[#1E293B] group-hover:text-[#E86A28] transition-colors truncate">
-                                            {{ item.name }}
+                                            {{ item.display_name || item.name }}
                                         </div>
                                         <div class="flex items-center gap-2 mt-0.5">
-                                            <span class="text-xs text-[#94A3B8] font-medium">{{ item.category_name }}</span>
+                                            <span class="text-xs text-[#94A3B8] font-medium">{{ item.category_display_name || item.category_name }}</span>
                                             <span class="text-xs text-[#CBD5E1]">•</span>
                                             <div class="flex items-center gap-1.5">
                                                 <span class="text-sm font-bold text-[#E86A28]">৳ {{ Number(item.price).toLocaleString('en-US') }}</span>
@@ -301,8 +303,8 @@ onUnmounted(() => {
                                     type="button"
                                     class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-[#E86A28] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer"
                                 >
-                                    <span>"{{ searchInput.trim() }}" এর সবগুলো ফলাফল দেখুন</span>
-                                    <span class="text-[11px] bg-[#E86A28]/10 text-[#E86A28] px-2 py-0.5 rounded-full font-bold">সব দেখুন ↵</span>
+                                    <span>{{ t('header.view_all', { query: searchInput.trim() }) }}</span>
+                                    <span class="text-[11px] bg-[#E86A28]/10 text-[#E86A28] px-2 py-0.5 rounded-full font-bold">{{ t('header.see_all_enter') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -313,9 +315,9 @@ onUnmounted(() => {
                                 <Search class="w-5 h-5 text-[#94A3B8]" />
                             </div>
                             <p class="text-sm font-medium text-[#64748B]">
-                                "{{ searchInput.trim() }}" এর সাথে মিলে এমন কোনো পণ্য পাওয়া যায়নি
+                                {{ t('header.no_results', { query: searchInput.trim() }) }}
                             </p>
-                            <p class="text-xs text-[#94A3B8] mt-1">ভিন্ন বানান বা শব্দ দিয়ে আবার চেষ্টা করুন</p>
+                            <p class="text-xs text-[#94A3B8] mt-1">{{ t('header.try_again') }}</p>
                         </div>
                     </div>
                 </div>
@@ -324,12 +326,12 @@ onUnmounted(() => {
                 <div class="flex items-center gap-6 sm:gap-8">
                     <!-- Nav Links -->
                     <nav class="hidden lg:flex items-center gap-6 text-[15px] font-medium text-[#475569]">
-                        <Link href="/" class="text-[#1E293B] hover:text-[#E86A28] transition-colors">হোম</Link>
+                        <Link href="/" class="text-[#1E293B] hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
                         
                         <!-- Category Dropdown -->
                         <div class="relative group" @mouseenter="showCategoryMenu = true" @mouseleave="showCategoryMenu = false">
                             <button class="flex items-center gap-1 hover:text-[#E86A28] transition-colors py-2 outline-none">
-                                <span>ক্যাটাগরি</span>
+                                <span>{{ t('header.categories') }}</span>
                                 <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{'rotate-180': showCategoryMenu}" />
                             </button>
                             
@@ -346,7 +348,7 @@ onUnmounted(() => {
                                         :href="'/?category=' + cat.slug"
                                         class="flex items-center justify-between px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
                                     >
-                                        <span>{{ cat.name }}</span>
+                                        <span>{{ cat.display_name || cat.name }}</span>
                                         <ChevronRight v-if="cat.children && cat.children.length > 0" class="w-4 h-4 text-[#94A3B8]" />
                                     </Link>
 
@@ -364,7 +366,7 @@ onUnmounted(() => {
                                                 :href="'/?category=' + subCat.slug"
                                                 class="flex items-center justify-between px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
                                             >
-                                                <span>{{ subCat.name }}</span>
+                                                <span>{{ subCat.display_name || subCat.name }}</span>
                                                 <ChevronRight v-if="subCat.children && subCat.children.length > 0" class="w-4 h-4 text-[#94A3B8]" />
                                             </Link>
                                             
@@ -379,14 +381,14 @@ onUnmounted(() => {
                                                     :href="'/?category=' + subSubCat.slug"
                                                     class="block px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
                                                 >
-                                                    {{ subSubCat.name }}
+                                                    {{ subSubCat.display_name || subSubCat.name }}
                                                 </Link>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div v-if="categories.length === 0" class="px-5 py-2 text-sm text-[#94A3B8]">
-                                    কোনো ক্যাটাগরি নেই
+                                    {{ t('header.no_categories') }}
                                 </div>
                             </div>
                         </div>
@@ -396,19 +398,38 @@ onUnmounted(() => {
                             class="transition-colors"
                             :class="page.props.filters?.offer ? 'text-[#E86A28] font-bold' : 'hover:text-[#E86A28]'"
                         >
-                            অফার
+                            {{ t('header.offers') }}
                         </Link>
-                        <Link href="/track-order" class="hover:text-[#E86A28] transition-colors font-bold text-[#E86A28]">ট্র্যাক অর্ডার</Link>
+                        <Link href="/track-order" class="hover:text-[#E86A28] transition-colors font-bold text-[#E86A28]">{{ t('header.track') }}</Link>
                     </nav>
 
                     <!-- Icons: Account, Wishlist & Cart -->
                     <div class="flex items-center gap-2 sm:gap-3">
+                        <div
+                            v-if="locales.length"
+                            class="flex items-center gap-0.5 px-2 py-1.5 text-xs font-bold bg-[#FAF7F2] border border-[#EAE3D6] rounded-xl shadow-2xs"
+                            role="group"
+                            :aria-label="t('header.language')"
+                        >
+                            <template v-for="(loc, index) in locales" :key="loc.code">
+                                <button
+                                    type="button"
+                                    @click="switchLocale(loc.code)"
+                                    class="px-1.5 py-0.5 rounded-lg transition-colors"
+                                    :class="locale === loc.code ? 'text-[#E86A28]' : 'text-[#475569] hover:text-[#1E293B]'"
+                                >
+                                    {{ loc.short }}
+                                </button>
+                                <span v-if="index < locales.length - 1" class="text-[#CBD5E1] select-none">|</span>
+                            </template>
+                        </div>
+
                         <!-- Customer Account / Login -->
                         <Link
                             v-if="page.props.customer"
                             href="/account"
                             class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
-                            title="আমার অ্যাকাউন্ট"
+                            :title="t('header.account')"
                         >
                             <User class="w-4 h-4 text-[#E86A28]" />
                             <span class="hidden sm:inline max-w-[90px] truncate">{{ page.props.customer.name }}</span>
@@ -417,10 +438,10 @@ onUnmounted(() => {
                             v-else
                             href="/login"
                             class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
-                            title="লগইন করুন"
+                            :title="t('header.login')"
                         >
                             <User class="w-4 h-4 text-[#E86A28]" />
-                            <span class="hidden sm:inline">লগইন</span>
+                            <span class="hidden sm:inline">{{ t('header.login') }}</span>
                         </Link>
 
                         <!-- Wishlist -->
@@ -428,7 +449,7 @@ onUnmounted(() => {
                             @click="openWishlist"
                             type="button"
                             class="relative p-2 text-[#475569] hover:text-[#E86A28] transition-colors"
-                            title="উইশলিস্ট"
+                            :title="t('header.wishlist')"
                         >
                             <Heart class="w-6 h-6 stroke-[1.8]" />
                             <span
@@ -444,7 +465,7 @@ onUnmounted(() => {
                             @click="openCart"
                             type="button"
                             class="relative p-2 text-[#475569] hover:text-[#E86A28] transition-colors"
-                            title="কার্ট দেখুন"
+                            :title="t('header.cart')"
                         >
                             <ShoppingBag class="w-6 h-6 stroke-[1.8]" />
                             <span
@@ -463,7 +484,7 @@ onUnmounted(() => {
                 <form @submit.prevent="handleSearch" class="relative flex items-center">
                     <button
                         type="submit"
-                        title="অনুসন্ধান করুন"
+                        :title="t('header.search')"
                         class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#94A3B8] hover:text-[#E86A28] transition-colors cursor-pointer"
                     >
                         <Search class="w-4 h-4" />
@@ -473,14 +494,14 @@ onUnmounted(() => {
                         @input="onSearchInput"
                         @focus="onSearchFocus"
                         type="text"
-                        placeholder="পণ্য খুঁজুন (যেমন: শার্ট, ঘড়ি, জুতো...)"
+                        :placeholder="t('header.search_placeholder')"
                         class="w-full pl-10 pr-9 py-2 bg-[#F6F1E9] border border-transparent rounded-full text-sm text-[#1E293B] placeholder-[#94A3B8] focus:bg-white focus:border-[#E86A28] outline-none"
                     />
                     <button
                         v-if="searchInput"
                         @click="clearSearch"
                         type="button"
-                        title="মুছুন"
+                        :title="t('header.clear')"
                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#94A3B8] hover:text-[#E86A28] transition-colors"
                     >
                         <X class="w-4 h-4" />
@@ -495,14 +516,14 @@ onUnmounted(() => {
                     <!-- Loading State -->
                     <div v-if="isLoadingSuggestions" class="py-6 flex items-center justify-center gap-2.5 text-sm text-[#64748B]">
                         <Loader2 class="w-4 h-4 text-[#E86A28] animate-spin" />
-                        <span>পণ্য অনুসন্ধান করা হচ্ছে...</span>
+                        <span>{{ t('header.searching') }}</span>
                     </div>
 
                     <!-- Results List -->
                     <div v-else-if="suggestions.length > 0" class="flex flex-col">
                         <div class="px-4 pt-3 pb-1.5 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
-                            <span>পণ্যসমূহ</span>
-                            <span>{{ suggestions.length }} টি পণ্য পাওয়া গেছে</span>
+                            <span>{{ t('header.products') }}</span>
+                            <span>{{ t('header.found', { count: suggestions.length }) }}</span>
                         </div>
                         <div class="max-h-[60vh] overflow-y-auto divide-y divide-[#F6F1E9]">
                             <Link
@@ -522,7 +543,7 @@ onUnmounted(() => {
                                         {{ item.name }}
                                     </div>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-xs text-[#94A3B8] font-medium">{{ item.category_name }}</span>
+                                        <span class="text-xs text-[#94A3B8] font-medium">{{ item.category_display_name || item.category_name }}</span>
                                         <span class="text-xs text-[#CBD5E1]">•</span>
                                         <div class="flex items-center gap-1.5">
                                             <span class="text-sm font-bold text-[#E86A28]">৳ {{ Number(item.price).toLocaleString('en-US') }}</span>
@@ -543,8 +564,8 @@ onUnmounted(() => {
                                 type="button"
                                 class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-[#E86A28] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer"
                             >
-                                <span>"{{ searchInput.trim() }}" এর সবগুলো ফলাফল দেখুন</span>
-                                <span class="text-[11px] bg-[#E86A28]/10 text-[#E86A28] px-2 py-0.5 rounded-full font-bold">সব দেখুন ↵</span>
+                                <span>{{ t('header.view_all', { query: searchInput.trim() }) }}</span>
+                                <span class="text-[11px] bg-[#E86A28]/10 text-[#E86A28] px-2 py-0.5 rounded-full font-bold">{{ t('header.see_all_enter') }}</span>
                             </button>
                         </div>
                     </div>
@@ -555,9 +576,9 @@ onUnmounted(() => {
                             <Search class="w-5 h-5 text-[#94A3B8]" />
                         </div>
                         <p class="text-sm font-medium text-[#64748B]">
-                            "{{ searchInput.trim() }}" এর সাথে মিলে এমন কোনো পণ্য পাওয়া যায়নি
+                            {{ t('header.no_results', { query: searchInput.trim() }) }}
                         </p>
-                        <p class="text-xs text-[#94A3B8] mt-1">ভিন্ন বানান বা শব্দ দিয়ে আবার চেষ্টা করুন</p>
+                        <p class="text-xs text-[#94A3B8] mt-1">{{ t('header.try_again') }}</p>
                     </div>
                 </div>
             </div>

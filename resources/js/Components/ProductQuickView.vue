@@ -1,7 +1,8 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { X, ShoppingBag, Plus, Minus, Heart } from 'lucide-vue-next';
 import { useCart } from '../Composables/useCart';
+import { useI18n } from '../Composables/useI18n';
 
 const props = defineProps({
     product: {
@@ -17,12 +18,16 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { addToCart, toggleWishlist, isInWishlist } = useCart();
+const { t } = useI18n();
 const quantity = ref(1);
 
-// Reset quantity when modal opens for a new product
 watch(() => props.product, () => {
     quantity.value = 1;
 });
+
+const productName = computed(() => props.product?.display_name || props.product?.name || '');
+const categoryName = computed(() => props.product?.category_display_name || props.product?.category_name || t('product.general'));
+const shortDescription = computed(() => props.product?.display_short_description || props.product?.short_description || t('product.fallback_short'));
 
 const formatPrice = (val) => {
     if (!val) return '';
@@ -65,7 +70,7 @@ const handleAddToCart = () => {
                 <div class="w-full md:w-1/2 bg-[#F7F3EC] flex items-center justify-center p-8 shrink-0">
                     <img
                         :src="product.image"
-                        :alt="product.name"
+                        :alt="productName"
                         class="w-full h-auto max-h-[400px] object-contain rounded-2xl drop-shadow-md"
                     />
                 </div>
@@ -73,10 +78,10 @@ const handleAddToCart = () => {
                 <!-- Product Details -->
                 <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col overflow-y-auto">
                     <span class="text-sm font-medium text-[#E86A28] uppercase tracking-wider block mb-2">
-                        {{ product.category_name || 'পণ্য' }}
+                        {{ categoryName }}
                     </span>
                     <h2 class="text-2xl md:text-3xl font-bold text-[#1E293B] leading-tight mb-2">
-                        {{ product.name }}
+                        {{ productName }}
                     </h2>
                     
                     <div class="flex items-center gap-3 mb-6">
@@ -90,12 +95,12 @@ const handleAddToCart = () => {
                             {{ formatPrice(product.compare_at_price) }}
                         </span>
                         <span v-if="product.compare_at_price && product.compare_at_price > product.price" class="px-2 py-1 bg-[#FEE2E2] text-[#EF4444] text-xs font-bold rounded-md ml-2">
-                            ছাড়!
+                            {{ t('product.discount_badge') }}
                         </span>
                     </div>
 
                     <div class="prose prose-sm text-[#64748B] mb-8 leading-relaxed">
-                        {{ product.short_description || 'এই পণ্যটির চমৎকার ডিজাইন এবং উন্নত কোয়ালিটি আপনাকে মুগ্ধ করবে। প্রতিদিনের ব্যবহারের জন্য একটি পারফেক্ট পছন্দ।' }}
+                        {{ shortDescription }}
                     </div>
 
                     <div class="mt-auto pt-6 border-t border-[#F0EAE1]">
@@ -129,7 +134,7 @@ const handleAddToCart = () => {
                                 class="flex-1 h-12 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-sm"
                             >
                                 <ShoppingBag class="w-5 h-5" />
-                                <span>কার্টে যোগ করুন</span>
+                                <span>{{ t('product.add_to_cart') }}</span>
                             </button>
                         </div>
 
@@ -143,7 +148,7 @@ const handleAddToCart = () => {
                                 class="w-5 h-5 transition-colors" 
                                 :class="{ 'fill-[#E86A28] text-[#E86A28]': isInWishlist(product.id) }" 
                             />
-                            <span>{{ isInWishlist(product.id) ? 'উইশলিস্টে যুক্ত আছে' : 'উইশলিস্টে যুক্ত করুন' }}</span>
+                            <span>{{ isInWishlist(product.id) ? t('product.wishlist_added') : t('product.wishlist_add') }}</span>
                         </button>
                     </div>
                 </div>

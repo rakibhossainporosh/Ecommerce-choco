@@ -125,6 +125,8 @@
         </x-filament::dropdown.list>
     @endif
 
+    @include('filament.components.locale-switcher-profile')
+
     @if ($multiGroupAfterTheme && $afterThemeItemGroups !== [])
         @foreach ($afterThemeItemGroups as $afterThemeGroup)
             <x-filament::dropdown.list>

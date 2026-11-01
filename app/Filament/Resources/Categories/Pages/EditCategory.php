@@ -23,7 +23,7 @@ class EditCategory extends EditRecord
                     if ($record->hasChildren()) {
                         Notification::make()
                             ->danger()
-                            ->title('Cannot delete category because it has subcategories.')
+                            ->title(__('Cannot delete category because it has subcategories.'))
                             ->send();
 
                         $action->halt();
@@ -32,7 +32,7 @@ class EditCategory extends EditRecord
                     if ($record->hasProducts()) {
                         Notification::make()
                             ->danger()
-                            ->title('Cannot delete category because it has active products assigned to it.')
+                            ->title(__('Cannot delete category because it has active products assigned to it.'))
                             ->send();
 
                         $action->halt();

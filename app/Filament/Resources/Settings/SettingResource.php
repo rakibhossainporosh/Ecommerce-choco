@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Settings;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Settings\Pages\CreateSetting;
 use App\Filament\Resources\Settings\Pages\EditSetting;
 use App\Filament\Resources\Settings\Pages\ListSettings;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class SettingResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Setting::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
@@ -27,6 +30,10 @@ class SettingResource extends Resource
     protected static ?int $navigationSort = 10;
 
     protected static ?string $navigationLabel = 'Settings';
+
+    protected static ?string $modelLabel = 'Setting';
+
+    protected static ?string $pluralModelLabel = 'Settings';
 
     public static function form(Schema $schema): Schema
     {

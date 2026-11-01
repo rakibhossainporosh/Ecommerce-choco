@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum SettingType: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum SettingType: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case String = 'string';
     case Boolean = 'boolean';
     case Integer = 'integer';
@@ -17,12 +22,6 @@ enum SettingType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::String => 'String / Text',
-            self::Boolean => 'Boolean (True/False)',
-            self::Integer => 'Integer',
-            self::Float => 'Float / Decimal',
-            self::Json => 'JSON',
-        };
+        return __('enums.setting_type.'.$this->value);
     }
 }

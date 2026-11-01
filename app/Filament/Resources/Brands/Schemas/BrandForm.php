@@ -26,13 +26,13 @@ class BrandForm
             ->components([
                 Group::make([
                     Section::make('Brand Information')
-                        ->description('Core brand identity and search engine details.')
+                        ->description(__('Core brand identity and search engine details.'))
                         ->icon(Heroicon::OutlinedBuildingStorefront)
                         ->columns(2)
                         ->schema([
                             TextInput::make('name')
                                 ->label('Brand Name')
-                                ->placeholder('e.g. Lindt, Ferrero, Godiva')
+                                ->placeholder(__('e.g. Lindt, Ferrero, Godiva'))
                                 ->prefixIcon(Heroicon::OutlinedBuildingStorefront)
                                 ->required()
                                 ->maxLength(255)
@@ -52,16 +52,16 @@ class BrandForm
                                             ->exists();
 
                                         if ($exists) {
-                                            $fail('A brand with this name already exists.');
+                                            $fail(__('A brand with this name already exists.'));
                                         }
                                     },
                                 ]),
 
                             TextInput::make('slug')
                                 ->label('URL Slug')
-                                ->placeholder('e.g. lindt-chocolate')
+                                ->placeholder(__('e.g. lindt-chocolate'))
                                 ->prefixIcon(Heroicon::OutlinedGlobeAlt)
-                                ->helperText('Used for SEO friendly brand links.')
+                                ->helperText(__('Used for SEO friendly brand links.'))
                                 ->required()
                                 ->maxLength(255)
                                 ->unique(ignoreRecord: true)
@@ -69,7 +69,7 @@ class BrandForm
 
                             Textarea::make('description')
                                 ->label('Description')
-                                ->placeholder('Enter a detailed biography, history, or overview of this brand...')
+                                ->placeholder(__('Enter a detailed biography, history, or overview of this brand...'))
                                 ->nullable()
                                 ->rows(4)
                                 ->columnSpanFull(),
@@ -78,7 +78,7 @@ class BrandForm
 
                 Group::make([
                     Section::make('Brand Logo & Media')
-                        ->description('Visual branding asset for the storefront.')
+                        ->description(__('Visual branding asset for the storefront.'))
                         ->icon(Heroicon::OutlinedPhoto)
                         ->schema([
                             FileUpload::make('logo')
@@ -88,17 +88,17 @@ class BrandForm
                                 ->directory('brands/logos')
                                 ->maxSize(2048)
                                 ->imageEditor()
-                                ->helperText('PNG, JPG, or WebP up to 2MB.'),
+                                ->helperText(__('PNG, JPG, or WebP up to 2MB.')),
                         ]),
 
                     Section::make('Display & Status')
-                        ->description('Storefront visibility and sorting sequence.')
+                        ->description(__('Storefront visibility and sorting sequence.'))
                         ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
                         ->schema([
                             TextInput::make('sort_order')
                                 ->label('Sort Order')
                                 ->prefixIcon(Heroicon::OutlinedArrowsUpDown)
-                                ->helperText('Lower values appear first (0 = top priority).')
+                                ->helperText(__('Lower values appear first (0 = top priority).'))
                                 ->numeric()
                                 ->default(0)
                                 ->minValue(0)
@@ -106,7 +106,7 @@ class BrandForm
 
                             Toggle::make('is_active')
                                 ->label('Active Status')
-                                ->helperText('Disable to hide this brand from the storefront.')
+                                ->helperText(__('Disable to hide this brand from the storefront.'))
                                 ->default(true)
                                 ->required(),
                         ]),

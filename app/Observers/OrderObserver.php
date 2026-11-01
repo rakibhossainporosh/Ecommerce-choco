@@ -18,8 +18,8 @@ class OrderObserver
 
         if ($users && $users->isNotEmpty()) {
             Notification::make()
-                ->title('New Order Received')
-                ->body("Order #{$order->order_number} has been placed for ".number_format($order->grand_total, 2).' ৳.')
+                ->title(__('New Order Received'))
+                ->body(__('Order #:number has been placed for :amount.', ['number' => $order->order_number, 'amount' => number_format($order->grand_total, 2).' ৳']))
                 ->success()
                 ->icon('heroicon-o-shopping-bag')
                 ->actions([

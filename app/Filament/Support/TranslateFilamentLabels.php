@@ -2,6 +2,7 @@
 
 namespace App\Filament\Support;
 
+use App\Support\UiText;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\Entry;
 use Filament\Schemas\Components\Component;
@@ -31,7 +32,7 @@ class TranslateFilamentLabels
             $heading = $property->getValue($section);
 
             if (is_string($heading) && $heading !== '') {
-                $section->heading(fn (): string => __($heading));
+                $section->heading(fn (): string => UiText::line($heading));
             }
         });
     }

@@ -9,6 +9,7 @@ import {
     ChevronDown, 
     Sparkles 
 } from 'lucide-vue-next';
+import { useI18n } from '../Composables/useI18n';
 
 const props = defineProps({
     categories: {
@@ -29,9 +30,10 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['selectCategory', 'selectSort']);
+defineEmits(['selectCategory', 'selectSort']);
 
-// Icon mapping based on category slug
+const { t } = useI18n();
+
 const getCategoryIcon = (slug) => {
     switch (slug) {
         case 'fashion':
@@ -49,15 +51,15 @@ const getCategoryIcon = (slug) => {
     }
 };
 
-const sortOptions = [
-    { label: 'নতুন', value: 'newest' },
-    { label: 'মূল্য: কম থেকে বেশি', value: 'price_asc' },
-    { label: 'মূল্য: বেশি থেকে কম', value: 'price_desc' },
-];
+const sortOptions = computed(() => [
+    { label: t('home.sort_newest'), value: 'newest' },
+    { label: t('home.sort_price_asc'), value: 'price_asc' },
+    { label: t('home.sort_price_desc'), value: 'price_desc' },
+]);
 
 const currentSortLabel = computed(() => {
-    const found = sortOptions.find(o => o.value === props.activeSort);
-    return found ? found.label : 'নতুন';
+    const found = sortOptions.value.find(o => o.value === props.activeSort);
+    return found ? found.label : t('home.sort_newest');
 });
 </script>
 
@@ -67,8 +69,8 @@ const currentSortLabel = computed(() => {
             <!-- Section Heading -->
             <div class="flex items-center gap-3">
                 <h2 class="text-2xl font-bold text-[#1E293B] tracking-tight flex items-center gap-2.5">
-                    <span>{{ isOffer ? 'বিশেষ অফারসমূহ' : 'নির্বাচিত পণ্য' }}</span>
-                    <span v-if="isOffer" class="text-xs bg-[#E86A28] text-white px-2.5 py-0.5 rounded-full font-bold">অফার</span>
+                    <span>{{ isOffer ? t('home.offers_title') : t('home.featured') }}</span>
+                    <span v-if="isOffer" class="text-xs bg-[#E86A28] text-white px-2.5 py-0.5 rounded-full font-bold">{{ t('home.offer_badge') }}</span>
                 </h2>
             </div>
 
@@ -85,7 +87,7 @@ const currentSortLabel = computed(() => {
                     ]"
                 >
                     <Sparkles class="w-4 h-4" />
-                    <span>সবগুলো</span>
+                    <span>{{ t('home.all') }}</span>
                 </button>
 
                 <!-- Dynamic Categories matching screenshot -->
@@ -101,7 +103,7 @@ const currentSortLabel = computed(() => {
                     ]"
                 >
                     <component :is="getCategoryIcon(cat.slug)" class="w-4 h-4 text-inherit" />
-                    <span>{{ cat.name }}</span>
+                    <span>{{ cat.display_name || cat.name }}</span>
                 </button>
             </div>
 
@@ -109,7 +111,7 @@ const currentSortLabel = computed(() => {
             <div class="flex items-center justify-end shrink-0">
                 <div class="relative inline-block text-left group">
                     <div class="inline-flex items-center gap-2 text-sm text-[#475569] font-medium bg-white px-3.5 py-2 rounded-full border border-[#EAE3D6] hover:border-[#CBD5E1] transition-colors cursor-pointer">
-                        <span class="text-[#64748B]">সাজান:</span>
+                        <span class="text-[#64748B]">{{ t('home.sort_label') }}:</span>
                         <span class="text-[#1E293B] font-semibold">{{ currentSortLabel }}</span>
                         <ChevronDown class="w-4 h-4 text-[#94A3B8]" />
                     </div>

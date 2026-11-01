@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Attributes;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Attributes\Pages\CreateAttribute;
 use App\Filament\Resources\Attributes\Pages\EditAttribute;
 use App\Filament\Resources\Attributes\Pages\ListAttributes;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AttributeResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Attribute::class;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -35,7 +38,7 @@ class AttributeResource extends Resource
         return [
             'Type' => ucfirst($record->type),
             'Scope' => ucfirst($record->scope),
-            'Status' => $record->is_active ? 'Active' : 'Inactive',
+            'Status' => $record->is_active ? __('Active') : __('Inactive'),
         ];
     }
 

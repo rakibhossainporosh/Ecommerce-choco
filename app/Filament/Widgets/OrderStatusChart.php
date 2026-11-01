@@ -5,10 +5,16 @@ namespace App\Filament\Widgets;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 
 class OrderStatusChart extends ChartWidget
 {
     protected ?string $heading = 'Order Status Breakdown';
+
+    public function getHeading(): string|Htmlable|null
+    {
+        return $this->heading ? __($this->heading) : null;
+    }
 
     protected static ?int $sort = 3;
 
@@ -17,13 +23,13 @@ class OrderStatusChart extends ChartWidget
     protected function getData(): array
     {
         $statusConfigs = [
-            OrderStatus::Pending->value => ['label' => 'Pending', 'color' => '#F59E0B'],
-            OrderStatus::Confirmed->value => ['label' => 'Confirmed', 'color' => '#0EA5E9'],
-            OrderStatus::Processing->value => ['label' => 'Processing', 'color' => '#3B82F6'],
-            OrderStatus::Shipped->value => ['label' => 'Shipped', 'color' => '#8B5CF6'],
-            OrderStatus::Delivered->value => ['label' => 'Delivered', 'color' => '#10B981'],
-            OrderStatus::Cancelled->value => ['label' => 'Cancelled', 'color' => '#EF4444'],
-            OrderStatus::Returned->value => ['label' => 'Returned', 'color' => '#64748B'],
+            OrderStatus::Pending->value => ['label' => OrderStatus::Pending->label(), 'color' => '#F59E0B'],
+            OrderStatus::Confirmed->value => ['label' => OrderStatus::Confirmed->label(), 'color' => '#0EA5E9'],
+            OrderStatus::Processing->value => ['label' => OrderStatus::Processing->label(), 'color' => '#3B82F6'],
+            OrderStatus::Shipped->value => ['label' => OrderStatus::Shipped->label(), 'color' => '#8B5CF6'],
+            OrderStatus::Delivered->value => ['label' => OrderStatus::Delivered->label(), 'color' => '#10B981'],
+            OrderStatus::Cancelled->value => ['label' => OrderStatus::Cancelled->label(), 'color' => '#EF4444'],
+            OrderStatus::Returned->value => ['label' => OrderStatus::Returned->label(), 'color' => '#64748B'],
         ];
 
         $counts = Order::query()
@@ -53,7 +59,7 @@ class OrderStatusChart extends ChartWidget
                         'backgroundColor' => ['#334155'],
                     ],
                 ],
-                'labels' => ['No Orders Yet'],
+                'labels' => [__('No Orders Yet')],
             ];
         }
 

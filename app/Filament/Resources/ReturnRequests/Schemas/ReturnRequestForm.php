@@ -40,7 +40,7 @@ class ReturnRequestForm
                     ->searchable()
                     ->preload()
                     ->nullable()
-                    ->placeholder('Guest / Walk-in')
+                    ->placeholder(__('Guest / Walk-in'))
                     ->prefixIcon(Heroicon::OutlinedUser),
 
                 Select::make('status')
@@ -57,18 +57,18 @@ class ReturnRequestForm
                     ->minValue(0)
                     ->default(0)
                     ->required()
-                    ->helperText('Cannot exceed the associated order grand total.'),
+                    ->helperText(__('Cannot exceed the associated order grand total.')),
 
                 Textarea::make('reason')
                     ->label('Reason for Return')
-                    ->placeholder('Describe the defects, damage, or customer complaint...')
+                    ->placeholder(__('Describe the defects, damage, or customer complaint...'))
                     ->rows(3)
                     ->columnSpanFull()
                     ->required(),
 
                 Textarea::make('admin_note')
                     ->label('Admin Note (Internal)')
-                    ->placeholder('Internal review notes, investigation findings, or rejection reason...')
+                    ->placeholder(__('Internal review notes, investigation findings, or rejection reason...'))
                     ->rows(3)
                     ->columnSpanFull(),
             ]);

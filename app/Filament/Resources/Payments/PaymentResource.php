@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Payments;
 
 use App\Enums\PaymentTransactionStatus;
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Filament\Resources\Payments\Pages\ViewPayment;
 use App\Filament\Resources\Payments\Schemas\PaymentForm;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Payment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;

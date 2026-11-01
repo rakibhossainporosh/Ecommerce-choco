@@ -45,7 +45,7 @@ class PaymentsTable
                     ->label('Customer')
                     ->searchable()
                     ->sortable()
-                    ->placeholder('Guest / Walk-in'),
+                    ->placeholder(__('Guest / Walk-in')),
 
                 TextColumn::make('amount')
                     ->label('Amount')
@@ -78,14 +78,14 @@ class PaymentsTable
                     ->label('TrxID')
                     ->searchable()
                     ->copyable()
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('paid_at')
                     ->label('Paid At')
                     ->dateTime('M j, Y H:i')
                     ->sortable()
-                    ->placeholder('Pending'),
+                    ->placeholder(__('Pending')),
 
                 TextColumn::make('created_at')
                     ->label('Recorded At')
@@ -114,8 +114,8 @@ class PaymentsTable
                         $record->markAsCompleted(actor: auth()->user());
                         Notification::make()
                             ->success()
-                            ->title('Payment Verified')
-                            ->body("Payment {$record->payment_number} has been marked as completed.")
+                            ->title(__('Payment Verified'))
+                            ->body(__('Payment :number has been marked as completed.', ['number' => $record->payment_number]))
                             ->send();
                     }),
 
@@ -128,15 +128,15 @@ class PaymentsTable
                     ->form([
                         TextInput::make('reason')
                             ->label('Failure Reason')
-                            ->placeholder('e.g. Invalid TrxID / Amount mismatch')
+                            ->placeholder(__('e.g. Invalid TrxID / Amount mismatch'))
                             ->required(),
                     ])
                     ->action(function (Payment $record, array $data): void {
                         $record->markAsFailed(reason: $data['reason'], actor: auth()->user());
                         Notification::make()
                             ->warning()
-                            ->title('Payment Failed')
-                            ->body("Payment {$record->payment_number} marked as failed.")
+                            ->title(__('Payment Failed'))
+                            ->body(__('Payment :number marked as failed.', ['number' => $record->payment_number]))
                             ->send();
                     }),
 
@@ -145,21 +145,24 @@ class PaymentsTable
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->modalHeading('Process Refund')
-                    ->modalDescription(fn (Payment $record): string => "Are you sure you want to refund payment {$record->payment_number} for ৳".number_format((float) $record->amount, 2).'?')
+                    ->modalHeading(__('Process Refund'))
+                    ->modalDescription(fn (Payment $record): string => __('Are you sure you want to refund payment :number for ৳:amount?', [
+                        'number' => $record->payment_number,
+                        'amount' => number_format((float) $record->amount, 2),
+                    ]))
                     ->visible(fn (Payment $record): bool => $record->canBeRefunded() && auth()->user()?->can('payments.refund'))
                     ->form([
                         TextInput::make('reason')
                             ->label('Refund Reason')
-                            ->placeholder('e.g. Return of items / Overpayment')
+                            ->placeholder(__('e.g. Return of items / Overpayment'))
                             ->required(),
                     ])
                     ->action(function (Payment $record, array $data): void {
                         $record->refund(reason: $data['reason'], actor: auth()->user());
                         Notification::make()
                             ->success()
-                            ->title('Payment Refunded')
-                            ->body("Payment {$record->payment_number} has been successfully refunded.")
+                            ->title(__('Payment Refunded'))
+                            ->body(__('Payment :number has been successfully refunded.', ['number' => $record->payment_number]))
                             ->send();
                     }),
             ])

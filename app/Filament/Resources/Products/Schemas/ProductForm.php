@@ -34,13 +34,13 @@ class ProductForm
                 // Left Column: Primary Content (2 columns on large screens)
                 Group::make([
                     Section::make('General Information')
-                        ->description('Core product identity and store presentation.')
+                        ->description(__('Core product identity and store presentation.'))
                         ->icon(Heroicon::OutlinedShoppingBag)
                         ->columns(['default' => 1, 'md' => 2])
                         ->schema([
                             TextInput::make('name')
                                 ->label('Product Name')
-                                ->placeholder('e.g. Belgian Dark Chocolate Sea Salt')
+                                ->placeholder(__('e.g. Belgian Dark Chocolate Sea Salt'))
                                 ->prefixIcon(Heroicon::OutlinedShoppingBag)
                                 ->required()
                                 ->maxLength(255)
@@ -53,9 +53,9 @@ class ProductForm
 
                             TextInput::make('slug')
                                 ->label('URL Slug')
-                                ->placeholder('e.g. belgian-dark-chocolate-sea-salt')
+                                ->placeholder(__('e.g. belgian-dark-chocolate-sea-salt'))
                                 ->prefixIcon(Heroicon::OutlinedGlobeAlt)
-                                ->helperText('Used for SEO friendly product links.')
+                                ->helperText(__('Used for SEO friendly product links.'))
                                 ->required()
                                 ->maxLength(255)
                                 ->unique(ignoreRecord: true)
@@ -63,35 +63,35 @@ class ProductForm
 
                             Textarea::make('short_description')
                                 ->label('Short Summary')
-                                ->placeholder('Brief highlight of the product shown in listings and quick-views...')
+                                ->placeholder(__('Brief highlight of the product shown in listings and quick-views...'))
                                 ->nullable()
                                 ->rows(3)
                                 ->columnSpanFull(),
 
                             Textarea::make('description')
                                 ->label('Detailed Description')
-                                ->placeholder('Comprehensive description, ingredients, dietary details, and tasting notes...')
+                                ->placeholder(__('Comprehensive description, ingredients, dietary details, and tasting notes...'))
                                 ->nullable()
                                 ->rows(5)
                                 ->columnSpanFull(),
                         ]),
 
                     Section::make('Initial Default Variant')
-                        ->description('Every product must have at least one valid variant. Configure the initial default variant below.')
+                        ->description(__('Every product must have at least one valid variant. Configure the initial default variant below.'))
                         ->icon(Heroicon::OutlinedSquare3Stack3d)
                         ->visible(fn (string $operation): bool => $operation === 'create')
                         ->columns(['default' => 1, 'md' => 2])
                         ->schema([
                             TextInput::make('variant_name')
                                 ->label('Variant Name (Optional)')
-                                ->placeholder('e.g. Standard, 100g Bar')
+                                ->placeholder(__('e.g. Standard, 100g Bar'))
                                 ->prefixIcon(Heroicon::OutlinedTag)
                                 ->nullable()
                                 ->maxLength(255),
 
                             Select::make('unit_id')
                                 ->label('Unit of Measure')
-                                ->placeholder('Select unit...')
+                                ->placeholder(__('Select unit...'))
                                 ->prefixIcon(Heroicon::OutlinedScale)
                                 ->options(fn () => Unit::where('is_active', true)->pluck('name', 'id'))
                                 ->required(fn (string $operation): bool => $operation === 'create')
@@ -105,14 +105,14 @@ class ProductForm
 
                                         $unit = Unit::withTrashed()->find($value);
                                         if (! $unit || $unit->trashed() || ! $unit->is_active) {
-                                            $fail('Cannot assign an invalid, inactive, or soft-deleted unit.');
+                                            $fail(__('Cannot assign an invalid, inactive, or soft-deleted unit.'));
                                         }
                                     },
                                 ]),
 
                             TextInput::make('sku')
                                 ->label('Variant SKU')
-                                ->placeholder('e.g. SKU-BELGIAN-SALT-01')
+                                ->placeholder(__('e.g. SKU-BELGIAN-SALT-01'))
                                 ->prefixIcon(Heroicon::OutlinedQrCode)
                                 ->required(fn (string $operation): bool => $operation === 'create')
                                 ->maxLength(255)
@@ -121,7 +121,7 @@ class ProductForm
 
                             TextInput::make('barcode')
                                 ->label('Barcode / UPC (Optional)')
-                                ->placeholder('e.g. 7610400012345')
+                                ->placeholder(__('e.g. 7610400012345'))
                                 ->prefixIcon(Heroicon::OutlinedIdentification)
                                 ->nullable()
                                 ->maxLength(255)
@@ -129,13 +129,13 @@ class ProductForm
 
                             TextInput::make('unit_quantity')
                                 ->label('Unit Quantity')
-                                ->placeholder('1.000')
+                                ->placeholder(__('1.000'))
                                 ->prefixIcon(Heroicon::OutlinedHashtag)
                                 ->numeric()
                                 ->default(1)
                                 ->required(fn (string $operation): bool => $operation === 'create')
                                 ->minValue(0.001)
-                                ->helperText('Quantity per packaging unit (e.g. 1 or 0.500).')
+                                ->helperText(__('Quantity per packaging unit (e.g. 1 or 0.500).'))
                                 ->columnSpanFull(),
 
                             Grid::make(['default' => 1, 'sm' => 3])
@@ -143,25 +143,25 @@ class ProductForm
                                 ->schema([
                                     TextInput::make('cost_price')
                                         ->label('Cost Price')
-                                        ->placeholder('0.00')
+                                        ->placeholder(__('0.00'))
                                         ->numeric()
                                         ->prefix('৳')
                                         ->required(fn (string $operation): bool => $operation === 'create')
                                         ->minValue(0)
-                                        ->helperText('Purchase or production cost.'),
+                                        ->helperText(__('Purchase or production cost.')),
 
                                     TextInput::make('selling_price')
                                         ->label('Selling Price')
-                                        ->placeholder('0.00')
+                                        ->placeholder(__('0.00'))
                                         ->numeric()
                                         ->prefix('৳')
                                         ->required(fn (string $operation): bool => $operation === 'create')
                                         ->minValue(0)
-                                        ->helperText('Customer checkout price.'),
+                                        ->helperText(__('Customer checkout price.')),
 
                                     TextInput::make('compare_at_price')
                                         ->label('Compare at Price')
-                                        ->placeholder('0.00')
+                                        ->placeholder(__('0.00'))
                                         ->numeric()
                                         ->prefix('৳')
                                         ->nullable()
@@ -171,16 +171,16 @@ class ProductForm
                                                 if ($value !== null && $value !== '') {
                                                     $selling = $get('selling_price');
                                                     if ($selling !== null && $selling !== '' && (float) $value < (float) $selling) {
-                                                        $fail('The compare at price must be greater than or equal to the selling price.');
+                                                        $fail(__('The compare at price must be greater than or equal to the selling price.'));
                                                     }
                                                 }
                                             },
                                         ])
-                                        ->helperText('Original price for discounts.'),
+                                        ->helperText(__('Original price for discounts.')),
                                 ]),
 
                             Section::make('Variant Dynamic Attributes')
-                                ->description('Configure dynamic attributes for this initial variant.')
+                                ->description(__('Configure dynamic attributes for this initial variant.'))
                                 ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
                                 ->collapsible()
                                 ->columnSpanFull()
@@ -189,21 +189,21 @@ class ProductForm
                         ]),
 
                     Section::make('Product Attributes')
-                        ->description('Configure dynamic attributes and specifications for this product.')
+                        ->description(__('Configure dynamic attributes and specifications for this product.'))
                         ->icon(Heroicon::OutlinedAdjustmentsVertical)
                         ->collapsible()
                         ->columns(['default' => 1, 'md' => 2])
                         ->components(fn () => static::getProductAttributeComponents()),
 
                     Section::make('Search Engine Optimization (SEO)')
-                        ->description('Configure metadata to improve search engine rankings.')
+                        ->description(__('Configure metadata to improve search engine rankings.'))
                         ->icon(Heroicon::OutlinedMagnifyingGlass)
                         ->collapsible()
                         ->collapsed()
                         ->schema([
                             TextInput::make('meta_title')
                                 ->label('Meta Title (SEO)')
-                                ->placeholder('Search engine title...')
+                                ->placeholder(__('Search engine title...'))
                                 ->prefixIcon(Heroicon::OutlinedGlobeAlt)
                                 ->nullable()
                                 ->maxLength(255)
@@ -211,7 +211,7 @@ class ProductForm
 
                             Textarea::make('meta_description')
                                 ->label('Meta Description (SEO)')
-                                ->placeholder('Search engine summary snippet...')
+                                ->placeholder(__('Search engine summary snippet...'))
                                 ->nullable()
                                 ->rows(3)
                                 ->columnSpanFull(),
@@ -221,12 +221,12 @@ class ProductForm
                 // Right Column: Status, Organization & Insights (1 column on large screens)
                 Group::make([
                     Section::make('Status & Visibility')
-                        ->description('Storefront catalog availability.')
+                        ->description(__('Storefront catalog availability.'))
                         ->icon(Heroicon::OutlinedEye)
                         ->schema([
                             Toggle::make('is_active')
                                 ->label('Active in Catalog')
-                                ->helperText('Disable to hide product from the store.')
+                                ->helperText(__('Disable to hide product from the store.'))
                                 ->default(true)
                                 ->required()
                                 ->live()
@@ -238,25 +238,25 @@ class ProductForm
 
                             Toggle::make('is_featured')
                                 ->label('Featured Product')
-                                ->helperText('Promote on homepage showcases.')
+                                ->helperText(__('Promote on homepage showcases.'))
                                 ->default(false)
                                 ->required()
                                 ->rules([
                                     fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
                                         if ((bool) $value && ! (bool) $get('is_active')) {
-                                            $fail('An inactive product cannot be featured.');
+                                            $fail(__('An inactive product cannot be featured.'));
                                         }
                                     },
                                 ]),
                         ]),
 
                     Section::make('Organization')
-                        ->description('Brand and category categorization.')
+                        ->description(__('Brand and category categorization.'))
                         ->icon(Heroicon::OutlinedRectangleStack)
                         ->schema([
                             Select::make('brand_id')
                                 ->label('Brand')
-                                ->placeholder('None (No Brand)')
+                                ->placeholder(__('None (No Brand)'))
                                 ->prefixIcon(Heroicon::OutlinedBuildingStorefront)
                                 ->relationship(
                                     name: 'brand',
@@ -275,14 +275,14 @@ class ProductForm
                                         $brand = Brand::withTrashed()->find($value);
 
                                         if (! $brand || $brand->trashed() || ! $brand->is_active) {
-                                            $fail('Cannot assign an invalid, inactive, or soft-deleted brand.');
+                                            $fail(__('Cannot assign an invalid, inactive, or soft-deleted brand.'));
                                         }
                                     },
                                 ]),
 
                             Select::make('categories')
                                 ->label('Categories')
-                                ->placeholder('Select categories...')
+                                ->placeholder(__('Select categories...'))
                                 ->prefixIcon(Heroicon::OutlinedTag)
                                 ->relationship(
                                     name: 'categories',
@@ -293,14 +293,14 @@ class ProductForm
                                 ->searchable()
                                 ->preload()
                                 ->required(fn (Get $get): bool => (bool) $get('is_active'))
-                                ->helperText('At least one category is required when product is active.')
+                                ->helperText(__('At least one category is required when product is active.'))
                                 ->rules([
                                     fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
                                         $categoryIds = is_array($value) ? array_map('intval', $value) : [];
 
                                         if (empty($categoryIds)) {
                                             if ((bool) $get('is_active')) {
-                                                $fail('A product must have at least one category.');
+                                                $fail(__('A product must have at least one category.'));
                                             }
 
                                             return;
@@ -317,12 +317,12 @@ class ProductForm
                         ]),
 
                     Section::make('Product Insights')
-                        ->description('Metadata and catalog statistics.')
+                        ->description(__('Metadata and catalog statistics.'))
                         ->icon(Heroicon::OutlinedInformationCircle)
                         ->schema([
                             Placeholder::make('variants_count')
                                 ->label('Total Variants')
-                                ->content(fn (?Product $record): string => $record ? (string) $record->variants()->count().' variants' : '0 variants'),
+                                ->content(fn (?Product $record): string => __('Variant count: :count', ['count' => $record ? $record->variants()->count() : 0])),
 
                             Placeholder::make('default_variant_sku')
                                 ->label('Default Variant SKU')

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reviews;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Reviews\Pages\CreateReview;
 use App\Filament\Resources\Reviews\Pages\EditReview;
 use App\Filament\Resources\Reviews\Pages\ListReviews;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class ReviewResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Review::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedStar;
@@ -27,6 +30,10 @@ class ReviewResource extends Resource
     protected static ?int $navigationSort = 30;
 
     protected static ?string $navigationLabel = 'Reviews';
+
+    protected static ?string $modelLabel = 'Review';
+
+    protected static ?string $pluralModelLabel = 'Reviews';
 
     protected static ?string $recordTitleAttribute = 'id';
 

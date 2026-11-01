@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Attributes\RelationManagers;
 
+use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Models\Attribute;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -22,6 +23,8 @@ use Illuminate\Support\Str;
 
 class ValuesRelationManager extends RelationManager
 {
+    use TranslatesRelationManagerTitle;
+
     protected static string $relationship = 'values';
 
     protected static ?string $title = 'Attribute Values';
@@ -40,7 +43,7 @@ class ValuesRelationManager extends RelationManager
             ->components([
                 TextInput::make('name')
                     ->label('Value Name')
-                    ->placeholder('e.g. 70% Dark, 100g, Large')
+                    ->placeholder(__('e.g. 70% Dark, 100g, Large'))
                     ->prefixIcon(Heroicon::OutlinedTag)
                     ->required()
                     ->maxLength(255)
@@ -53,16 +56,16 @@ class ValuesRelationManager extends RelationManager
 
                 TextInput::make('slug')
                     ->label('Value Slug')
-                    ->placeholder('e.g. 70-dark')
+                    ->placeholder(__('e.g. 70-dark'))
                     ->prefixIcon(Heroicon::OutlinedGlobeAlt)
-                    ->helperText('Option identifier.')
+                    ->helperText(__('Option identifier.'))
                     ->required()
                     ->maxLength(255)
                     ->rules(['alpha_dash']),
 
                 Toggle::make('is_active')
                     ->label('Active')
-                    ->helperText('Available for assignment.')
+                    ->helperText(__('Available for assignment.'))
                     ->default(true),
 
                 TextInput::make('sort_order')
@@ -91,7 +94,7 @@ class ValuesRelationManager extends RelationManager
                     ->searchable()
                     ->sortable()
                     ->copyable()
-                    ->copyMessage('Slug copied')
+                    ->copyMessage(__('Slug copied'))
                     ->color('gray'),
 
                 IconColumn::make('is_active')

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Shipments;
 
 use App\Enums\ShipmentStatus;
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Shipments\Pages\ListShipments;
 use App\Filament\Resources\Shipments\Pages\ViewShipment;
 use App\Filament\Resources\Shipments\Schemas\ShipmentForm;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ShipmentResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Shipment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;

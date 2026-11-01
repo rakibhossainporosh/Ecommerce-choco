@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum PaymentMethod: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum PaymentMethod: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Cod = 'cod';
     case Bkash = 'bkash';
     case Nagad = 'nagad';

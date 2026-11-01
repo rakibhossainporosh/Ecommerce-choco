@@ -49,7 +49,7 @@ class ShipmentForm
                     ->searchable()
                     ->preload()
                     ->nullable()
-                    ->placeholder('Guest / Walk-in')
+                    ->placeholder(__('Guest / Walk-in'))
                     ->prefixIcon(Heroicon::OutlinedUser),
 
                 Select::make('shipping_method_id')
@@ -83,7 +83,7 @@ class ShipmentForm
 
                 TextInput::make('tracking_code')
                     ->label('Consignment ID / Tracking Code')
-                    ->placeholder('e.g. STDF109283')
+                    ->placeholder(__('e.g. STDF109283'))
                     ->maxLength(100)
                     ->nullable()
                     ->prefixIcon(Heroicon::OutlinedIdentification),
@@ -103,7 +103,7 @@ class ShipmentForm
                     ->minValue(0)
                     ->step(0.01)
                     ->nullable()
-                    ->placeholder('e.g. 0.50'),
+                    ->placeholder(__('e.g. 0.50')),
 
                 TextInput::make('recipient_name')
                     ->label('Recipient Full Name')
@@ -127,7 +127,7 @@ class ShipmentForm
 
                 TextInput::make('shipping_area')
                     ->label('Area / Thana')
-                    ->placeholder('e.g. Dhanmondi, Gulshan, Mirpur')
+                    ->placeholder(__('e.g. Dhanmondi, Gulshan, Mirpur'))
                     ->maxLength(100)
                     ->nullable(),
 
@@ -139,7 +139,7 @@ class ShipmentForm
 
                 TextInput::make('shipping_postcode')
                     ->label('Postal Code')
-                    ->placeholder('e.g. 1205')
+                    ->placeholder(__('e.g. 1205'))
                     ->maxLength(20)
                     ->nullable(),
 
@@ -151,7 +151,7 @@ class ShipmentForm
 
                 Textarea::make('notes')
                     ->label('Fulfillment & Delivery Notes')
-                    ->placeholder('Handling instructions (fragile, liquid hair oil packaging, etc.)...')
+                    ->placeholder(__('Handling instructions (fragile, liquid hair oil packaging, etc.)...'))
                     ->rows(3)
                     ->columnSpanFull()
                     ->nullable(),

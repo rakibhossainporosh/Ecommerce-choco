@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ReturnRequests;
 
 use App\Enums\ReturnRequestStatus;
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\ReturnRequests\Pages\EditReturnRequest;
 use App\Filament\Resources\ReturnRequests\Pages\ListReturnRequests;
 use App\Filament\Resources\ReturnRequests\Pages\ViewReturnRequest;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReturnRequestResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = ReturnRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowUturnLeft;
@@ -29,6 +32,10 @@ class ReturnRequestResource extends Resource
     protected static ?int $navigationSort = 30;
 
     protected static ?string $navigationLabel = 'Return Requests';
+
+    protected static ?string $modelLabel = 'Return Request';
+
+    protected static ?string $pluralModelLabel = 'Return Requests';
 
     protected static ?string $recordTitleAttribute = 'id';
 

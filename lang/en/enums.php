@@ -70,4 +70,17 @@ return [
         'adjustment_out' => 'Stock Out',
         'sale' => 'Sale',
     ],
+    'payment_transaction' => [
+        'pending' => 'Pending',
+        'completed' => 'Completed',
+        'failed' => 'Failed',
+        'refunded' => 'Refunded',
+    ],
+    'setting_type' => [
+        'string' => 'Text',
+        'boolean' => 'Yes or no',
+        'integer' => 'Whole number',
+        'float' => 'Decimal number',
+        'json' => 'JSON',
+    ],
 ];

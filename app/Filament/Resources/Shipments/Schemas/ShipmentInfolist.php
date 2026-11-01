@@ -63,14 +63,14 @@ class ShipmentInfolist
 
                         TextEntry::make('tracking_code')
                             ->label('Consignment / Tracking #')
-                            ->placeholder('Not assigned')
+                            ->placeholder(__('Not assigned'))
                             ->copyable(),
 
                         TextEntry::make('tracking_url')
                             ->label('Live Carrier Tracking')
                             ->state(fn (Shipment $record): ?string => $record->getTrackingUrl())
                             ->url(fn (Shipment $record): ?string => $record->getTrackingUrl(), shouldOpenInNewTab: true)
-                            ->placeholder('No online tracking available')
+                            ->placeholder(__('No online tracking available'))
                             ->color('primary'),
 
                         TextEntry::make('shipping_charge')
@@ -81,11 +81,11 @@ class ShipmentInfolist
                         TextEntry::make('weight_kg')
                             ->label('Weight')
                             ->formatStateUsing(fn ($state) => $state ? "{$state} kg" : '—')
-                            ->placeholder('—'),
+                            ->placeholder(__('—')),
 
                         TextEntry::make('dispatchedBy.name')
                             ->label('Fulfillment Officer')
-                            ->placeholder('System'),
+                            ->placeholder(__('System')),
                     ]),
 
                 Section::make('Recipient & Delivery Destination')
@@ -109,14 +109,14 @@ class ShipmentInfolist
 
                         TextEntry::make('shipping_area')
                             ->label('Area / Thana')
-                            ->placeholder('—'),
+                            ->placeholder(__('—')),
 
                         TextEntry::make('shipping_city')
                             ->label('City / District'),
 
                         TextEntry::make('shipping_postcode')
                             ->label('Postal Code')
-                            ->placeholder('—'),
+                            ->placeholder(__('—')),
 
                         TextEntry::make('shipping_country')
                             ->label('Country'),
@@ -136,17 +136,17 @@ class ShipmentInfolist
                         TextEntry::make('packed_at')
                             ->label('Packed At')
                             ->dateTime('M j, Y H:i')
-                            ->placeholder('Not packed yet'),
+                            ->placeholder(__('Not packed yet')),
 
                         TextEntry::make('shipped_at')
                             ->label('Dispatched / Shipped At')
                             ->dateTime('M j, Y H:i')
-                            ->placeholder('Awaiting dispatch'),
+                            ->placeholder(__('Awaiting dispatch')),
 
                         TextEntry::make('delivered_at')
                             ->label('Delivered At')
                             ->dateTime('M j, Y H:i')
-                            ->placeholder('Pending delivery'),
+                            ->placeholder(__('Pending delivery')),
 
                         TextEntry::make('returned_at')
                             ->label('Returned At')

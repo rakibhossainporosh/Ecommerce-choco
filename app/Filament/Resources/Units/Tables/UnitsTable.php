@@ -60,7 +60,7 @@ class UnitsTable
                         if (! $record->canBeDeleted()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Cannot delete this unit because it is assigned to products.')
+                                ->title(__('Cannot delete this unit because it is assigned to products.'))
                                 ->send();
 
                             $action->halt();
@@ -75,7 +75,7 @@ class UnitsTable
                                 if (! $record->canBeDeleted()) {
                                     Notification::make()
                                         ->danger()
-                                        ->title('Cannot delete this unit because it is assigned to products.')
+                                        ->title(__('Cannot delete this unit because it is assigned to products.'))
                                         ->send();
 
                                     $action->halt();

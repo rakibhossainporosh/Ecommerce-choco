@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum ShippingProvider: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum ShippingProvider: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Steadfast = 'steadfast';
     case Pathao = 'pathao';
     case RedX = 'redx';

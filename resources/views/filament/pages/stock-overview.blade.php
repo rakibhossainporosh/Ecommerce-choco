@@ -107,13 +107,13 @@
                 role="button"
                 tabindex="0"
                 class="stock-kpi-card {{ $isSelected ? 'is-active' : '' }}"
-                title="{{ $card['filter'] ? 'Click to filter by ' . $card['label'] : 'Click to show all variants' }}"
+                title="{{ $card['filter'] ? __('Click to filter by :label', ['label' => \App\Support\UiText::line($card['label'])]) : __('Click to show all variants') }}"
             >
                 <div class="stock-kpi-accent accent-{{ $card['color'] }}"></div>
 
                 <div class="flex items-center justify-between mb-2 pt-1">
                     <span class="text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400">
-                        {{ $card['label'] }}
+                        {{ \App\Support\UiText::line($card['label']) }}
                     </span>
                     <div class="kpi-icon-badge badge-{{ $card['color'] }}">
                         <x-filament::icon :icon="$card['icon']" class="w-5 h-5" />
@@ -127,14 +127,14 @@
                         </div>
                         @if (! empty($card['subtext']))
                             <div class="text-[11px] font-medium text-gray-400 dark:text-gray-500 mt-0.5">
-                                {{ $card['subtext'] }}
+                                {{ \App\Support\UiText::line($card['subtext']) }}
                             </div>
                         @endif
                     </div>
 
                     @if ($isSelected)
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                            Active
+                            {{ __('Active') }}
                         </span>
                     @endif
                 </div>

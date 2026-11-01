@@ -23,24 +23,27 @@
     }}
 >
     @php
-        // Transform breadcrumbs to clean professional hierarchy: Dashboard > Module Name (> Action)
         $dashboardUrl = filament()->getHomeUrl() ?? url('/admin');
         $cleanBreadcrumbs = [];
-        
-        // Always start with Dashboard as root
-        $cleanBreadcrumbs[$dashboardUrl] = 'Dashboard';
+        $cleanBreadcrumbs[$dashboardUrl] = \App\Support\UiText::line('Dashboard');
+        $skipLabels = ['list', 'তালিকা', 'dashboard', 'ড্যাশবোর্ড'];
 
         if (! empty($breadcrumbs)) {
             foreach ($breadcrumbs as $url => $label) {
-                // If label is "List", ignore it so we don't have redundant "Attributes > List"
-                if (strtolower(trim($label)) === 'list') {
+                $label = trim((string) $label);
+
+                if ($label === '' || in_array(mb_strtolower($label), $skipLabels, true)) {
                     continue;
                 }
-                $cleanBreadcrumbs[$url] = $label;
+
+                $cleanBreadcrumbs[$url] = \App\Support\UiText::line($label);
             }
-        } elseif (filled($heading) && strtolower(trim($heading)) !== 'dashboard') {
-            // Fallback for pages that didn't provide breadcrumbs
-            $cleanBreadcrumbs[] = $heading;
+        } elseif (filled($heading)) {
+            $headingLabel = trim(strip_tags((string) $heading));
+
+            if ($headingLabel !== '' && ! in_array(mb_strtolower($headingLabel), $skipLabels, true)) {
+                $cleanBreadcrumbs[] = \App\Support\UiText::line($headingLabel);
+            }
         }
     @endphp
 

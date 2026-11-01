@@ -25,7 +25,7 @@ class CouponForm
                         ->maxLength(255)
                         ->regex('/^[A-Za-z0-9\-_]+$/')
                         ->validationMessages([
-                            'regex' => 'The code may only contain letters, numbers, dashes, and underscores.',
+                            'regex' => __('The code may only contain letters, numbers, dashes, and underscores.'),
                         ])
                         ->dehydrateStateUsing(fn (string $state): string => strtoupper(trim($state))),
                     TextInput::make('name')
@@ -41,13 +41,13 @@ class CouponForm
                         ->rules([
                             fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                                 if ($get('type') === CouponType::Percentage->value && $value > 100) {
-                                    $fail('Percentage coupon value cannot exceed 100%.');
+                                    $fail(__('Percentage coupon value cannot exceed 100%.'));
                                 }
                                 if ($value < 0) {
-                                    $fail('Value cannot be negative.');
+                                    $fail(__('Value cannot be negative.'));
                                 }
                                 if ($get('type') === CouponType::Fixed->value && $value <= 0) {
-                                    $fail('Fixed coupon value must be greater than zero.');
+                                    $fail(__('Fixed coupon value must be greater than zero.'));
                                 }
                             },
                         ]),
@@ -68,12 +68,12 @@ class CouponForm
                         ->numeric()
                         ->minValue(1)
                         ->nullable()
-                        ->hint('Leave blank for unlimited usage.'),
+                        ->hint(fn (): string => __('Leave blank for unlimited usage.')),
                     TextInput::make('usage_limit_per_user')
                         ->numeric()
                         ->minValue(1)
                         ->nullable()
-                        ->hint('Leave blank for unlimited usage per user.'),
+                        ->hint(fn (): string => __('Leave blank for unlimited usage per user.')),
                 ]),
             ]),
 

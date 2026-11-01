@@ -38,7 +38,7 @@ class CustomerInfolist
 
                         TextEntry::make('email')
                             ->label('Email Address')
-                            ->placeholder('No email registered'),
+                            ->placeholder(__('No email registered')),
 
                         IconEntry::make('is_active')
                             ->label('Status')
@@ -46,7 +46,7 @@ class CustomerInfolist
 
                         TextEntry::make('user.email')
                             ->label('Storefront Account')
-                            ->placeholder('Guest / Not registered'),
+                            ->placeholder(__('Guest / Not registered')),
 
                         TextEntry::make('created_at')
                             ->label('Customer Since')
@@ -86,12 +86,12 @@ class CustomerInfolist
                         TextEntry::make('default_shipping_address')
                             ->label('Default Shipping Address')
                             ->state(fn (Customer $record): ?string => $record->defaultShippingAddress?->formatted_address)
-                            ->placeholder('No default shipping address saved'),
+                            ->placeholder(__('No default shipping address saved')),
 
                         TextEntry::make('default_billing_address')
                             ->label('Default Billing Address')
                             ->state(fn (Customer $record): ?string => $record->defaultBillingAddress?->formatted_address)
-                            ->placeholder('No default billing address saved'),
+                            ->placeholder(__('No default billing address saved')),
                     ]),
             ]);
     }

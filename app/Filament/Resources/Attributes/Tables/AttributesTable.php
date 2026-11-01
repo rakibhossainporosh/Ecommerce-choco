@@ -33,7 +33,7 @@ class AttributesTable
                     ->searchable()
                     ->sortable()
                     ->copyable()
-                    ->copyMessage('Slug copied')
+                    ->copyMessage(__('Slug copied'))
                     ->color('gray'),
 
                 TextColumn::make('type')
@@ -89,18 +89,18 @@ class AttributesTable
             ->filters([
                 SelectFilter::make('type')
                     ->options([
-                        Attribute::ATTRIBUTE_TYPE_TEXT => 'Text',
-                        Attribute::ATTRIBUTE_TYPE_TEXTAREA => 'Textarea',
-                        Attribute::ATTRIBUTE_TYPE_NUMBER => 'Number',
-                        Attribute::ATTRIBUTE_TYPE_BOOLEAN => 'Boolean',
-                        Attribute::ATTRIBUTE_TYPE_SELECT => 'Select',
-                        Attribute::ATTRIBUTE_TYPE_MULTISELECT => 'Multiselect',
+                        Attribute::ATTRIBUTE_TYPE_TEXT => __('Text'),
+                        Attribute::ATTRIBUTE_TYPE_TEXTAREA => __('Textarea'),
+                        Attribute::ATTRIBUTE_TYPE_NUMBER => __('Number'),
+                        Attribute::ATTRIBUTE_TYPE_BOOLEAN => __('Boolean'),
+                        Attribute::ATTRIBUTE_TYPE_SELECT => __('Select'),
+                        Attribute::ATTRIBUTE_TYPE_MULTISELECT => __('Multiselect'),
                     ]),
 
                 SelectFilter::make('scope')
                     ->options([
-                        Attribute::SCOPE_PRODUCT => 'Product',
-                        Attribute::SCOPE_VARIANT => 'Variant',
+                        Attribute::SCOPE_PRODUCT => __('Product'),
+                        Attribute::SCOPE_VARIANT => __('Variant'),
                     ]),
 
                 TernaryFilter::make('is_active')
@@ -115,7 +115,7 @@ class AttributesTable
                         if (! $record->canBeDeleted()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Cannot delete this attribute because it has associated attribute values.')
+                                ->title(__('Cannot delete this attribute because it has associated attribute values.'))
                                 ->send();
 
                             $action->halt();
@@ -130,7 +130,7 @@ class AttributesTable
                                 if (! $record->canBeDeleted()) {
                                     Notification::make()
                                         ->danger()
-                                        ->title('Cannot delete this attribute because it has associated attribute values.')
+                                        ->title(__('Cannot delete this attribute because it has associated attribute values.'))
                                         ->send();
 
                                     $action->halt();

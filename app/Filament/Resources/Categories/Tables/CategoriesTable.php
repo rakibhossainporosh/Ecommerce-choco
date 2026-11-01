@@ -33,7 +33,7 @@ class CategoriesTable
 
                 TextColumn::make('parent.name')
                     ->label('Parent Category')
-                    ->placeholder('Root (Main Category)')
+                    ->placeholder(__('Root (Main Category)'))
                     ->badge()
                     ->color(fn ($state): string => $state ? 'gray' : 'primary')
                     ->searchable()

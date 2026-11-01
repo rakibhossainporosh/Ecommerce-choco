@@ -29,7 +29,7 @@ class OrdersTable
                     ->searchable()
                     ->sortable()
                     ->copyable()
-                    ->copyMessage('Order number copied!')
+                    ->copyMessage(__('Order number copied!'))
                     ->weight('bold'),
 
                 TextColumn::make('customer_name')
@@ -43,7 +43,7 @@ class OrdersTable
                     ->searchable()
                     ->alignCenter()
                     ->copyable()
-                    ->copyMessage('Phone number copied!'),
+                    ->copyMessage(__('Phone number copied!')),
 
                 TextColumn::make('customer_email')
                     ->label('Customer Email')
@@ -123,7 +123,7 @@ class OrdersTable
                     ->alignCenter()
                     ->dateTime('d M Y, h:i A')
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
 
                 TextColumn::make('created_at')
                     ->label('Created At')

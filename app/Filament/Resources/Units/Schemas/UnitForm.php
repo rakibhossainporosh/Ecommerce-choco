@@ -30,7 +30,7 @@ class UnitForm
                                 ->exists();
 
                             if ($exists) {
-                                $fail('A unit with this name already exists.');
+                                $fail(__('A unit with this name already exists.'));
                             }
                         },
                     ]),
@@ -52,7 +52,7 @@ class UnitForm
                                 ->exists();
 
                             if ($exists) {
-                                $fail('A unit with this code already exists.');
+                                $fail(__('A unit with this code already exists.'));
                             }
                         },
                     ]),

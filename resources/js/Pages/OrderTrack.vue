@@ -1,9 +1,10 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Search, Package, MapPin, Truck, CheckCircle2, ChevronRight, AlertCircle, ShoppingBag } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
+import { useI18n } from '../Composables/useI18n';
 
 const props = defineProps({
     order: {
@@ -23,6 +24,8 @@ const props = defineProps({
         default: null
     }
 });
+
+const { t } = useI18n();
 
 const orderNumber = ref(props.searched_order_number || '');
 const phone = ref(props.searched_phone || '');
@@ -60,26 +63,26 @@ const getStatusColor = (status) => {
 };
 
 const getStatusLabel = (status) => {
-    const labelMap = {
-        'pending': 'পেন্ডিং',
-        'confirmed': 'কনফার্মড',
-        'processing': 'প্রসেসিং',
-        'shipped': 'শিপ করা হয়েছে',
-        'delivered': 'ডেলিভারি সম্পন্ন',
-        'cancelled': 'বাতিল করা হয়েছে',
-        'returned': 'ফেরত দেওয়া হয়েছে',
+    const key = status?.toLowerCase();
+    const map = {
+        pending: t('track.status_pending'),
+        confirmed: t('track.status_confirmed'),
+        processing: t('track.status_processing'),
+        shipped: t('track.status_shipped'),
+        delivered: t('track.status_delivered'),
+        cancelled: t('track.status_cancelled'),
+        returned: t('track.status_returned'),
     };
-    return labelMap[status?.toLowerCase()] || status;
+    return map[key] || status;
 };
 
-// Define steps for progress bar
-const steps = [
-    { key: 'pending', label: 'অর্ডার প্লেসড', icon: ShoppingBag },
-    { key: 'confirmed', label: 'কনফার্মড', icon: CheckCircle2 },
-    { key: 'processing', label: 'প্যাকেজিং', icon: Package },
-    { key: 'shipped', label: 'শিপিং', icon: Truck },
-    { key: 'delivered', label: 'ডেলিভারড', icon: MapPin },
-];
+const steps = computed(() => [
+    { key: 'pending', label: t('track.step_placed'), icon: ShoppingBag },
+    { key: 'confirmed', label: t('track.step_confirmed'), icon: CheckCircle2 },
+    { key: 'processing', label: t('track.step_packaging'), icon: Package },
+    { key: 'shipped', label: t('track.step_shipping'), icon: Truck },
+    { key: 'delivered', label: t('track.step_delivered'), icon: MapPin },
+]);
 
 const getCurrentStepIndex = () => {
     if (!props.order) return -1;
@@ -87,31 +90,29 @@ const getCurrentStepIndex = () => {
     
     if (currentStatus === 'cancelled' || currentStatus === 'returned') return -1;
     
-    const index = steps.findIndex(s => s.key === currentStatus);
+    const index = steps.value.findIndex(s => s.key === currentStatus);
     return index !== -1 ? index : 0;
 };
 </script>
 
 <template>
-    <Head title="Track Order - Nobo Shop" />
+    <Head :title="t('meta.track')" />
 
     <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
         <Header />
 
         <main class="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full flex flex-col">
-            <!-- Breadcrumb stays at top in its original position -->
             <nav class="flex items-center gap-2 text-sm text-[#64748B] mb-8">
-                <Link href="/" class="hover:text-[#E86A28] transition-colors">হোম</Link>
+                <Link href="/" class="hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
                 <ChevronRight class="w-4 h-4" />
-                <span class="text-[#1E293B] font-medium">ট্র্যাক অর্ডার</span>
+                <span class="text-[#1E293B] font-medium">{{ t('track.breadcrumb') }}</span>
             </nav>
 
-            <!-- Card Centered in available space -->
             <div class="flex-1 flex flex-col justify-center" :class="{ 'my-auto': !order }">
                 <div class="bg-white rounded-3xl p-6 md:p-8 border border-[#EAE3D6] shadow-sm mb-8">
                 <div class="text-center mb-8">
-                    <h1 class="text-2xl md:text-3xl font-bold text-[#1E293B] mb-2">আপনার অর্ডার ট্র্যাক করুন</h1>
-                    <p class="text-[#64748B]">অর্ডারের বর্তমান অবস্থা জানতে নিচের বক্সে আপনার অর্ডার নম্বর দিন।</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-[#1E293B] mb-2">{{ t('track.title') }}</h1>
+                    <p class="text-[#64748B]">{{ t('track.intro') }}</p>
                 </div>
 
                 <form @submit.prevent="handleSearch" class="max-w-2xl mx-auto flex flex-col md:flex-row gap-4">
@@ -123,7 +124,7 @@ const getCurrentStepIndex = () => {
                             v-model="orderNumber"
                             type="text"
                             required
-                            placeholder="অর্ডার নম্বর (যেমন: ORD-XXXXXX)"
+                            :placeholder="t('track.order_number_placeholder')"
                             class="w-full pl-11 pr-4 py-3.5 bg-[#FAF7F2] border border-[#E2D9CD] rounded-xl text-[15px] focus:bg-white focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 transition-all outline-none"
                         />
                     </div>
@@ -131,7 +132,7 @@ const getCurrentStepIndex = () => {
                         <input
                             v-model="phone"
                             type="text"
-                            placeholder="মোবাইল নম্বর (ঐচ্ছিক)"
+                            :placeholder="t('track.phone')"
                             class="w-full px-4 py-3.5 bg-[#FAF7F2] border border-[#E2D9CD] rounded-xl text-[15px] focus:bg-white focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 transition-all outline-none"
                         />
                     </div>
@@ -140,7 +141,7 @@ const getCurrentStepIndex = () => {
                         :disabled="isSearching"
                         class="px-8 py-3.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold rounded-xl shadow-sm hover:shadow-md transition-all whitespace-nowrap disabled:opacity-70 flex items-center justify-center"
                     >
-                        {{ isSearching ? 'খুঁজছে...' : 'ট্র্যাক করুন' }}
+                        {{ isSearching ? t('track.searching') : t('track.submit') }}
                     </button>
                 </form>
 
@@ -151,16 +152,14 @@ const getCurrentStepIndex = () => {
             </div>
             </div>
 
-            <!-- Order Details -->
             <div v-if="order" class="space-y-6">
-                <!-- Status Header -->
                 <div class="bg-white rounded-3xl p-6 md:p-8 border border-[#EAE3D6] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h2 class="text-xl font-bold text-[#1E293B] mb-2">অর্ডার #{{ order.order_number }}</h2>
+                        <h2 class="text-xl font-bold text-[#1E293B] mb-2">{{ t('track.order_label', { number: order.order_number }) }}</h2>
                         <div class="flex items-center gap-3 text-sm text-[#64748B]">
                             <span>{{ order.placed_at }}</span>
                             <span class="w-1.5 h-1.5 rounded-full bg-[#DCCFC0]"></span>
-                            <span>{{ order.items.length }} আইটেম</span>
+                            <span>{{ t('track.item_count', { count: order.items.length }) }}</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
@@ -168,17 +167,15 @@ const getCurrentStepIndex = () => {
                             {{ getStatusLabel(order.status) }}
                         </span>
                         <div class="text-right hidden sm:block">
-                            <div class="text-sm font-medium text-[#64748B]">সর্বমোট</div>
+                            <div class="text-sm font-medium text-[#64748B]">{{ t('track.grand_total') }}</div>
                             <div class="text-xl font-bold text-[#E86A28]">{{ formatPrice(order.grand_total) }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Progress Bar -->
                 <div v-if="getCurrentStepIndex() !== -1" class="bg-white rounded-3xl p-6 md:p-8 border border-[#EAE3D6] shadow-sm overflow-x-auto">
                     <div class="min-w-[600px]">
                         <div class="flex justify-between relative">
-                            <!-- Track line -->
                             <div class="absolute left-8 right-8 top-6 h-1 bg-[#F0EAE1] -z-10 rounded-full"></div>
                             <div 
                                 class="absolute left-8 top-6 h-1 bg-[#E86A28] -z-10 rounded-full transition-all duration-500"
@@ -203,19 +200,17 @@ const getCurrentStepIndex = () => {
                     </div>
                 </div>
                 
-                <!-- Cancelled/Returned Message -->
                 <div v-else class="bg-white rounded-3xl p-6 border border-[#EAE3D6] shadow-sm flex items-center gap-4">
                     <AlertCircle class="w-8 h-8 text-rose-500 shrink-0" />
                     <div>
-                        <h3 class="text-lg font-bold text-[#1E293B]">এই অর্ডারটি {{ getStatusLabel(order.status) }}</h3>
-                        <p class="text-[#64748B] text-sm mt-1">যেকোনো তথ্যের জন্য আমাদের কাস্টমার সার্ভিসের সাথে যোগাযোগ করুন।</p>
+                        <h3 class="text-lg font-bold text-[#1E293B]">{{ t('track.order_cancelled_title', { status: getStatusLabel(order.status) }) }}</h3>
+                        <p class="text-[#64748B] text-sm mt-1">{{ t('track.contact_support') }}</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Items -->
                     <div class="md:col-span-2 bg-white rounded-3xl p-6 border border-[#EAE3D6] shadow-sm">
-                        <h3 class="font-bold text-[#1E293B] mb-4 border-b border-[#F0EAE1] pb-3">অর্ডারকৃত আইটেম</h3>
+                        <h3 class="font-bold text-[#1E293B] mb-4 border-b border-[#F0EAE1] pb-3">{{ t('track.ordered_items') }}</h3>
                         <div class="divide-y divide-[#F0EAE1]">
                             <div v-for="(item, index) in order.items" :key="index" class="py-3 flex justify-between items-center">
                                 <div>
@@ -227,27 +222,26 @@ const getCurrentStepIndex = () => {
                         </div>
                     </div>
 
-                    <!-- Details -->
                     <div class="bg-white rounded-3xl p-6 border border-[#EAE3D6] shadow-sm space-y-6">
                         <div>
-                            <h3 class="font-bold text-[#1E293B] mb-3 text-sm uppercase tracking-wider text-[#64748B]">ডেলিভারি ঠিকানা</h3>
+                            <h3 class="font-bold text-[#1E293B] mb-3 text-sm uppercase tracking-wider text-[#64748B]">{{ t('track.address') }}</h3>
                             <div class="text-sm text-[#1E293B] font-medium">{{ order.customer_name }}</div>
                             <div class="text-sm text-[#64748B] mt-1">{{ order.customer_phone }}</div>
                             <div class="text-sm text-[#64748B] mt-1">{{ order.shipping_address }}</div>
                         </div>
 
                         <div class="border-t border-[#F0EAE1] pt-6">
-                            <h3 class="font-bold text-[#1E293B] mb-3 text-sm uppercase tracking-wider text-[#64748B]">পেমেন্ট তথ্য</h3>
+                            <h3 class="font-bold text-[#1E293B] mb-3 text-sm uppercase tracking-wider text-[#64748B]">{{ t('track.payment') }}</h3>
                             <div class="flex justify-between text-sm mb-2">
-                                <span class="text-[#64748B]">পেমেন্ট মেথড</span>
+                                <span class="text-[#64748B]">{{ t('track.payment_method') }}</span>
                                 <span class="font-medium text-[#1E293B] capitalize">{{ order.payment_method }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <span class="text-[#64748B]">পেমেন্ট স্ট্যাটাস</span>
+                                <span class="text-[#64748B]">{{ t('track.payment_status') }}</span>
                                 <span class="font-medium px-2 py-0.5 rounded text-xs"
                                     :class="order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
                                 >
-                                    {{ order.payment_status === 'paid' ? 'পেইড' : 'আনপেইড' }}
+                                    {{ order.payment_status === 'paid' ? t('track.paid') : t('track.unpaid') }}
                                 </span>
                             </div>
                         </div>

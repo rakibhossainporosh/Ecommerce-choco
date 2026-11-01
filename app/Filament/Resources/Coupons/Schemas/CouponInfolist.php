@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Coupons\Schemas;
 
 use App\Enums\CouponType;
-use Filament\Schemas\Components\Grid;
 use Filament\Infolists\Components\IconEntry;
-use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class CouponInfolist
@@ -29,8 +29,8 @@ class CouponInfolist
                 Grid::make(4)->schema([
                     TextEntry::make('minimum_order_amount')->money('BDT'),
                     TextEntry::make('maximum_discount_amount')->money('BDT'),
-                    TextEntry::make('usage_limit')->placeholder('Unlimited'),
-                    TextEntry::make('usage_limit_per_user')->placeholder('Unlimited'),
+                    TextEntry::make('usage_limit')->placeholder(__('Unlimited')),
+                    TextEntry::make('usage_limit_per_user')->placeholder(__('Unlimited')),
                 ]),
             ]),
 

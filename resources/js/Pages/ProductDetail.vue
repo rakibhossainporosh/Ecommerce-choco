@@ -11,6 +11,7 @@ import Footer from '../Components/Footer.vue';
 import CartDrawer from '../Components/CartDrawer.vue';
 import WishlistDrawer from '../Components/WishlistDrawer.vue';
 import { useCart } from '../Composables/useCart';
+import { useI18n } from '../Composables/useI18n';
 
 const props = defineProps({
     product: {
@@ -20,7 +21,13 @@ const props = defineProps({
 });
 
 const page = usePage();
+const { t, tm } = useI18n();
 const { addToCart, toggleWishlist, isInWishlist } = useCart();
+
+const productTitle = computed(() => props.product.display_name || props.product.name);
+const productCategory = computed(() => props.product.category_display_name || props.product.category_name);
+const productShortDesc = computed(() => props.product.display_short_description || props.product.short_description || t('product.fallback_short'));
+const productDescriptionHtml = computed(() => props.product.display_description || props.product.description);
 const quantity = ref(1);
 const activeImage = ref(props.product.image);
 const showReviewForm = ref(false);
@@ -103,14 +110,17 @@ const reviewForm = useForm({
 
 const reviewSuccess = ref(false);
 
-const ratingLabels = {
-    0: 'রেটিং নির্বাচন করুন (০/৫)',
-    1: 'খুবই হতাশাজনক (১/৫)',
-    2: 'তেমন ভালো লাগেনি (২/৫)',
-    3: 'মোটামুটি মানের (৩/৫)',
-    4: 'ভালো, মানসম্মত পণ্য (৪/৫)',
-    5: 'অসাধারণ! খুব পছন্দ হয়েছে (৫/৫)',
-};
+const ratingLabels = computed(() => {
+    const labels = tm('product.rating_labels') || [];
+    return {
+        0: labels[0] || t('product.your_rating'),
+        1: labels[1] || '',
+        2: labels[2] || '',
+        3: labels[3] || '',
+        4: labels[4] || '',
+        5: labels[5] || '',
+    };
+});
 
 const setRating = (star) => {
     // If user clicks the currently selected active star, deselect that specific star (reduce by 1)
@@ -146,10 +156,10 @@ const submitReview = () => {
 </script>
 
 <template>
-    <Head :title="product.name + ' - Nobo Shop'">
-        <meta name="description" :content="product.short_description || product.name" />
-        <meta property="og:title" :content="product.name + ' - Nobo Shop'" />
-        <meta property="og:description" :content="product.short_description || product.name" />
+    <Head :title="t('meta.product', { name: productTitle })">
+        <meta name="description" :content="productShortDesc" />
+        <meta property="og:title" :content="t('meta.product', { name: productTitle })" />
+        <meta property="og:description" :content="productShortDesc" />
         <meta property="og:image" :content="activeImage" />
     </Head>
 
@@ -165,13 +175,13 @@ const submitReview = () => {
 
             <!-- Breadcrumbs -->
             <nav class="flex items-center gap-2 text-sm text-[#64748B] mb-8 overflow-x-auto whitespace-nowrap">
-                <Link href="/" class="hover:text-[#E86A28] transition-colors">হোম</Link>
+                <Link href="/" class="hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
                 <ChevronRight class="w-4 h-4 shrink-0" />
                 <Link :href="'/?category=' + product.category_slug" class="hover:text-[#E86A28] transition-colors">
-                    {{ product.category_name }}
+                    {{ productCategory }}
                 </Link>
                 <ChevronRight class="w-4 h-4 shrink-0" />
-                <span class="text-[#1E293B] font-medium truncate">{{ product.name }}</span>
+                <span class="text-[#1E293B] font-medium truncate">{{ productTitle }}</span>
             </nav>
 
             <div class="flex flex-col md:flex-row gap-10 lg:gap-16 bg-white rounded-3xl p-6 lg:p-10 border border-[#EAE3D6] shadow-sm">
@@ -180,14 +190,14 @@ const submitReview = () => {
                     <div class="relative w-full bg-[#F7F3EC] rounded-2xl p-6 sm:p-8 flex items-center justify-center min-h-[350px] sm:min-h-[440px] border border-[#EAE3D6] overflow-hidden">
                         <img
                             :src="activeImage"
-                            :alt="product.name"
+                            :alt="productTitle"
                             class="w-full h-auto max-h-[440px] object-contain drop-shadow-md transition-transform duration-500 hover:scale-105"
                         />
                         <div v-if="!isCurrentInStock" class="absolute top-4 left-4 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-lg shadow-sm">
-                            স্টক শেষ
+                            {{ t('product.out_of_stock') }}
                         </div>
                         <div v-else-if="currentComparePrice && currentComparePrice > currentPrice" class="absolute top-4 left-4 px-3 py-1 bg-[#E86A28] text-white text-xs font-bold rounded-lg shadow-sm">
-                            অফার
+                            {{ t('home.offer_badge') }}
                         </div>
                     </div>
 
@@ -201,7 +211,7 @@ const submitReview = () => {
                             class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 bg-[#F7F3EC] p-1 flex-shrink-0 transition-all cursor-pointer"
                             :class="activeImage === img ? 'border-[#E86A28] ring-2 ring-[#E86A28]/20 shadow-xs' : 'border-[#EAE3D6] opacity-70 hover:opacity-100 hover:border-[#DCCFC0]'"
                         >
-                            <img :src="img" :alt="product.name + ' ' + (idx + 1)" class="w-full h-full object-contain" />
+                            <img :src="img" :alt="productTitle + ' ' + (idx + 1)" class="w-full h-full object-contain" />
                         </button>
                     </div>
                 </div>
@@ -211,7 +221,7 @@ const submitReview = () => {
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-bold text-[#E86A28] uppercase tracking-wider">
-                                {{ product.category_name }}
+                                {{ productCategory }}
                             </span>
                             <span v-if="product.brand_name" class="text-xs text-[#64748B] font-semibold bg-[#F1EBE1] px-2.5 py-0.5 rounded-full">
                                 {{ product.brand_name }}
@@ -221,12 +231,12 @@ const submitReview = () => {
                             class="text-xs font-bold px-3 py-1 rounded-full"
                             :class="isCurrentInStock ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'"
                         >
-                            {{ isCurrentInStock ? '● ইন স্টক' : '✕ স্টক শেষ' }}
+                            {{ isCurrentInStock ? '● ' + t('product.in_stock_badge') : '✕ ' + t('product.out_of_stock') }}
                         </span>
                     </div>
 
                     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1E293B] leading-tight mb-3">
-                        {{ product.name }}
+                        {{ productTitle }}
                     </h1>
 
                     <!-- Rating Summary -->
@@ -241,7 +251,7 @@ const submitReview = () => {
                         </div>
                         <span class="text-sm font-bold text-[#1E293B]">{{ Number(product.rating || 5).toFixed(1) }}</span>
                         <a href="#reviews" class="text-xs text-[#64748B] hover:text-[#E86A28] underline underline-offset-2">
-                            ({{ product.reviews_count || 0 }} টি রিভিউ)
+                            ({{ t('product.reviews_count', { count: product.reviews_count || 0 }) }})
                         </a>
                     </div>
 
@@ -257,7 +267,7 @@ const submitReview = () => {
                             {{ formatPrice(currentComparePrice) }}
                         </span>
                         <span v-if="currentComparePrice && currentComparePrice > currentPrice" class="px-3 py-1 bg-[#FEE2E2] text-[#EF4444] text-xs font-bold rounded-lg">
-                            অফার
+                            {{ t('home.offer_badge') }}
                         </span>
                     </div>
 
@@ -282,7 +292,7 @@ const submitReview = () => {
 
                     <!-- Short Description -->
                     <div class="text-sm text-[#475569] leading-relaxed mb-8">
-                        <p>{{ product.short_description || 'এই পণ্যটির চমৎকার ডিজাইন এবং উন্নত কোয়ালিটি আপনাকে মুগ্ধ করবে।' }}</p>
+                        <p>{{ productShortDesc }}</p>
                     </div>
 
                     <div class="mt-auto border-t border-[#F0EAE1] pt-6">
@@ -325,7 +335,7 @@ const submitReview = () => {
                                     : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'"
                             >
                                 <ShoppingBag class="w-5 h-5" />
-                                <span>{{ isCurrentInStock ? 'কার্টে যোগ করুন' : 'স্টক শেষ' }}</span>
+                                <span>{{ isCurrentInStock ? t('product.add_to_cart') : t('product.out_of_stock') }}</span>
                             </button>
                         </div>
 
@@ -339,22 +349,22 @@ const submitReview = () => {
                                 class="w-5 h-5 transition-colors" 
                                 :class="{ 'fill-[#E86A28] text-[#E86A28]': isInWishlist(product.id) }" 
                             />
-                            <span>{{ isInWishlist(product.id) ? 'উইশলিস্টে যুক্ত আছে' : 'উইশলিস্টে যুক্ত করুন' }}</span>
+                            <span>{{ isInWishlist(product.id) ? t('product.wishlist_added') : t('product.wishlist_add') }}</span>
                         </button>
 
                         <!-- Assurance Perks -->
                         <div class="grid grid-cols-3 gap-2 pt-6 mt-6 border-t border-[#F0EAE1] text-center">
                             <div class="flex flex-col items-center gap-1 p-2 rounded-xl bg-[#FAF7F2]">
                                 <Truck class="w-4 h-4 text-[#E86A28]" />
-                                <span class="text-[11px] font-semibold text-[#1E293B]">দ্রুত ডেলিভারি</span>
+                                <span class="text-[11px] font-semibold text-[#1E293B]">{{ t('product.perk_fast_delivery') }}</span>
                             </div>
                             <div class="flex flex-col items-center gap-1 p-2 rounded-xl bg-[#FAF7F2]">
                                 <ShieldCheck class="w-4 h-4 text-[#E86A28]" />
-                                <span class="text-[11px] font-semibold text-[#1E293B]">ক্যাশ অন ডেলিভারি</span>
+                                <span class="text-[11px] font-semibold text-[#1E293B]">{{ t('product.perk_cod') }}</span>
                             </div>
                             <div class="flex flex-col items-center gap-1 p-2 rounded-xl bg-[#FAF7F2]">
                                 <RotateCcw class="w-4 h-4 text-[#E86A28]" />
-                                <span class="text-[11px] font-semibold text-[#1E293B]">সহজ রিটার্ন</span>
+                                <span class="text-[11px] font-semibold text-[#1E293B]">{{ t('product.perk_easy_return') }}</span>
                             </div>
                         </div>
                     </div>
@@ -363,10 +373,10 @@ const submitReview = () => {
 
             <!-- Product Description Section -->
             <div class="mt-10 bg-white rounded-3xl p-6 sm:p-10 border border-[#EAE3D6] shadow-sm">
-                <h2 class="text-xl font-bold text-[#1E293B] mb-4 pb-3 border-b border-[#F0EAE1]">পণ্যের বিস্তারিত বিবরণ</h2>
+                <h2 class="text-xl font-bold text-[#1E293B] mb-4 pb-3 border-b border-[#F0EAE1]">{{ t('product.details_heading') }}</h2>
                 <div class="prose max-w-none text-[#475569] leading-relaxed text-sm sm:text-base">
-                    <div v-if="product.description" v-html="product.description"></div>
-                    <p v-else>{{ product.short_description || 'এই পণ্যটির চমৎকার ডিজাইন এবং উন্নত কোয়ালিটি আপনাকে মুগ্ধ করবে। প্রতিদিনের ব্যবহারের জন্য একটি পারফেক্ট পছন্দ।' }}</p>
+                    <div v-if="productDescriptionHtml" v-html="productDescriptionHtml"></div>
+                    <p v-else>{{ productShortDesc || t('product.fallback_description') }}</p>
                 </div>
             </div>
 
@@ -377,9 +387,9 @@ const submitReview = () => {
                     <div>
                         <h2 class="text-xl font-bold text-[#1E293B] flex items-center gap-2">
                             <MessageSquare class="w-5 h-5 text-[#E86A28]" />
-                            <span>গ্রাহকদের রিভিউ ও রেটিং</span>
+                            <span>{{ t('product.reviews_heading') }}</span>
                         </h2>
-                        <p class="text-xs text-[#64748B] mt-1">পণ্যটি সম্পর্কে আমাদের আসল ক্রেতাদের অভিজ্ঞতা ও মতামত</p>
+                        <p class="text-xs text-[#64748B] mt-1">{{ t('product.reviews_subheading') }}</p>
                     </div>
 
                     <button
@@ -388,7 +398,7 @@ const submitReview = () => {
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow cursor-pointer w-fit"
                     >
                         <MessageSquare class="w-4 h-4" />
-                        <span>{{ showReviewForm ? 'ফর্ম বন্ধ করুন' : 'একটি রিভিউ দিন' }}</span>
+                        <span>{{ showReviewForm ? t('product.close_review_form') : t('product.write_review_cta') }}</span>
                     </button>
                 </div>
 
@@ -407,8 +417,8 @@ const submitReview = () => {
                                 :class="s <= Math.round(product.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'"
                             />
                         </div>
-                        <span class="text-sm font-semibold text-[#1E293B]">৫ এর মধ্যে গড় রেটিং</span>
-                        <span class="text-xs text-[#64748B] mt-0.5">মোট {{ product.reviews_count || (product.reviews ? product.reviews.length : 0) }} টি ভেরিফাইড রিভিউ</span>
+                        <span class="text-sm font-semibold text-[#1E293B]">{{ t('product.avg_rating') }}</span>
+                        <span class="text-xs text-[#64748B] mt-0.5">{{ t('product.verified_reviews', { count: product.reviews_count || (product.reviews ? product.reviews.length : 0) }) }}</span>
                     </div>
 
                     <!-- Right: Star Rating Bars -->
@@ -429,7 +439,7 @@ const submitReview = () => {
                                 ></div>
                             </div>
                             <span class="w-12 text-right text-xs font-semibold text-[#64748B] shrink-0">
-                                {{ product.rating_breakdown && product.rating_breakdown[s] ? product.rating_breakdown[s].count : 0 }}টি
+                                {{ t('product.review_count_unit', { count: product.rating_breakdown && product.rating_breakdown[s] ? product.rating_breakdown[s].count : 0 }) }}
                             </span>
                         </div>
                     </div>
@@ -438,15 +448,15 @@ const submitReview = () => {
                 <!-- Review Success Alert -->
                 <div v-if="reviewSuccess || page.props.flash?.success" class="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 animate-fade-in">
                     <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
-                    <span class="text-sm font-semibold">{{ page.props.flash?.success || 'আপনার মূল্যবান রিভিউ প্রদানের জন্য ধন্যবাদ!' }}</span>
+                    <span class="text-sm font-semibold">{{ page.props.flash?.success || t('product.review_thanks') }}</span>
                 </div>
 
                 <!-- Modern Interactive Review Form Box -->
                 <div v-if="showReviewForm" class="mt-6 p-6 sm:p-8 rounded-2xl bg-[#FDFBF7] border-2 border-[#E86A28]/30 shadow-md">
                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-[#EAE3D6]">
                         <div>
-                            <h3 class="text-lg font-bold text-[#1E293B]">আপনার মূল্যবান রিভিউ দিন</h3>
-                            <p class="text-xs text-[#64748B]">অন্যান্য ক্রেতাদের সঠিক সিদ্ধান্ত নিতে সহায়তা করুন</p>
+                            <h3 class="text-lg font-bold text-[#1E293B]">{{ t('product.review_form_title') }}</h3>
+                            <p class="text-xs text-[#64748B]">{{ t('product.review_form_subtitle') }}</p>
                         </div>
                         <button 
                             type="button" 
@@ -461,7 +471,7 @@ const submitReview = () => {
                         <!-- Modern Interactive Star Rating Input with Dynamic Feedback -->
                         <div class="p-4 bg-white rounded-2xl border border-[#EAE3D6]">
                             <label class="block text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2">
-                                আপনার রেটিং নির্বাচন করুন <span class="text-red-500">*</span>
+                                {{ t('product.review_rating_required') }} <span class="text-red-500">*</span>
                             </label>
                             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                                 <div class="flex items-center gap-1" @mouseleave="clearHover">
@@ -472,7 +482,7 @@ const submitReview = () => {
                                         @click="setRating(star)"
                                         @mouseenter="setHover(star)"
                                         class="p-1.5 hover:scale-125 active:scale-90 transition-transform duration-100 focus:outline-none cursor-pointer"
-                                        :title="star + ' স্টার'"
+                                        :title="t('product.star_title', { count: star })"
                                     >
                                         <Star
                                             class="w-8 h-8 pointer-events-none transition-colors"
@@ -491,26 +501,26 @@ const submitReview = () => {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-[#475569] mb-1.5">
-                                    আপনার পুরো নাম <span class="text-red-500">*</span>
+                                    {{ t('product.reviewer_name') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     v-model="reviewForm.reviewer_name"
                                     type="text"
                                     required
-                                    placeholder="যেমন: মোঃ করিম হোসেন"
+                                    :placeholder="t('product.review_name_placeholder')"
                                     class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium"
                                 />
                                 <p v-if="reviewForm.errors.reviewer_name" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.reviewer_name }}</p>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-[#475569] mb-1.5">
-                                    আপনার ইমেইল ঠিকানা <span class="text-red-500">*</span>
+                                    {{ t('product.reviewer_email') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     v-model="reviewForm.reviewer_email"
                                     type="email"
                                     required
-                                    placeholder="যেমন: karim@example.com"
+                                    :placeholder="t('product.review_email_placeholder')"
                                     class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium"
                                 />
                                 <p v-if="reviewForm.errors.reviewer_email" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.reviewer_email }}</p>
@@ -520,12 +530,12 @@ const submitReview = () => {
                         <!-- Review Title -->
                         <div>
                             <label class="block text-xs font-bold text-[#475569] mb-1.5">
-                                রিভিউয়ের শিরোনাম <span class="text-[#94A3B8] font-normal">(ঐচ্ছিক)</span>
+                                {{ t('product.review_title') }} <span class="text-[#94A3B8] font-normal">({{ t('product.optional') }})</span>
                             </label>
                             <input
                                 v-model="reviewForm.title"
                                 type="text"
-                                placeholder="সংক্ষেপে এক লাইনে আপনার মতামত (যেমন: দারুণ প্রোডাক্ট, খুবই আরামদায়ক)"
+                                :placeholder="t('product.review_title_placeholder')"
                                 class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium"
                             />
                             <p v-if="reviewForm.errors.title" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.title }}</p>
@@ -534,13 +544,13 @@ const submitReview = () => {
                         <!-- Review Body -->
                         <div>
                             <label class="block text-xs font-bold text-[#475569] mb-1.5">
-                                বিস্তারিত মতামত ও অভিজ্ঞতা <span class="text-red-500">*</span>
+                                {{ t('product.review_body') }} <span class="text-red-500">*</span>
                             </label>
                             <textarea
                                 v-model="reviewForm.body"
                                 rows="4"
                                 required
-                                placeholder="পণ্যটির কোয়ালিটি, সাইজ, মেটেরিয়াল ও ডেলিভারি সম্পর্কে আপনার বাস্তব অভিজ্ঞতা শেয়ার করুন..."
+                                :placeholder="t('product.review_body_placeholder')"
                                 class="w-full px-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-2 focus:ring-[#E86A28]/20 outline-hidden bg-white font-medium leading-relaxed"
                             ></textarea>
                             <p v-if="reviewForm.errors.body" class="text-xs text-red-500 mt-1">{{ reviewForm.errors.body }}</p>
@@ -553,14 +563,14 @@ const submitReview = () => {
                                 @click="showReviewForm = false"
                                 class="px-5 py-2.5 rounded-xl text-sm font-semibold text-[#64748B] hover:bg-[#FAF7F2] transition-colors cursor-pointer"
                             >
-                                বাতিল
+                                {{ t('product.cancel') }}
                             </button>
                             <button
                                 type="submit"
                                 :disabled="reviewForm.processing"
                                 class="px-8 py-3 rounded-xl text-sm font-bold bg-[#E86A28] hover:bg-[#D35B1D] text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
                             >
-                                {{ reviewForm.processing ? 'জমা দেওয়া হচ্ছে...' : 'রিভিউ সাবমিট করুন' }}
+                                {{ reviewForm.processing ? t('product.submitting_review') : t('product.submit_review') }}
                             </button>
                         </div>
                     </form>
@@ -576,14 +586,14 @@ const submitReview = () => {
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#E86A28] to-[#F59E0B] text-white font-bold flex items-center justify-center text-sm shadow-xs uppercase">
-                                    {{ review.reviewer_name ? review.reviewer_name.charAt(0) : 'ক' }}
+                                    {{ review.reviewer_name ? review.reviewer_name.charAt(0) : t('reviews.satisfied_customer').charAt(0) }}
                                 </div>
                                 <div>
                                     <div class="flex items-center gap-2">
                                         <h4 class="text-sm font-bold text-[#1E293B]">{{ review.reviewer_name }}</h4>
                                         <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                                             <Check class="w-3 h-3 stroke-[2.5]" />
-                                            ভেরিফাইড পারচেজ
+                                            {{ t('product.verified_purchase') }}
                                         </span>
                                     </div>
                                     <span class="text-xs text-[#94A3B8]">{{ review.created_at }}</span>
@@ -614,15 +624,15 @@ const submitReview = () => {
                         <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE3D6] flex items-center justify-center text-[#E86A28]">
                             <MessageSquare class="w-8 h-8" />
                         </div>
-                        <h4 class="text-base font-bold text-[#1E293B]">এখনো কোনো রিভিউ দেওয়া হয়নি</h4>
-                        <p class="text-sm text-[#64748B] max-w-md mx-auto mt-1 mb-5">আপনি কি এই পণ্যটি ব্যবহার করেছেন? সবার প্রথম রিভিউ দিয়ে অন্য ক্রেতাদের সাহায্য করুন।</p>
+                        <h4 class="text-base font-bold text-[#1E293B]">{{ t('product.no_reviews_title') }}</h4>
+                        <p class="text-sm text-[#64748B] max-w-md mx-auto mt-1 mb-5">{{ t('product.no_reviews_body') }}</p>
                         <button
                             v-if="!showReviewForm"
                             @click="showReviewForm = true"
                             type="button"
                             class="px-5 py-2.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl text-sm font-bold transition-all shadow-sm cursor-pointer"
                         >
-                            প্রথম রিভিউটি আপনি দিন
+                            {{ t('product.first_review_cta') }}
                         </button>
                     </div>
                 </div>

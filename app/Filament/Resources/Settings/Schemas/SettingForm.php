@@ -73,12 +73,12 @@ class SettingForm
             Grid::make(2)->schema([
                 Toggle::make('is_public')
                     ->label('Public Setting')
-                    ->helperText('Should this setting be exposed to the public API/frontend?'),
+                    ->helperText(__('Should this setting be exposed to the public API/frontend?')),
 
                 Toggle::make('is_system')
                     ->label('System Setting')
                     ->disabled(fn ($record) => $record?->is_system ?? false)
-                    ->helperText('System settings cannot have their keys or types modified.'),
+                    ->helperText(__('System settings cannot have their keys or types modified.')),
             ]),
         ]);
     }

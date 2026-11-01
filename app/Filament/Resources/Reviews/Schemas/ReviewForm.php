@@ -35,15 +35,15 @@ class ReviewForm
                                 ->ignore($record?->id),
                         ])
                         ->validationMessages([
-                            'unique' => 'এই ইউজার ইতোমধ্যে এই প্রোডাক্টের জন্য একটি রিভিউ জমা দিয়েছেন।',
+                            'unique' => __('This user has already reviewed this product.'),
                         ]),
                     Select::make('rating')
-                        ->options([
-                            1 => '1 Star',
-                            2 => '2 Stars',
-                            3 => '3 Stars',
-                            4 => '4 Stars',
-                            5 => '5 Stars',
+                        ->options(fn (): array => [
+                            1 => __('1 Star'),
+                            2 => __('2 Stars'),
+                            3 => __('3 Stars'),
+                            4 => __('4 Stars'),
+                            5 => __('5 Stars'),
                         ])
                         ->required(),
                     TextInput::make('title')

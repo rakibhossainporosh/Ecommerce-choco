@@ -17,7 +17,7 @@
         </h1>
     @else
         <h1 class="fi-simple-header-heading">
-            Sign in
+            {{ __('Sign in') }}
         </h1>
     @endif
 
@@ -28,7 +28,7 @@
         </p>
     @else
         <p class="fi-simple-header-subheading">
-            Enter your credentials to access your administrative dashboard
+            {{ __('Enter your credentials to access your administrative dashboard') }}
         </p>
     @endif
 </header>

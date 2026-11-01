@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 
 class OrdersChart extends ChartWidget
 {
@@ -16,12 +17,17 @@ class OrdersChart extends ChartWidget
 
     public ?string $filter = '30days';
 
+    public function getHeading(): string|Htmlable|null
+    {
+        return $this->heading ? __($this->heading) : null;
+    }
+
     protected function getFilters(): ?array
     {
         return [
-            '7days' => 'Last 7 Days',
-            '30days' => 'Last 30 Days',
-            '12months' => 'Last 12 Months',
+            '7days' => __('Last 7 Days'),
+            '30days' => __('Last 30 Days'),
+            '12months' => __('Last 12 Months'),
         ];
     }
 
@@ -34,7 +40,7 @@ class OrdersChart extends ChartWidget
                 $date = Carbon::today()->subDays($daysAgo);
 
                 return [
-                    'label' => $date->format('D, M d'),
+                    'label' => $date->translatedFormat('D, M d'),
                     'start' => $date->copy()->startOfDay(),
                     'end' => $date->copy()->endOfDay(),
                 ];
@@ -44,7 +50,7 @@ class OrdersChart extends ChartWidget
                 $date = Carbon::now()->subMonths($monthsAgo);
 
                 return [
-                    'label' => $date->format('M Y'),
+                    'label' => $date->translatedFormat('M Y'),
                     'start' => $date->copy()->startOfMonth(),
                     'end' => $date->copy()->endOfDay(),
                 ];
@@ -55,7 +61,7 @@ class OrdersChart extends ChartWidget
                 $date = Carbon::today()->subDays($daysAgo);
 
                 return [
-                    'label' => $date->format('M d'),
+                    'label' => $date->translatedFormat('M d'),
                     'start' => $date->copy()->startOfDay(),
                     'end' => $date->copy()->endOfDay(),
                 ];
@@ -84,7 +90,7 @@ class OrdersChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Orders Placed',
+                    'label' => __('Orders Placed'),
                     'data' => $ordersData,
                     'borderColor' => '#E86A28',
                     'backgroundColor' => 'rgba(232, 106, 40, 0.15)',

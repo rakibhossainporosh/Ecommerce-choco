@@ -16,6 +16,8 @@ class SiteLocaleController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        abort_unless($request->user()?->can('settings.update'), 403);
+
         $validated = $request->validate([
             'locale' => ['required', 'in:en,bn'],
         ]);

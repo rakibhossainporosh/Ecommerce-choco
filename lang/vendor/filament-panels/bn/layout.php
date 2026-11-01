@@ -1,72 +1,33 @@
 <?php
 
 return [
-
-    'direction' => 'ltr',
+    'skip_to_content' => [
+        'label' => 'সোজা লেখায় যান',
+    ],
 
     'actions' => [
-
-        'billing' => [
-            'label' => 'সাবস্ক্রিপশন পরিচালনা করুন',
-        ],
-
-        'logout' => [
-            'label' => 'সাইন আউট',
-        ],
-
         'open_database_notifications' => [
-            'label' => 'বিজ্ঞপ্তি',
+            'label_with_unread_count' => '{1} নোটিফিকেশন, :countটি না পড়া|[2,*] নোটিফিকেশন, :countটি না পড়া',
         ],
-
-        'open_user_menu' => [
-            'label' => 'ইউজার মেনু',
-        ],
-
-        'sidebar' => [
-
-            'collapse' => [
-                'label' => 'সাইডবার ছোট করুন',
-            ],
-
-            'expand' => [
-                'label' => 'সাইডবার বড় করুন',
-            ],
-
-        ],
-
         'theme_switcher' => [
-
+            'label' => 'থিম',
             'dark' => [
-                'label' => 'ডার্ক মোড সক্রিয় করুন',
+                'label' => 'ডার্ক থিম চালু করুন',
             ],
-
             'light' => [
-                'label' => 'লাইট মোড সক্রিয় করুন',
+                'label' => 'লাইট থিম চালু করুন',
             ],
-
             'system' => [
-                'label' => 'সিস্টেম মোড সক্রিয় করুন',
+                'label' => 'ফোনের থিম ব্যবহার করুন',
             ],
-
         ],
-
     ],
 
-    'avatar' => [
-        'alt' => ':name এর অবতার',
+    'navigation' => [
+        'label' => 'সাইডবার',
     ],
 
-    'logo' => [
-        'alt' => ':name এর লোগো',
+    'topbar' => [
+        'label' => 'উপরের বার',
     ],
-
-    'tenant_menu' => [
-
-        'search_field' => [
-            'label' => 'টেন্যান্ট অনুসন্ধান',
-            'placeholder' => 'অনুসন্ধান',
-        ],
-
-    ],
-
 ];

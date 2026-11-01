@@ -23,7 +23,7 @@ class EditBrand extends EditRecord
                     if (! $record->canBeDeleted()) {
                         Notification::make()
                             ->danger()
-                            ->title('Cannot delete this brand because it has associated products.')
+                            ->title(__('Cannot delete this brand because it has associated products.'))
                             ->send();
 
                         $action->halt();

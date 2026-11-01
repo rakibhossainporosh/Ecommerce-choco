@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Brands;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Brands\Pages\CreateBrand;
 use App\Filament\Resources\Brands\Pages\EditBrand;
 use App\Filament\Resources\Brands\Pages\ListBrands;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BrandResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Brand::class;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -32,7 +35,7 @@ class BrandResource extends Resource
     {
         /** @var Brand $record */
         return [
-            'Status' => $record->is_active ? 'Active' : 'Inactive',
+            'Status' => $record->is_active ? __('Active') : __('Inactive'),
             'Products' => $record->products()->count().' products',
         ];
     }

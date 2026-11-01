@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Customers\RelationManagers;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
 use Filament\Actions\ViewAction;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrdersRelationManager extends RelationManager
 {
+    use TranslatesRelationManagerTitle;
+
     protected static string $relationship = 'orders';
 
     protected static ?string $title = 'Order History';

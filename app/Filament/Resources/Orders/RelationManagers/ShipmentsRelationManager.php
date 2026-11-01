@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\RelationManagers;
 
 use App\Enums\ShipmentStatus;
 use App\Enums\ShippingProvider;
+use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Filament\Resources\Shipments\ShipmentResource;
 use App\Models\Customer;
 use App\Models\Order;
@@ -24,6 +25,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ShipmentsRelationManager extends RelationManager
 {
+    use TranslatesRelationManagerTitle;
+
     protected static string $relationship = 'shipments';
 
     protected static ?string $title = 'Shipment & Delivery History';
@@ -73,7 +76,7 @@ class ShipmentsRelationManager extends RelationManager
                 TextColumn::make('tracking_code')
                     ->label('Tracking #')
                     ->copyable()
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->url(fn (Shipment $record): ?string => $record->getTrackingUrl(), shouldOpenInNewTab: true),
 
                 TextColumn::make('shipping_charge')
@@ -84,21 +87,21 @@ class ShipmentsRelationManager extends RelationManager
                 TextColumn::make('shipped_at')
                     ->label('Dispatched At')
                     ->dateTime('M j, Y H:i')
-                    ->placeholder('Pending')
+                    ->placeholder(__('Pending'))
                     ->sortable(),
 
                 TextColumn::make('delivered_at')
                     ->label('Delivered At')
                     ->dateTime('M j, Y H:i')
-                    ->placeholder('Pending')
+                    ->placeholder(__('Pending'))
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make()
                     ->label('Create Consignment')
-                    ->modalHeading('Create Shipment for this Order')
-                    ->modalDescription('Generate a consignment with courier and tracking details.')
+                    ->modalHeading(__('Create Shipment for this Order'))
+                    ->modalDescription(__('Generate a consignment with courier and tracking details.'))
                     ->modalIcon(Heroicon::OutlinedTruck)
                     ->modalWidth(Width::TwoExtraLarge)
                     ->visible(fn (): bool => auth()->user()?->can('shipping.create') ?? false)
@@ -120,7 +123,7 @@ class ShipmentsRelationManager extends RelationManager
 
                         TextInput::make('tracking_code')
                             ->label('Tracking Code / Consignment ID')
-                            ->placeholder('e.g. STDF92817')
+                            ->placeholder(__('e.g. STDF92817'))
                             ->maxLength(100)
                             ->nullable()
                             ->prefixIcon(Heroicon::OutlinedIdentification),
@@ -135,7 +138,7 @@ class ShipmentsRelationManager extends RelationManager
 
                         Textarea::make('notes')
                             ->label('Packaging & Delivery Notes')
-                            ->placeholder('Special instructions for delivery rider...')
+                            ->placeholder(__('Special instructions for delivery rider...'))
                             ->rows(3)
                             ->columnSpanFull()
                             ->nullable(),
@@ -173,7 +176,7 @@ class ShipmentsRelationManager extends RelationManager
                     ->visible(fn (Shipment $record): bool => $record->canBePacked() && auth()->user()?->can('shipping.update'))
                     ->action(function (Shipment $record): void {
                         $record->markAsPacked(actor: auth()->user());
-                        Notification::make()->info()->title('Parcel Packed')->send();
+                        Notification::make()->info()->title(__('Parcel Packed'))->send();
                     }),
 
                 Action::make('mark_shipped')
@@ -192,7 +195,7 @@ class ShipmentsRelationManager extends RelationManager
                             trackingCode: $data['tracking_code'] ?? null,
                             actor: auth()->user()
                         );
-                        Notification::make()->success()->title('Shipment Dispatched')->send();
+                        Notification::make()->success()->title(__('Shipment Dispatched'))->send();
                     }),
 
                 Action::make('mark_delivered')
@@ -203,7 +206,7 @@ class ShipmentsRelationManager extends RelationManager
                     ->visible(fn (Shipment $record): bool => $record->canBeDelivered() && auth()->user()?->can('shipping.deliver'))
                     ->action(function (Shipment $record): void {
                         $record->markAsDelivered(actor: auth()->user());
-                        Notification::make()->success()->title('Shipment Delivered')->send();
+                        Notification::make()->success()->title(__('Shipment Delivered'))->send();
                     }),
             ]);
     }

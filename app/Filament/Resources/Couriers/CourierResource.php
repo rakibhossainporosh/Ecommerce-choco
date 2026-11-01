@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Couriers;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Models\Courier;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -19,6 +20,8 @@ use Filament\Tables\Table;
 
 class CourierResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Courier::class;
 
     protected static \BackedEnum|string|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
@@ -28,6 +31,10 @@ class CourierResource extends Resource
     protected static ?int $navigationSort = 30;
 
     protected static ?string $navigationLabel = 'Couriers';
+
+    protected static ?string $modelLabel = 'Courier';
+
+    protected static ?string $pluralModelLabel = 'Couriers';
 
     public static function form(Schema $schema): Schema
     {
@@ -52,11 +59,11 @@ class CourierResource extends Resource
                 ]),
                 Section::make('API Credentials')->schema([
                     KeyValue::make('credentials')
-                        ->keyLabel('Credential Key')
-                        ->valueLabel('Credential Value')
+                        ->keyLabel(fn (): string => __('Credential Key'))
+                        ->valueLabel(fn (): string => __('Credential Value'))
                         ->formatStateUsing(fn () => []) // Security: Hide existing credentials
                         ->dehydrated(fn ($state) => filled($state)) // Only save if provided
-                        ->helperText('Existing credentials are not displayed for security. Entering new credentials will overwrite existing ones completely.'),
+                        ->helperText(__('Existing credentials are not displayed for security. Entering new credentials will overwrite existing ones completely.')),
                 ]),
             ]);
     }

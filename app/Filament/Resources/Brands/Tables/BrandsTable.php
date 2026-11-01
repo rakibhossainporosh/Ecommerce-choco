@@ -38,7 +38,7 @@ class BrandsTable
                     ->searchable()
                     ->sortable()
                     ->copyable()
-                    ->copyMessage('Slug copied')
+                    ->copyMessage(__('Slug copied'))
                     ->color('gray'),
 
                 TextColumn::make('products_count')
@@ -77,7 +77,7 @@ class BrandsTable
                         if (! $record->canBeDeleted()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Cannot delete this brand because it has associated products.')
+                                ->title(__('Cannot delete this brand because it has associated products.'))
                                 ->send();
 
                             $action->halt();
@@ -92,7 +92,7 @@ class BrandsTable
                                 if (! $record->canBeDeleted()) {
                                     Notification::make()
                                         ->danger()
-                                        ->title('Cannot delete this brand because it has associated products.')
+                                        ->title(__('Cannot delete this brand because it has associated products.'))
                                         ->send();
 
                                     $action->halt();

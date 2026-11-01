@@ -45,7 +45,7 @@ class CustomersTable
                     ->label('Email Address')
                     ->searchable()
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
 
                 IconColumn::make('is_active')
                     ->label('Active')
@@ -104,8 +104,8 @@ class CustomersTable
                         if (! $record->canBeDeleted()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Cannot delete customer with placed orders.')
-                                ->body('To preserve business and financial integrity, customers with historical orders cannot be deleted.')
+                                ->title(__('Cannot delete customer with placed orders.'))
+                                ->body(__('To preserve business and financial integrity, customers with historical orders cannot be deleted.'))
                                 ->send();
 
                             $action->halt();
@@ -120,8 +120,8 @@ class CustomersTable
                                 if (! $record->canBeDeleted()) {
                                     Notification::make()
                                         ->danger()
-                                        ->title('Cannot delete customer with placed orders.')
-                                        ->body("Customer '{$record->name}' has existing orders. Deletion halted.")
+                                        ->title(__('Cannot delete customer with placed orders.'))
+                                        ->body(__('Customer :name has existing orders. Deletion halted.', ['name' => $record->name]))
                                         ->send();
 
                                     $action->halt();

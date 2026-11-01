@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\RelationManagers;
 
+use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Models\CustomerAddress;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -19,6 +20,8 @@ use Filament\Tables\Table;
 
 class AddressesRelationManager extends RelationManager
 {
+    use TranslatesRelationManagerTitle;
+
     protected static string $relationship = 'addresses';
 
     protected static ?string $title = 'Postal & Delivery Addresses';
@@ -39,13 +42,13 @@ class AddressesRelationManager extends RelationManager
                 TextInput::make('name')
                     ->label('Recipient Name (Optional)')
                     ->maxLength(255)
-                    ->placeholder('Leave blank to use customer name'),
+                    ->placeholder(__('Leave blank to use customer name')),
 
                 TextInput::make('phone')
                     ->label('Recipient Phone (Optional)')
                     ->tel()
                     ->maxLength(30)
-                    ->placeholder('Leave blank to use customer phone'),
+                    ->placeholder(__('Leave blank to use customer phone')),
 
                 TextInput::make('address_line')
                     ->label('Address Line (Street/House/Flat)')
@@ -106,7 +109,7 @@ class AddressesRelationManager extends RelationManager
 
                 TextColumn::make('postcode')
                     ->label('Postcode')
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
 
                 IconColumn::make('is_default')
                     ->label('Default')

@@ -27,13 +27,13 @@ class CategoryForm
             ->components([
                 Group::make([
                     Section::make('General Information')
-                        ->description('Basic identity and search engine details for this category.')
+                        ->description(__('Basic identity and search engine details for this category.'))
                         ->icon(Heroicon::OutlinedTag)
                         ->columns(2)
                         ->schema([
                             TextInput::make('name')
                                 ->label('Category Name')
-                                ->placeholder('e.g. Dark Chocolates, Truffles')
+                                ->placeholder(__('e.g. Dark Chocolates, Truffles'))
                                 ->prefixIcon(Heroicon::OutlinedTag)
                                 ->required()
                                 ->maxLength(255)
@@ -55,16 +55,16 @@ class CategoryForm
                                             ->exists();
 
                                         if ($exists) {
-                                            $fail('A category with this name already exists under the selected parent.');
+                                            $fail(__('A category with this name already exists under the selected parent.'));
                                         }
                                     },
                                 ]),
 
                             TextInput::make('slug')
                                 ->label('URL Slug')
-                                ->placeholder('e.g. dark-chocolates')
+                                ->placeholder(__('e.g. dark-chocolates'))
                                 ->prefixIcon(Heroicon::OutlinedGlobeAlt)
-                                ->helperText('Used for SEO friendly URL links.')
+                                ->helperText(__('Used for SEO friendly URL links.'))
                                 ->required()
                                 ->maxLength(255)
                                 ->unique(ignoreRecord: true)
@@ -72,7 +72,7 @@ class CategoryForm
 
                             Textarea::make('description')
                                 ->label('Description')
-                                ->placeholder('Enter a clear description of this category for customers and SEO...')
+                                ->placeholder(__('Enter a clear description of this category for customers and SEO...'))
                                 ->nullable()
                                 ->rows(4)
                                 ->columnSpanFull(),
@@ -81,14 +81,14 @@ class CategoryForm
 
                 Group::make([
                     Section::make('Hierarchy & Placement')
-                        ->description('Category tree level and display sequence.')
+                        ->description(__('Category tree level and display sequence.'))
                         ->icon(Heroicon::OutlinedRectangleStack)
                         ->schema([
                             Select::make('parent_id')
                                 ->label('Parent Category')
-                                ->placeholder('None (Root Category)')
+                                ->placeholder(__('None (Root Category)'))
                                 ->prefixIcon(Heroicon::OutlinedFolder)
-                                ->helperText('Leave empty to create a top-level root category.')
+                                ->helperText(__('Leave empty to create a top-level root category.'))
                                 ->relationship(
                                     name: 'parent',
                                     titleAttribute: 'name',
@@ -109,19 +109,19 @@ class CategoryForm
                                         $parentId = (int) $value;
 
                                         if ($record && $parentId === (int) $record->id) {
-                                            $fail('A category cannot be its own parent.');
+                                            $fail(__('A category cannot be its own parent.'));
 
                                             return;
                                         }
 
                                         if (Category::onlyTrashed()->where('id', $parentId)->exists()) {
-                                            $fail('Cannot assign a deleted category as parent.');
+                                            $fail(__('Cannot assign a deleted category as parent.'));
 
                                             return;
                                         }
 
                                         if ($record && in_array($parentId, $record->getDescendantIds(), true)) {
-                                            $fail('Cannot assign this parent because it would create a circular category hierarchy.');
+                                            $fail(__('Cannot assign this parent because it would create a circular category hierarchy.'));
 
                                             return;
                                         }
@@ -130,7 +130,7 @@ class CategoryForm
                                         if ($isActive) {
                                             $parent = Category::find($parentId);
                                             if ($parent && (! $parent->is_active || $parent->hasInactiveAncestor())) {
-                                                $fail('An active category cannot have an inactive parent.');
+                                                $fail(__('An active category cannot have an inactive parent.'));
 
                                                 return;
                                             }
@@ -141,7 +141,7 @@ class CategoryForm
                             TextInput::make('sort_order')
                                 ->label('Sort Order')
                                 ->prefixIcon(Heroicon::OutlinedArrowsUpDown)
-                                ->helperText('Lower numbers appear first (0 = top priority).')
+                                ->helperText(__('Lower numbers appear first (0 = top priority).'))
                                 ->numeric()
                                 ->default(0)
                                 ->minValue(0)
@@ -149,19 +149,19 @@ class CategoryForm
                         ]),
 
                     Section::make('Visibility & Status')
-                        ->description('Storefront catalog availability.')
+                        ->description(__('Storefront catalog availability.'))
                         ->icon(Heroicon::OutlinedEye)
                         ->schema([
                             Toggle::make('is_active')
                                 ->label('Active Status')
-                                ->helperText('Disable to hide category from the store.')
+                                ->helperText(__('Disable to hide category from the store.'))
                                 ->default(true)
                                 ->required()
                                 ->rules([
                                     fn (?Category $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
                                         $willBeActive = (bool) $value;
                                         if (! $willBeActive && $record && $record->hasActiveChildren()) {
-                                            $fail('Cannot deactivate this category because it has active child categories.');
+                                            $fail(__('Cannot deactivate this category because it has active child categories.'));
                                         }
                                     },
                                 ]),

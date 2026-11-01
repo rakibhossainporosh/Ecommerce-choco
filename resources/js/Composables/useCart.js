@@ -38,9 +38,10 @@ export function useCart() {
         const variantId = variant ? variant.id : defaultVariantId;
         
         const price = variant ? variant.price : product.price;
-        let name = product.name;
+        const baseName = product.display_name || product.name;
+        let name = baseName;
         if (variant && variant.options && Object.keys(variant.options).length > 0) {
-            name = `${product.name} - ${Object.values(variant.options).join(' ')}`;
+            name = `${baseName} - ${Object.values(variant.options).join(' ')}`;
         }
         
         const cartItemId = `${product.id}-${variantId}`;
@@ -92,11 +93,15 @@ export function useCart() {
         } else {
             wishlistItems.value.push({
                 id: product.id,
-                name: product.name,
+                name: product.display_name || product.name,
                 price: product.price,
                 image: product.image,
-                category_name: product.category_name,
-                compare_at_price: product.compare_at_price
+                category_name: product.category_display_name || product.category_name,
+                compare_at_price: product.compare_at_price,
+                display_name: product.display_name,
+                category_display_name: product.category_display_name,
+                is_in_stock: product.is_in_stock,
+                slug: product.slug,
             });
         }
         saveWishlist();

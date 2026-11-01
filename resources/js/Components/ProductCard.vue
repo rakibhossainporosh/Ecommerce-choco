@@ -2,6 +2,7 @@
 import { Heart, ShoppingBag, Eye, Star } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
 import { useCart } from '../Composables/useCart';
+import { useI18n } from '../Composables/useI18n';
 
 const props = defineProps({
     product: {
@@ -9,6 +10,11 @@ const props = defineProps({
         required: true,
     },
 });
+
+const { t } = useI18n();
+
+const productName = () => props.product.display_name || props.product.name;
+const categoryName = () => props.product.category_display_name || props.product.category_name;
 
 const navigateToProduct = () => {
     router.visit('/product/' + props.product.slug);
@@ -31,7 +37,7 @@ const formatPrice = (val) => {
         <div class="relative w-full aspect-square bg-[#F7F3EC] rounded-xl overflow-hidden mb-3.5 flex items-center justify-center">
             <img
                 :src="product.image"
-                :alt="product.name"
+                :alt="productName()"
                 class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
             />
 
@@ -40,13 +46,13 @@ const formatPrice = (val) => {
                 v-if="product.is_in_stock === false"
                 class="absolute top-2.5 left-2.5 px-2.5 py-0.5 bg-red-600/90 text-white text-[11px] font-bold rounded-md shadow-xs"
             >
-                স্টক শেষ
+                {{ t('product.out_of_stock') }}
             </div>
             <div
                 v-else-if="product.compare_at_price && product.compare_at_price > product.price"
                 class="absolute top-2.5 left-2.5 px-2 py-0.5 bg-[#E86A28] text-white text-[11px] font-bold rounded-md shadow-xs"
             >
-                অফার
+                {{ t('home.offer_badge') }}
             </div>
 
             <!-- Wishlist Heart Button -->
@@ -59,7 +65,7 @@ const formatPrice = (val) => {
                         ? 'text-[#E86A28] bg-white scale-110'
                         : 'text-[#94A3B8] hover:text-[#E86A28] hover:bg-white'
                 ]"
-                title="উইশলিস্টে যুক্ত করুন"
+                :title="t('product.wishlist_add')"
             >
                 <Heart
                     class="w-4 h-4 transition-colors"
@@ -74,7 +80,7 @@ const formatPrice = (val) => {
                 <!-- Category Tag -->
                 <div class="flex items-center justify-between">
                     <span class="text-[12px] font-medium text-[#94A3B8] uppercase tracking-wider block">
-                        {{ product.category_name }}
+                        {{ categoryName() }}
                     </span>
                     <div v-if="product.rating" class="flex items-center gap-1">
                         <Star class="w-3.5 h-3.5 fill-[#F59E0B] text-[#F59E0B]" />
@@ -84,7 +90,7 @@ const formatPrice = (val) => {
 
                 <!-- Title -->
                 <h3 class="text-[15px] font-bold text-[#1E293B] mt-0.5 line-clamp-1 group-hover:text-[#E86A28] transition-colors">
-                    {{ product.name }}
+                    {{ productName() }}
                 </h3>
 
                 <!-- Pricing -->
@@ -110,7 +116,7 @@ const formatPrice = (val) => {
                     class="flex-1 py-2 px-3 bg-[#FAF7F2] hover:bg-[#E86A28] text-[#1E293B] hover:text-white border border-[#EAE3D6] hover:border-[#E86A28] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-2xs"
                 >
                     <ShoppingBag class="w-3.5 h-3.5" />
-                    <span>কার্টে যোগ করুন</span>
+                    <span>{{ t('product.add_to_cart') }}</span>
                 </button>
                 <button
                     v-else
@@ -118,14 +124,14 @@ const formatPrice = (val) => {
                     type="button"
                     class="flex-1 py-2 px-3 bg-gray-100 text-gray-400 border border-gray-200 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed"
                 >
-                    <span>স্টক শেষ</span>
+                    <span>{{ t('product.out_of_stock') }}</span>
                 </button>
 
                 <button
                     @click.stop="navigateToProduct"
                     type="button"
                     class="py-2 px-2.5 bg-white hover:bg-[#FAF7F2] text-[#64748B] hover:text-[#1E293B] border border-[#EAE3D6] rounded-lg text-xs font-medium transition-colors"
-                    title="বিস্তারিত দেখুন"
+                    :title="t('product.view_details')"
                 >
                     <Eye class="w-3.5 h-3.5" />
                 </button>

@@ -22,41 +22,131 @@
         }
     }
 
-    .admin-locale-switch {
+    .store-locale-choices.fi-btn-group {
+        width: max-content;
+        max-width: 100%;
+    }
+
+    .store-locale-choices.fi-btn-group > .fi-btn {
+        min-width: 7.5rem;
+        justify-content: center;
+    }
+
+    .fi-topbar-end .admin-locale {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .admin-locale-trigger {
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
-        margin-inline-end: 0.75rem;
-        padding: 0.2rem;
-        border: 1px solid rgba(232, 106, 40, 0.28);
-        background: #fff7ed;
+        gap: 0.4rem;
+        height: 2.25rem;
+        padding: 0 0.7rem;
+        border: 1px solid #e7e5e4;
         border-radius: 999px;
-    }
-    .admin-locale-switch-label {
-        padding-inline: 0.45rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        color: #9a3412;
-    }
-    .admin-locale-switch button {
-        border: 0;
-        background: transparent;
-        color: #9a3412;
-        font-size: 0.72rem;
-        font-weight: 700;
+        background: #fff;
+        color: #1e293b;
+        font-size: 0.8125rem;
+        font-weight: 600;
         line-height: 1;
-        padding: 0.35rem 0.55rem;
-        border-radius: 999px;
         cursor: pointer;
     }
-    .admin-locale-switch button.is-active {
-        background: #e86a28;
-        color: #fff;
+    .admin-locale-trigger:hover,
+    .admin-locale-trigger[aria-expanded="true"] {
+        background: #faf7f2;
+        border-color: #e2d9cd;
     }
-    .dark .admin-locale-switch {
-        background: rgba(232, 106, 40, 0.12);
-        border-color: rgba(232, 106, 40, 0.35);
+    .admin-locale-trigger:focus,
+    .admin-locale-trigger:focus-visible {
+        outline: none;
+        border-color: #e86a28;
+        box-shadow: 0 0 0 3px rgba(232, 106, 40, 0.18);
+    }
+    .admin-locale-trigger svg {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+        color: #64748b;
+    }
+    .admin-locale-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+    }
+    .admin-locale-menu {
+        position: fixed;
+        z-index: 81;
+        max-width: calc(100vw - 1rem);
+        padding: 0.35rem;
+        border: 1px solid #e7e5e4;
+        border-radius: 0.85rem;
+        background: #fff;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+    }
+    .admin-locale-menu-label {
+        margin: 0;
+        padding: 0.4rem 0.65rem 0.2rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+    }
+    .admin-locale-option {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0.65rem;
+        border: 0;
+        border-radius: 0.6rem;
+        background: transparent;
+        color: #1e293b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-align: start;
+        cursor: pointer;
+    }
+    .admin-locale-option:hover {
+        background: #faf7f2;
+    }
+    .admin-locale-option.is-active {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+    .admin-locale-option svg {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+    }
+    .dark .admin-locale-trigger,
+    .dark .admin-locale-menu {
+        background: #0f172a;
+        border-color: #334155;
+        color: #f8fafc;
+    }
+    .dark .admin-locale-trigger:hover,
+    .dark .admin-locale-trigger[aria-expanded="true"],
+    .dark .admin-locale-option:hover {
+        background: #1e293b;
+    }
+    .dark .admin-locale-option {
+        color: #f8fafc;
+    }
+    .dark .admin-locale-option.is-active {
+        background: rgba(232, 106, 40, 0.16);
+        color: #fdba74;
+    }
+    .admin-locale-profile {
+        display: none;
+    }
+    @media (max-width: 1023px) {
+        .fi-topbar-end .admin-locale {
+            display: none !important;
+        }
+        .admin-locale-profile {
+            display: contents;
+        }
     }
 
     /* Topbar clean full-bleed styling */
@@ -672,7 +762,7 @@
     }
 
     .fi-ta-actions-header-cell::after {
-        content: "Actions" !important;
+        content: "{{ __('Actions') }}" !important;
         display: inline-block !important;
         font-size: 0.775rem !important;
         font-weight: 700 !important;

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Activities;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Activities\Pages\ListActivities;
 use App\Filament\Resources\Activities\Pages\ViewActivity;
 use App\Filament\Resources\Activities\Schemas\ActivityForm;
@@ -16,6 +17,8 @@ use Spatie\Activitylog\Models\Activity;
 
 class ActivityResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Activity::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
@@ -25,6 +28,10 @@ class ActivityResource extends Resource
     protected static ?int $navigationSort = 30;
 
     protected static ?string $navigationLabel = 'Activities';
+
+    protected static ?string $modelLabel = 'Activity';
+
+    protected static ?string $pluralModelLabel = 'Activities';
 
     public static function form(Schema $schema): Schema
     {

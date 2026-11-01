@@ -78,7 +78,7 @@ class ShipmentsTable
                     ->label('Tracking #')
                     ->searchable()
                     ->copyable()
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->url(fn (Shipment $record): ?string => $record->getTrackingUrl(), shouldOpenInNewTab: true),
 
                 TextColumn::make('shipping_charge')
@@ -89,13 +89,13 @@ class ShipmentsTable
                 TextColumn::make('shipped_at')
                     ->label('Dispatched At')
                     ->dateTime('M j, Y H:i')
-                    ->placeholder('Pending')
+                    ->placeholder(__('Pending'))
                     ->sortable(),
 
                 TextColumn::make('delivered_at')
                     ->label('Delivered At')
                     ->dateTime('M j, Y H:i')
-                    ->placeholder('Pending')
+                    ->placeholder(__('Pending'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -126,8 +126,8 @@ class ShipmentsTable
                         $record->markAsPacked(actor: auth()->user());
                         Notification::make()
                             ->info()
-                            ->title('Parcel Packed')
-                            ->body("Shipment {$record->shipment_number} marked as packed and ready to ship.")
+                            ->title(__('Parcel Packed'))
+                            ->body(__('Shipment :number marked as packed and ready to ship.', ['number' => $record->shipment_number]))
                             ->send();
                     }),
 
@@ -140,7 +140,7 @@ class ShipmentsTable
                     ->form([
                         TextInput::make('tracking_code')
                             ->label('Carrier Tracking / Consignment ID')
-                            ->placeholder('e.g. STDF92817')
+                            ->placeholder(__('e.g. STDF92817'))
                             ->default(fn (Shipment $record): ?string => $record->tracking_code),
                     ])
                     ->action(function (Shipment $record, array $data): void {
@@ -150,8 +150,8 @@ class ShipmentsTable
                         );
                         Notification::make()
                             ->success()
-                            ->title('Shipment Dispatched')
-                            ->body("Shipment {$record->shipment_number} is now in transit.")
+                            ->title(__('Shipment Dispatched'))
+                            ->body(__('Shipment :number is now in transit.', ['number' => $record->shipment_number]))
                             ->send();
                     }),
 
@@ -165,8 +165,8 @@ class ShipmentsTable
                         $record->markAsDelivered(actor: auth()->user());
                         Notification::make()
                             ->success()
-                            ->title('Shipment Delivered')
-                            ->body("Shipment {$record->shipment_number} successfully delivered.")
+                            ->title(__('Shipment Delivered'))
+                            ->body(__('Shipment :number successfully delivered.', ['number' => $record->shipment_number]))
                             ->send();
                     }),
 
@@ -179,15 +179,15 @@ class ShipmentsTable
                     ->form([
                         TextInput::make('reason')
                             ->label('Return Reason')
-                            ->placeholder('e.g. Customer unreachable / refused parcel')
+                            ->placeholder(__('e.g. Customer unreachable / refused parcel'))
                             ->required(),
                     ])
                     ->action(function (Shipment $record, array $data): void {
                         $record->markAsReturned(reason: $data['reason'], actor: auth()->user());
                         Notification::make()
                             ->warning()
-                            ->title('Shipment Returned')
-                            ->body("Shipment {$record->shipment_number} marked as returned.")
+                            ->title(__('Shipment Returned'))
+                            ->body(__('Shipment :number marked as returned.', ['number' => $record->shipment_number]))
                             ->send();
                     }),
             ])

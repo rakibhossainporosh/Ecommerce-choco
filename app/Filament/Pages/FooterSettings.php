@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Enums\SettingType;
+use App\Filament\Concerns\TranslatesPageNavigation;
 use App\Models\Setting;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -26,6 +28,8 @@ use UnitEnum;
 
 class FooterSettings extends Page
 {
+    use TranslatesPageNavigation;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
 
     protected static string|UnitEnum|null $navigationGroup = 'System';
@@ -81,6 +85,7 @@ class FooterSettings extends Page
         $paymentMethods = Setting::get('footer_payment_methods');
 
         $this->form->fill([
+            'site_locale' => Setting::get('site_locale', 'en'),
             'site_name' => Setting::get('site_name', 'Nobo Shop'),
             'site_tagline' => Setting::get('site_tagline', 'আপনার প্রতিদিনের পছন্দ'),
             'site_logo' => Setting::get('site_logo'),
@@ -113,19 +118,32 @@ class FooterSettings extends Page
                         Tab::make('General & Branding')
                             ->icon(Heroicon::OutlinedBuildingStorefront)
                             ->schema([
+                                Section::make('Store language')
+                                    ->description(__('Choose the language for the admin panel and the default language of the website. Shoppers can still switch language on the storefront.'))
+                                    ->schema([
+                                        ToggleButtons::make('site_locale')
+                                            ->label('Default language')
+                                            ->options([
+                                                'en' => 'English',
+                                                'bn' => 'বাংলা',
+                                            ])
+                                            ->grouped()
+                                            ->required()
+                                            ->extraAttributes(['class' => 'store-locale-choices'], merge: true),
+                                    ]),
                                 Section::make('Brand Identity & Logo')
-                                    ->description('Configure your store brand identity, official logo, favicon, and bio shown across the website.')
+                                    ->description(__('Configure your store brand identity, official logo, favicon, and bio shown across the website.'))
                                     ->schema([
                                         Grid::make(2)->schema([
                                             TextInput::make('site_name')
                                                 ->label('Store / Brand Name')
-                                                ->placeholder('e.g. Nobo Shop')
-                                                ->helperText('The primary name of your ecommerce store.')
+                                                ->placeholder(__('e.g. Nobo Shop'))
+                                                ->helperText(__('The primary name of your ecommerce store.'))
                                                 ->required(),
                                             TextInput::make('site_tagline')
                                                 ->label('Tagline / Slogan')
-                                                ->placeholder('e.g. আপনার প্রতিদিনের পছন্দ')
-                                                ->helperText('Catchy tagline shown beneath the logo or in browser metadata.')
+                                                ->placeholder(__('e.g. আপনার প্রতিদিনের পছন্দ'))
+                                                ->helperText(__('Catchy tagline shown beneath the logo or in browser metadata.'))
                                                 ->nullable(),
                                         ]),
                                         Grid::make(2)->schema([
@@ -140,7 +158,7 @@ class FooterSettings extends Page
                                                 ->openable()
                                                 ->downloadable()
                                                 ->deletable()
-                                                ->helperText('PNG, JPG, WebP, SVG, AVIF (Max: 5MB). লোগো পরিবর্তন করতে চাইলে নতুন ছবি সিলেক্ট করুন বা ক্রস চিহ্নে ক্লিক করে রিমুভ করুন।'),
+                                                ->helperText(__('PNG, JPG, WebP, SVG, AVIF (Max: 5MB). লোগো পরিবর্তন করতে চাইলে নতুন ছবি সিলেক্ট করুন বা ক্রস চিহ্নে ক্লিক করে রিমুভ করুন।')),
                                             FileUpload::make('site_favicon')
                                                 ->label('Browser Favicon Icon')
                                                 ->image()
@@ -152,13 +170,13 @@ class FooterSettings extends Page
                                                 ->openable()
                                                 ->downloadable()
                                                 ->deletable()
-                                                ->helperText('Square 1:1 icon (PNG, ICO, SVG, WebP, Max: 2MB). ফেভিকন পরিবর্তন করতে চাইলে নতুন ফাইল সিলেক্ট করুন বা ক্রস চিহ্নে ক্লিক করে রিমুভ করুন।'),
+                                                ->helperText(__('Square 1:1 icon (PNG, ICO, SVG, WebP, Max: 2MB). ফেভিকন পরিবর্তন করতে চাইলে নতুন ফাইল সিলেক্ট করুন বা ক্রস চিহ্নে ক্লিক করে রিমুভ করুন।')),
                                         ]),
                                         Textarea::make('footer_about')
                                             ->label('Brand Bio / About Text')
-                                            ->placeholder('Write a brief overview of your store and commitment to customers...')
+                                            ->placeholder(__('Write a brief overview of your store and commitment to customers...'))
                                             ->rows(3)
-                                            ->helperText('This introduction text appears directly under your brand logo in the footer.')
+                                            ->helperText(__('This introduction text appears directly under your brand logo in the footer.'))
                                             ->required(),
                                     ]),
                             ]),
@@ -167,53 +185,53 @@ class FooterSettings extends Page
                             ->icon(Heroicon::OutlinedBars3BottomLeft)
                             ->schema([
                                 Section::make('Quick Links Menu')
-                                    ->description('Manage primary navigation links for quick access to store sections.')
+                                    ->description(__('Manage primary navigation links for quick access to store sections.'))
                                     ->schema([
                                         TextInput::make('footer_col2_title')
                                             ->label('Menu Column Title')
-                                            ->placeholder('প্রয়োজনীয় লিংক')
-                                            ->helperText('Header displayed above this link group in the footer.')
+                                            ->placeholder(__('প্রয়োজনীয় লিংক'))
+                                            ->helperText(__('Header displayed above this link group in the footer.'))
                                             ->required(),
                                         Repeater::make('footer_col2_links')
                                             ->label('Navigation Links')
                                             ->schema([
                                                 TextInput::make('label')
                                                     ->label('Menu Title')
-                                                    ->placeholder('e.g. আমাদের সম্পর্কে')
+                                                    ->placeholder(__('e.g. আমাদের সম্পর্কে'))
                                                     ->required(),
                                                 TextInput::make('url')
                                                     ->label('Destination URL / Path')
-                                                    ->placeholder('/about-us')
+                                                    ->placeholder(__('/about-us'))
                                                     ->required(),
                                             ])
                                             ->columns(2)
-                                            ->addActionLabel('+ Add Navigation Link')
+                                            ->addActionLabel(__('+ Add Navigation Link'))
                                             ->reorderable()
                                             ->collapsible(),
                                     ]),
 
                                 Section::make('Customer Service & Policies Menu')
-                                    ->description('Manage customer assistance, policy, and information page links.')
+                                    ->description(__('Manage customer assistance, policy, and information page links.'))
                                     ->schema([
                                         TextInput::make('footer_col3_title')
                                             ->label('Menu Column Title')
-                                            ->placeholder('গ্রাহক সেবা')
-                                            ->helperText('Header displayed above this policy group in the footer.')
+                                            ->placeholder(__('গ্রাহক সেবা'))
+                                            ->helperText(__('Header displayed above this policy group in the footer.'))
                                             ->required(),
                                         Repeater::make('footer_col3_links')
                                             ->label('Service & Policy Links')
                                             ->schema([
                                                 TextInput::make('label')
                                                     ->label('Policy Title')
-                                                    ->placeholder('e.g. রিটার্ন পলিসি')
+                                                    ->placeholder(__('e.g. রিটার্ন পলিসি'))
                                                     ->required(),
                                                 TextInput::make('url')
                                                     ->label('Destination URL / Path')
-                                                    ->placeholder('/return-policy')
+                                                    ->placeholder(__('/return-policy'))
                                                     ->required(),
                                             ])
                                             ->columns(2)
-                                            ->addActionLabel('+ Add Policy Link')
+                                            ->addActionLabel(__('+ Add Policy Link'))
                                             ->reorderable()
                                             ->collapsible(),
                                     ]),
@@ -223,29 +241,29 @@ class FooterSettings extends Page
                             ->icon(Heroicon::OutlinedPhone)
                             ->schema([
                                 Section::make('Official Store Contact Information')
-                                    ->description('Public contact details displayed for customer assistance, orders, and inquiries.')
+                                    ->description(__('Public contact details displayed for customer assistance, orders, and inquiries.'))
                                     ->schema([
                                         TextInput::make('footer_col4_title')
                                             ->label('Section Title')
-                                            ->placeholder('যোগাযোগ')
+                                            ->placeholder(__('যোগাযোগ'))
                                             ->required(),
                                         Textarea::make('contact_address')
                                             ->label('Store / Office Physical Address')
-                                            ->placeholder('e.g. ৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ')
+                                            ->placeholder(__('e.g. ৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ'))
                                             ->rows(2)
-                                            ->helperText('Official head office or pickup showroom address.')
+                                            ->helperText(__('Official head office or pickup showroom address.'))
                                             ->required(),
                                         Grid::make(2)->schema([
                                             TextInput::make('contact_phone')
                                                 ->label('Customer Support Hotline')
-                                                ->placeholder('+৮৮০ ৫২৩৪ ৫৬৭৮৯০')
-                                                ->helperText('Direct phone or helpline number for customer inquiries.')
+                                                ->placeholder(__('+৮৮০ ৫২৩৪ ৫৬৭৮৯০'))
+                                                ->helperText(__('Direct phone or helpline number for customer inquiries.'))
                                                 ->required(),
                                             TextInput::make('contact_email')
                                                 ->label('Official Support Email')
-                                                ->placeholder('support@noboshop.com')
+                                                ->placeholder(__('support@noboshop.com'))
                                                 ->email()
-                                                ->helperText('Inquiries sent through contact forms will be directed here.')
+                                                ->helperText(__('Inquiries sent through contact forms will be directed here.'))
                                                 ->required(),
                                         ]),
                                     ]),
@@ -255,27 +273,27 @@ class FooterSettings extends Page
                             ->icon(Heroicon::OutlinedShare)
                             ->schema([
                                 Section::make('Social Media Accounts')
-                                    ->description('Connect your official social media pages. Icons without URLs are automatically hidden.')
+                                    ->description(__('Connect your official social media pages. Icons without URLs are automatically hidden.'))
                                     ->schema([
                                         Grid::make(2)->schema([
                                             TextInput::make('facebook_url')
                                                 ->label('Facebook Page / Group URL')
-                                                ->placeholder('https://facebook.com/your-brand')
+                                                ->placeholder(__('https://facebook.com/your-brand'))
                                                 ->prefix('https://')
                                                 ->nullable(),
                                             TextInput::make('twitter_url')
                                                 ->label('X (Twitter) Profile URL')
-                                                ->placeholder('https://twitter.com/your-brand')
+                                                ->placeholder(__('https://twitter.com/your-brand'))
                                                 ->prefix('https://')
                                                 ->nullable(),
                                             TextInput::make('instagram_url')
                                                 ->label('Instagram Profile URL')
-                                                ->placeholder('https://instagram.com/your-brand')
+                                                ->placeholder(__('https://instagram.com/your-brand'))
                                                 ->prefix('https://')
                                                 ->nullable(),
                                             TextInput::make('youtube_url')
                                                 ->label('YouTube Channel URL')
-                                                ->placeholder('https://youtube.com/@your-brand')
+                                                ->placeholder(__('https://youtube.com/@your-brand'))
                                                 ->prefix('https://')
                                                 ->nullable(),
                                         ]),
@@ -286,17 +304,17 @@ class FooterSettings extends Page
                             ->icon(Heroicon::OutlinedShieldCheck)
                             ->schema([
                                 Section::make('Legal Copyright & Payment Trust Badges')
-                                    ->description('Configure bottom copyright notices and accepted payment gateway trust badges.')
+                                    ->description(__('Configure bottom copyright notices and accepted payment gateway trust badges.'))
                                     ->schema([
                                         TextInput::make('footer_copyright')
                                             ->label('Copyright Notice')
-                                            ->placeholder('© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।')
-                                            ->helperText('Note: {year} is automatically replaced with the current year dynamically.')
+                                            ->placeholder(__('© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।'))
+                                            ->helperText(__('Note: {year} is automatically replaced with the current year dynamically.'))
                                             ->required(),
                                         TagsInput::make('footer_payment_methods')
                                             ->label('Accepted Payment Method Badges')
-                                            ->placeholder('Add payment method and press Enter')
-                                            ->helperText('Badges displayed at footer bottom (e.g. bKash, Nagad, Rocket, Upay, VISA, Mastercard, COD).'),
+                                            ->placeholder(__('Add payment method and press Enter'))
+                                            ->helperText(__('Badges displayed at footer bottom (e.g. bKash, Nagad, Rocket, Upay, VISA, Mastercard, COD).')),
                                     ]),
                             ]),
                     ]),
@@ -320,7 +338,7 @@ class FooterSettings extends Page
     {
         if (! auth()->user()?->can('settings.update')) {
             Notification::make()
-                ->title('You do not have permission to update settings.')
+                ->title(__('You do not have permission to update settings.'))
                 ->danger()
                 ->send();
 
@@ -333,7 +351,7 @@ class FooterSettings extends Page
             $type = SettingType::String;
             $group = 'footer';
 
-            if (in_array($key, ['site_name', 'site_tagline', 'site_logo', 'site_favicon'])) {
+            if (in_array($key, ['site_name', 'site_tagline', 'site_logo', 'site_favicon', 'site_locale'])) {
                 $group = 'general';
             } elseif (in_array($key, ['facebook_url', 'twitter_url', 'instagram_url', 'youtube_url'])) {
                 $group = 'social';
@@ -361,7 +379,7 @@ class FooterSettings extends Page
         }
 
         Notification::make()
-            ->title('Website settings saved successfully!')
+            ->title(__('Website settings saved successfully!'))
             ->success()
             ->send();
     }
@@ -369,6 +387,7 @@ class FooterSettings extends Page
     protected static function getSettingLabel(string $key): string
     {
         return match ($key) {
+            'site_locale' => 'Site Language',
             'site_name' => 'Site Name',
             'site_tagline' => 'Site Tagline',
             'site_logo' => 'Website Logo',

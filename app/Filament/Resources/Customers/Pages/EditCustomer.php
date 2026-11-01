@@ -23,8 +23,8 @@ class EditCustomer extends EditRecord
                     if (! $record->canBeDeleted()) {
                         Notification::make()
                             ->danger()
-                            ->title('Cannot delete customer with placed orders.')
-                            ->body('To preserve business history and financial consistency, this customer cannot be deleted.')
+                            ->title(__('Cannot delete customer with placed orders.'))
+                            ->body(__('To preserve business history and financial consistency, this customer cannot be deleted.'))
                             ->send();
 
                         $action->halt();

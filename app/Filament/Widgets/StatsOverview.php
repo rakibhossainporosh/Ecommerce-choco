@@ -57,26 +57,26 @@ class StatsOverview extends BaseWidget
         $outOfStockCount = Inventory::where('quantity', '<=', 0)->count();
 
         return [
-            Stat::make('Total Revenue', '৳ '.number_format($totalRevenue, 2))
-                ->description('Today: ৳ '.number_format($todayRevenue, 2))
+            Stat::make(__('Total Revenue'), '৳ '.number_format($totalRevenue, 2))
+                ->description(__('Today: ৳ :amount', ['amount' => number_format($todayRevenue, 2)]))
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->chart($revenueTrend)
                 ->color('success'),
 
-            Stat::make('Total Orders', number_format($totalOrders))
-                ->description($pendingOrders > 0 ? "{$pendingOrders} pending review" : 'All orders processed')
+            Stat::make(__('Total Orders'), number_format($totalOrders))
+                ->description($pendingOrders > 0 ? __(':count pending review', ['count' => $pendingOrders]) : __('All orders processed'))
                 ->descriptionIcon($pendingOrders > 0 ? 'heroicon-m-clock' : 'heroicon-m-check-circle')
                 ->chart($ordersTrend)
                 ->color($pendingOrders > 0 ? 'warning' : 'primary'),
 
-            Stat::make('Total Customers', number_format($totalCustomers))
-                ->description("{$newCustomersThisMonth} new this month")
+            Stat::make(__('Total Customers'), number_format($totalCustomers))
+                ->description(__(':count new this month', ['count' => $newCustomersThisMonth]))
                 ->descriptionIcon('heroicon-m-user-group')
                 ->chart($customersTrend)
                 ->color('info'),
 
-            Stat::make('Stock Alert', number_format($lowStockCount).' Items')
-                ->description($outOfStockCount > 0 ? "{$outOfStockCount} out of stock" : ($lowStockCount > 0 ? 'Needs restock' : 'All items in stock'))
+            Stat::make(__('Stock Alert'), __(':count items', ['count' => number_format($lowStockCount)]))
+                ->description($outOfStockCount > 0 ? __(':count out of stock', ['count' => $outOfStockCount]) : ($lowStockCount > 0 ? __('Needs restock') : __('All items in stock')))
                 ->descriptionIcon($lowStockCount > 0 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-check-badge')
                 ->color($lowStockCount > 0 ? 'danger' : 'success')
                 ->url('/admin/inventory/stock-overview'),

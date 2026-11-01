@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -22,6 +23,8 @@ use Illuminate\Support\Str;
 
 class MediaRelationManager extends RelationManager
 {
+    use TranslatesRelationManagerTitle;
+
     protected static string $relationship = 'media';
 
     protected static ?string $title = 'Product Media';
@@ -55,7 +58,7 @@ class MediaRelationManager extends RelationManager
 
         Notification::make()
             ->success()
-            ->title('Media reordered successfully.')
+            ->title(__('Media reordered successfully.'))
             ->send();
     }
 
@@ -97,7 +100,7 @@ class MediaRelationManager extends RelationManager
 
                 TextColumn::make('alt_text')
                     ->label('Alt Text')
-                    ->placeholder('No alt text added')
+                    ->placeholder(__('No alt text added'))
                     ->limit(40)
                     ->color('gray'),
             ])
@@ -110,7 +113,7 @@ class MediaRelationManager extends RelationManager
                     ->form([
                         FileUpload::make('images')
                             ->label('Select Images')
-                            ->helperText('Allowed formats: JPEG, JPG, PNG, WEBP. Maximum file size: 5 MB per image.')
+                            ->helperText(__('Allowed formats: JPEG, JPG, PNG, WEBP. Maximum file size: 5 MB per image.'))
                             ->multiple()
                             ->disk('public')
                             ->directory(fn (RelationManager $livewire): string => ($livewire->getOwnerRecord() instanceof ProductVariant ? 'variants/' : 'products/').$livewire->getOwnerRecord()->getKey())
@@ -170,7 +173,7 @@ class MediaRelationManager extends RelationManager
 
                         Notification::make()
                             ->success()
-                            ->title('Media uploaded successfully.')
+                            ->title(__('Media uploaded successfully.'))
                             ->send();
                     }),
             ])
@@ -191,7 +194,7 @@ class MediaRelationManager extends RelationManager
 
                         Notification::make()
                             ->success()
-                            ->title('Primary image updated.')
+                            ->title(__('Primary image updated.'))
                             ->send();
                     }),
 
@@ -203,7 +206,7 @@ class MediaRelationManager extends RelationManager
                     ->form([
                         TextInput::make('alt_text')
                             ->label('Alternative Text (Alt Text)')
-                            ->helperText('Describes the image for screen readers and SEO.')
+                            ->helperText(__('Describes the image for screen readers and SEO.'))
                             ->maxLength(255)
                             ->nullable(),
                     ])
@@ -221,14 +224,14 @@ class MediaRelationManager extends RelationManager
 
                         Notification::make()
                             ->success()
-                            ->title('Alt text updated.')
+                            ->title(__('Alt text updated.'))
                             ->send();
                     }),
 
                 DeleteAction::make()
                     ->label('Delete')
-                    ->modalHeading('Delete Media')
-                    ->modalDescription('Are you sure you want to delete this media item? If this is the primary image, the next image in sort order will automatically be promoted to primary.')
+                    ->modalHeading(__('Delete Media'))
+                    ->modalDescription(__('Are you sure you want to delete this media item? If this is the primary image, the next image in sort order will automatically be promoted to primary.'))
                     ->visible(fn (): bool => auth()->user()?->can('products.update') ?? false)
                     ->action(function (Media $record, RelationManager $livewire): void {
                         if (! auth()->user()?->can('products.update')) {
@@ -247,7 +250,7 @@ class MediaRelationManager extends RelationManager
 
                         Notification::make()
                             ->success()
-                            ->title('Media deleted successfully.')
+                            ->title(__('Media deleted successfully.'))
                             ->send();
                     }),
             ]);

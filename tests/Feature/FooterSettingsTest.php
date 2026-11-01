@@ -29,12 +29,12 @@ test('storefront receives all dynamic footer settings', function () {
     $response->assertInertia(fn (Assert $page) => $page
         ->has('site_settings', fn (Assert $settings) => $settings
             ->where('site_name', 'Nobo Shop')
-            ->where('footer_col2_title', 'প্রয়োজনীয় লিংক')
-            ->where('footer_col3_title', 'গ্রাহক সেবা')
-            ->where('footer_col4_title', 'যোগাযোগ')
-            ->where('contact_phone', '+৮৮০ ৫২৩৪ ৫৬৭৮৯০')
+            ->where('footer_col2_title', 'Useful links')
+            ->where('footer_col3_title', 'Customer care')
+            ->where('footer_col4_title', 'Contact')
+            ->where('contact_phone', '+880 5234 567890')
             ->where('contact_email', 'support@noboshop.com')
-            ->where('contact_address', '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ')
+            ->where('contact_address', '523, Nobo Shop Tower, Dhanmondi, Dhaka-1205, Bangladesh')
             ->has('footer_col2_links', 4)
             ->has('footer_col3_links', 4)
             ->has('footer_payment_methods', 3)
@@ -48,11 +48,16 @@ test('admin can access footer settings page and save new values', function () {
 
     Livewire::test(FooterSettings::class)
         ->assertSuccessful()
+        ->assertSee('store-locale-choices')
+        ->assertSee('English')
+        ->assertSee('বাংলা')
+        ->assertDontSee('English and Bangla names stay in their own script so the choice is easy to recognise.')
         ->assertSchemaStateSet([
             'site_name' => 'Nobo Shop',
             'footer_col2_title' => 'প্রয়োজনীয় লিংক',
         ])
         ->fillForm([
+            'site_locale' => 'en',
             'site_name' => 'মডেল শপ',
             'footer_about' => 'কাস্টম ফুটার বিবরণ টেক্সট',
             'footer_col2_title' => 'জরুরি লিংক',

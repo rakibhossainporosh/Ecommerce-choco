@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders;
 
 use App\Enums\OrderStatus;
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Orders\RelationManagers\PaymentsRelationManager;
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Order::class;
 
     protected static ?string $recordTitleAttribute = 'order_number';

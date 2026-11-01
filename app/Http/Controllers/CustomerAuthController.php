@@ -63,14 +63,14 @@ class CustomerAuthController extends Controller
 
         if (! $customer || ! $customer->password || ! Hash::check($credentials['password'], $customer->password)) {
             throw ValidationException::withMessages([
-                'login' => 'ফোন নম্বর/ইমেইল অথবা পাসওয়ার্ডটি সঠিক নয়।',
+                'login' => __('storefront.auth.invalid_credentials'),
             ]);
         }
 
         Auth::guard('customer')->login($customer, $remember);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('customer.account'))->with('success', 'স্বাগতম, '.$customer->name.'! আপনি সফলভাবে লগইন করেছেন।');
+        return redirect()->intended(route('customer.account'))->with('success', __('storefront.auth.welcome', ['name' => $customer->name]));
     }
 
     /**
@@ -104,7 +104,7 @@ class CustomerAuthController extends Controller
         if ($existing) {
             if ($existing->password !== null) {
                 throw ValidationException::withMessages([
-                    'phone' => 'এই ফোন নম্বর দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট রয়েছে। দয়া করে লগইন করুন।',
+                    'phone' => __('storefront.auth.phone_taken'),
                 ]);
             }
 
@@ -135,7 +135,7 @@ class CustomerAuthController extends Controller
         Auth::guard('customer')->login($customer);
         $request->session()->regenerate();
 
-        return redirect()->route('customer.account')->with('success', 'আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! স্বাগতম।');
+        return redirect()->route('customer.account')->with('success', __('storefront.auth.registered'));
     }
 
     /**
@@ -148,7 +148,7 @@ class CustomerAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home')->with('success', 'আপনি সফলভাবে লগআউট করেছেন।');
+        return redirect()->route('home')->with('success', __('storefront.auth.logged_out'));
     }
 
     /**
@@ -234,7 +234,7 @@ class CustomerAuthController extends Controller
         if (! empty($validated['new_password'])) {
             if (! Hash::check($validated['current_password'], $customer->password)) {
                 throw ValidationException::withMessages([
-                    'current_password' => 'বর্তমান পাসওয়ার্ডটি সঠিক নয়।',
+                    'current_password' => __('storefront.auth.wrong_password'),
                 ]);
             }
             $customer->password = $validated['new_password'];
@@ -244,6 +244,6 @@ class CustomerAuthController extends Controller
         $customer->email = $validated['email'] ?? $customer->email;
         $customer->save();
 
-        return back()->with('success', 'প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!');
+        return back()->with('success', __('storefront.auth.profile_updated'));
     }
 }

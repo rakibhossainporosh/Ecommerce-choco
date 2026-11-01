@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum ShipmentStatus: string
+use App\Enums\Concerns\HasTranslatedLabel;
+use Filament\Support\Contracts\HasLabel;
+
+enum ShipmentStatus: string implements HasLabel
 {
+    use HasTranslatedLabel;
+
     case Pending = 'pending';
     case Packed = 'packed';
     case InTransit = 'in_transit';

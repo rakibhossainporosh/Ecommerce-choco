@@ -52,7 +52,13 @@ class SmsService
         $grandTotal = number_format((float) $order->grand_total);
         $trackUrl = route('track.order', ['order_number' => $order->order_number]);
 
-        $message = "প্রিয় {$order->customer_name}, {$siteName}-এ আপনার অর্ডার #{$order->order_number} সফলভাবে গ্রহণ করা হয়েছে। মোট: ৳{$grandTotal}। অর্ডার ট্র্যাক করতে ভিজিট করুন: {$trackUrl}";
+        $message = __('sms.order_placed', [
+            'name' => $order->customer_name,
+            'shop' => $siteName,
+            'number' => $order->order_number,
+            'total' => $grandTotal,
+            'url' => $trackUrl,
+        ]);
 
         return $this->send($order->customer_phone, $message);
     }
@@ -65,7 +71,13 @@ class SmsService
         $siteName = Setting::get('site_name', 'Nobo Shop');
         $trackUrl = route('track.order', ['order_number' => $order->order_number]);
 
-        $message = "প্রিয় {$order->customer_name}, {$siteName}-এ আপনার অর্ডার #{$order->order_number} এর স্ট্যাটাস আপডেট হয়েছে: {$statusBengali}। বিস্তারিত: {$trackUrl}";
+        $message = __('sms.status_updated', [
+            'name' => $order->customer_name,
+            'shop' => $siteName,
+            'number' => $order->order_number,
+            'status' => $statusBengali,
+            'url' => $trackUrl,
+        ]);
 
         return $this->send($order->customer_phone, $message);
     }
@@ -76,7 +88,11 @@ class SmsService
     public function sendCustomerRegistrationSms(Customer $customer): bool
     {
         $siteName = Setting::get('site_name', 'Nobo Shop');
-        $message = "স্বাগতম {$customer->name}! {$siteName}-এ আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে। কেনাকাটা শুরু করুন: ".url('/');
+        $message = __('sms.registered', [
+            'name' => $customer->name,
+            'shop' => $siteName,
+            'url' => url('/'),
+        ]);
 
         return $this->send($customer->phone, $message);
     }

@@ -56,7 +56,7 @@ class ShippingMethodsTable
                 TextColumn::make('free_shipping_threshold')
                     ->label('Free Above')
                     ->formatStateUsing(fn ($state) => $state ? $currencyFormat($state) : '—')
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
 
                 TextColumn::make('delivery_estimate')
                     ->label('Delivery Window')
@@ -90,8 +90,8 @@ class ShippingMethodsTable
                         if ($record->shipments()->exists()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Cannot delete shipping method.')
-                                ->body("This method is referenced by {$record->shipments()->count()} historical shipments.")
+                                ->title(__('Cannot delete shipping method.'))
+                                ->body(__('This method is referenced by :count historical shipments.', ['count' => $record->shipments()->count()]))
                                 ->send();
 
                             $action->halt();

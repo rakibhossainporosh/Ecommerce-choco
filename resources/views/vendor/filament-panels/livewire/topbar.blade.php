@@ -279,6 +279,8 @@
                     ])
                 @endif
 
+                @include('filament.components.locale-switcher')
+
                 @if (filament()->hasUserMenu() && filament()->getUserMenuPosition() === UserMenuPosition::Topbar)
                     <x-filament-panels::user-menu />
                 @endif

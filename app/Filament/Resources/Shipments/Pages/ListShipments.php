@@ -17,8 +17,8 @@ class ListShipments extends ListRecords
         return [
             CreateAction::make()
                 ->label('New Consignment')
-                ->modalHeading('Create Shipment Consignment')
-                ->modalDescription('Fulfill an order by assigning a courier, tracking code, and delivery destination.')
+                ->modalHeading(__('Create Shipment Consignment'))
+                ->modalDescription(__('Fulfill an order by assigning a courier, tracking code, and delivery destination.'))
                 ->modalIcon(Heroicon::OutlinedTruck)
                 ->modalWidth(Width::TwoExtraLarge),
         ];

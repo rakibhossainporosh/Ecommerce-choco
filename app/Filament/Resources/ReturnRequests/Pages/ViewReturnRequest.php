@@ -24,8 +24,8 @@ class ViewReturnRequest extends ViewRecord
                 ->icon(Heroicon::OutlinedCheckCircle)
                 ->color('info')
                 ->requiresConfirmation()
-                ->modalHeading('Approve Return Request')
-                ->modalDescription(fn (ReturnRequest $record): string => "Approve return request for Order #{$record->order?->order_number}?")
+                ->modalHeading(__('Approve Return Request'))
+                ->modalDescription(fn (ReturnRequest $record): string => __('Approve return request for Order #:number?', ['number' => $record->order?->order_number]))
                 ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Pending && auth()->user()?->can('returns.update'))
                 ->action(function (ReturnRequest $record): void {
                     $record->status = ReturnRequestStatus::Approved;
@@ -33,8 +33,8 @@ class ViewReturnRequest extends ViewRecord
 
                     Notification::make()
                         ->info()
-                        ->title('Return Request Approved')
-                        ->body("Return request for Order #{$record->order?->order_number} has been approved.")
+                        ->title(__('Return Request Approved'))
+                        ->body(__('Return request for Order #:number has been approved.', ['number' => $record->order?->order_number]))
                         ->send();
                 }),
 
@@ -45,7 +45,7 @@ class ViewReturnRequest extends ViewRecord
                 ->form([
                     Textarea::make('admin_note')
                         ->label('Rejection Reason / Internal Note')
-                        ->placeholder('Explain why this return request is rejected...')
+                        ->placeholder(__('Explain why this return request is rejected...'))
                         ->required(),
                 ])
                 ->visible(fn (ReturnRequest $record): bool => in_array($record->status, [ReturnRequestStatus::Pending, ReturnRequestStatus::Approved], true) && auth()->user()?->can('returns.update'))
@@ -56,8 +56,8 @@ class ViewReturnRequest extends ViewRecord
 
                     Notification::make()
                         ->danger()
-                        ->title('Return Request Rejected')
-                        ->body("Return request for Order #{$record->order?->order_number} has been rejected.")
+                        ->title(__('Return Request Rejected'))
+                        ->body(__('Return request for Order #:number has been rejected.', ['number' => $record->order?->order_number]))
                         ->send();
                 }),
 
@@ -66,8 +66,8 @@ class ViewReturnRequest extends ViewRecord
                 ->icon(Heroicon::OutlinedCheckBadge)
                 ->color('success')
                 ->requiresConfirmation()
-                ->modalHeading('Complete Return Request')
-                ->modalDescription(fn (ReturnRequest $record): string => "Mark return request for Order #{$record->order?->order_number} as completed? Verify items were received and refund processed.")
+                ->modalHeading(__('Complete Return Request'))
+                ->modalDescription(fn (ReturnRequest $record): string => __('Mark return request for Order #:number as completed? Verify items were received and refund processed.', ['number' => $record->order?->order_number]))
                 ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Approved && auth()->user()?->can('returns.update'))
                 ->action(function (ReturnRequest $record): void {
                     $record->status = ReturnRequestStatus::Completed;
@@ -75,8 +75,8 @@ class ViewReturnRequest extends ViewRecord
 
                     Notification::make()
                         ->success()
-                        ->title('Return Request Completed')
-                        ->body("Return request for Order #{$record->order?->order_number} is marked as completed.")
+                        ->title(__('Return Request Completed'))
+                        ->body(__('Return request for Order #:number is marked as completed.', ['number' => $record->order?->order_number]))
                         ->send();
                 }),
 

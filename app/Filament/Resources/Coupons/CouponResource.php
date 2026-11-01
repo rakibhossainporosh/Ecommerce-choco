@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Coupons;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Coupons\Pages\CreateCoupon;
 use App\Filament\Resources\Coupons\Pages\EditCoupon;
 use App\Filament\Resources\Coupons\Pages\ListCoupons;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class CouponResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = Coupon::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
@@ -27,6 +30,10 @@ class CouponResource extends Resource
     protected static ?int $navigationSort = 20;
 
     protected static ?string $navigationLabel = 'Coupons';
+
+    protected static ?string $modelLabel = 'Coupon';
+
+    protected static ?string $pluralModelLabel = 'Coupons';
 
     protected static ?string $recordTitleAttribute = 'name';
 

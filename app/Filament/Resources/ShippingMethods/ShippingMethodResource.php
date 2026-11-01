@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ShippingMethods;
 
+use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\ShippingMethods\Pages\ListShippingMethods;
 use App\Filament\Resources\ShippingMethods\Schemas\ShippingMethodForm;
 use App\Filament\Resources\ShippingMethods\Tables\ShippingMethodsTable;
@@ -14,6 +15,8 @@ use Filament\Tables\Table;
 
 class ShippingMethodResource extends Resource
 {
+    use TranslatesResourceNavigation;
+
     protected static ?string $model = ShippingMethod::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;

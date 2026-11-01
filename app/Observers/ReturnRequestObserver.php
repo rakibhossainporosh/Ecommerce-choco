@@ -20,8 +20,8 @@ class ReturnRequestObserver
             $orderNumber = $returnRequest->order?->order_number ?? $returnRequest->order_id;
 
             Notification::make()
-                ->title('New Return Request')
-                ->body("A return request has been submitted for Order #{$orderNumber}.")
+                ->title(__('New Return Request'))
+                ->body(__('A return request has been submitted for Order #:number.', ['number' => $orderNumber]))
                 ->warning()
                 ->icon('heroicon-o-arrow-path')
                 ->actions([
@@ -43,8 +43,8 @@ class ReturnRequestObserver
             $orderNumber = $returnRequest->order?->order_number ?? $returnRequest->order_id;
 
             Notification::make()
-                ->title("Return Request {$statusLabel}")
-                ->body("Your return request for Order #{$orderNumber} has been updated to {$statusLabel}.")
+                ->title(__('Return request update'))
+                ->body(__('Your return request for Order #:number has been updated to :status.', ['number' => $orderNumber, 'status' => $statusLabel]))
                 ->icon($returnRequest->status->getIcon())
                 ->color($returnRequest->status->getColor())
                 ->sendToDatabase($returnRequest->user);

@@ -25,13 +25,13 @@ class AttributeForm
             ->components([
                 Group::make([
                     Section::make('Attribute Information')
-                        ->description('Define the name, identifier, input type, and application scope.')
+                        ->description(__('Define the name, identifier, input type, and application scope.'))
                         ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
                         ->columns(2)
                         ->schema([
                             TextInput::make('name')
                                 ->label('Attribute Name')
-                                ->placeholder('e.g. Cocoa Percentage, Flavor, Size')
+                                ->placeholder(__('e.g. Cocoa Percentage, Flavor, Size'))
                                 ->prefixIcon(Heroicon::OutlinedAdjustmentsHorizontal)
                                 ->required()
                                 ->maxLength(255)
@@ -44,9 +44,9 @@ class AttributeForm
 
                             TextInput::make('slug')
                                 ->label('URL Slug')
-                                ->placeholder('e.g. cocoa-percentage')
+                                ->placeholder(__('e.g. cocoa-percentage'))
                                 ->prefixIcon(Heroicon::OutlinedGlobeAlt)
-                                ->helperText('Used for system and API identification.')
+                                ->helperText(__('Used for system and API identification.'))
                                 ->required()
                                 ->maxLength(255)
                                 ->unique(ignoreRecord: true)
@@ -55,30 +55,30 @@ class AttributeForm
                             Select::make('type')
                                 ->label('Attribute Type')
                                 ->options([
-                                    Attribute::ATTRIBUTE_TYPE_TEXT => 'Text',
-                                    Attribute::ATTRIBUTE_TYPE_TEXTAREA => 'Textarea',
-                                    Attribute::ATTRIBUTE_TYPE_NUMBER => 'Number',
-                                    Attribute::ATTRIBUTE_TYPE_BOOLEAN => 'Boolean',
-                                    Attribute::ATTRIBUTE_TYPE_SELECT => 'Select (Single Choice)',
-                                    Attribute::ATTRIBUTE_TYPE_MULTISELECT => 'Multiselect (Multiple Choice)',
+                                    Attribute::ATTRIBUTE_TYPE_TEXT => __('Text'),
+                                    Attribute::ATTRIBUTE_TYPE_TEXTAREA => __('Textarea'),
+                                    Attribute::ATTRIBUTE_TYPE_NUMBER => __('Number'),
+                                    Attribute::ATTRIBUTE_TYPE_BOOLEAN => __('Boolean'),
+                                    Attribute::ATTRIBUTE_TYPE_SELECT => __('Select (Single Choice)'),
+                                    Attribute::ATTRIBUTE_TYPE_MULTISELECT => __('Multiselect (Multiple Choice)'),
                                 ])
-                                ->helperText('Select / Multiselect types support predefined option values.')
+                                ->helperText(__('Select / Multiselect types support predefined option values.'))
                                 ->required()
                                 ->native(false),
 
                             Select::make('scope')
                                 ->label('Scope')
                                 ->options([
-                                    Attribute::SCOPE_PRODUCT => 'Product (Global Specification)',
-                                    Attribute::SCOPE_VARIANT => 'Variant (Variant Option)',
+                                    Attribute::SCOPE_PRODUCT => __('Product (Global Specification)'),
+                                    Attribute::SCOPE_VARIANT => __('Variant (Variant Option)'),
                                 ])
-                                ->helperText('Product: specification. Variant: creates stockable variants.')
+                                ->helperText(__('Product: specification. Variant: creates stockable variants.'))
                                 ->required()
                                 ->native(false),
 
                             Textarea::make('description')
                                 ->label('Description')
-                                ->placeholder('Provide guidance on how this attribute is used...')
+                                ->placeholder(__('Provide guidance on how this attribute is used...'))
                                 ->nullable()
                                 ->rows(4)
                                 ->columnSpanFull(),
@@ -87,13 +87,13 @@ class AttributeForm
 
                 Group::make([
                     Section::make('Behavior & Order')
-                        ->description('Configure display sequence and assignment requirements.')
+                        ->description(__('Configure display sequence and assignment requirements.'))
                         ->icon(Heroicon::OutlinedCog6Tooth)
                         ->schema([
                             TextInput::make('sort_order')
                                 ->label('Sort Order')
                                 ->prefixIcon(Heroicon::OutlinedArrowsUpDown)
-                                ->helperText('Display priority (0 = top priority).')
+                                ->helperText(__('Display priority (0 = top priority).'))
                                 ->numeric()
                                 ->default(0)
                                 ->minValue(0)
@@ -101,12 +101,12 @@ class AttributeForm
 
                             Toggle::make('is_required')
                                 ->label('Mandatory Field')
-                                ->helperText('When enabled, this attribute must be filled in forms.')
+                                ->helperText(__('When enabled, this attribute must be filled in forms.'))
                                 ->default(false),
 
                             Toggle::make('is_active')
                                 ->label('Active Status')
-                                ->helperText('Disable to hide from product/variant assignment.')
+                                ->helperText(__('Disable to hide from product/variant assignment.'))
                                 ->default(true),
                         ]),
 

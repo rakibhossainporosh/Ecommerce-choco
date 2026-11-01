@@ -43,7 +43,7 @@ class ReviewsTable
                     ->label('Title')
                     ->searchable()
                     ->limit(30)
-                    ->placeholder('—'),
+                    ->placeholder(__('—')),
                 IconColumn::make('is_approved')
                     ->label('Approved')
                     ->boolean()
@@ -63,9 +63,9 @@ class ReviewsTable
             ->filters([
                 TernaryFilter::make('is_approved')
                     ->label('Approval Status')
-                    ->placeholder('All Reviews')
-                    ->trueLabel('Approved Reviews Only')
-                    ->falseLabel('Pending Moderation Only'),
+                    ->placeholder(__('All Reviews'))
+                    ->trueLabel(__('Approved Reviews Only'))
+                    ->falseLabel(__('Pending Moderation Only')),
             ])
             ->actions([
                 Action::make('approve')
@@ -76,7 +76,7 @@ class ReviewsTable
                     ->action(function ($record) {
                         $record->update(['is_approved' => true]);
                         Notification::make()
-                            ->title('Review approved successfully')
+                            ->title(__('Review approved successfully'))
                             ->success()
                             ->send();
                     }),
@@ -89,7 +89,7 @@ class ReviewsTable
                     ->action(function ($record) {
                         $record->update(['is_approved' => false]);
                         Notification::make()
-                            ->title('Review set to unapproved')
+                            ->title(__('Review set to unapproved'))
                             ->warning()
                             ->send();
                     }),
@@ -104,7 +104,7 @@ class ReviewsTable
                     ->action(function (Collection $records) {
                         $records->each->update(['is_approved' => true]);
                         Notification::make()
-                            ->title('Selected reviews approved')
+                            ->title(__('Selected reviews approved'))
                             ->success()
                             ->send();
                     }),
@@ -115,7 +115,7 @@ class ReviewsTable
                     ->action(function (Collection $records) {
                         $records->each->update(['is_approved' => false]);
                         Notification::make()
-                            ->title('Selected reviews set to pending')
+                            ->title(__('Selected reviews set to pending'))
                             ->warning()
                             ->send();
                     }),

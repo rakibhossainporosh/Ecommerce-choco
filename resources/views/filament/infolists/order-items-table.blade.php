@@ -11,12 +11,12 @@
         <table class="w-full text-left text-sm text-gray-700 dark:text-gray-200 divide-y divide-gray-200 dark:divide-white/10">
             <thead class="bg-gray-50/80 dark:bg-white/5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 <tr>
-                    <th scope="col" class="py-3.5 px-4 min-w-[200px]">Product</th>
-                    <th scope="col" class="py-3.5 px-3 text-center min-w-[110px]">SKU</th>
-                    <th scope="col" class="py-3.5 px-3 text-right min-w-[100px]">Unit Price</th>
-                    <th scope="col" class="py-3.5 px-3 text-center min-w-[70px]">Qty</th>
-                    <th scope="col" class="py-3.5 px-3 text-right min-w-[100px]">Discount</th>
-                    <th scope="col" class="py-3.5 px-4 text-right min-w-[110px]">Total</th>
+                    <th scope="col" class="py-3.5 px-4 min-w-[200px]">{{ __('Product') }}</th>
+                    <th scope="col" class="py-3.5 px-3 text-center min-w-[110px]">{{ __('SKU') }}</th>
+                    <th scope="col" class="py-3.5 px-3 text-right min-w-[100px]">{{ __('Unit Price') }}</th>
+                    <th scope="col" class="py-3.5 px-3 text-center min-w-[70px]">{{ __('Qty') }}</th>
+                    <th scope="col" class="py-3.5 px-3 text-right min-w-[100px]">{{ __('Discount') }}</th>
+                    <th scope="col" class="py-3.5 px-4 text-right min-w-[110px]">{{ __('Total') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-white/5 font-normal">
@@ -63,7 +63,7 @@
                 @empty
                     <tr>
                         <td colspan="6" class="py-6 px-4 text-center text-gray-400 dark:text-gray-500 italic">
-                            No items found in this order.
+                            {{ __('No items found in this order.') }}
                         </td>
                     </tr>
                 @endforelse
@@ -74,11 +74,11 @@
         <div class="border-t border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02] p-5">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Total {{ $order->items->count() }} line item(s) • Currency: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $order->currency ?? 'BDT' }}</span>
+                    {{ __('Total :count line items', ['count' => $order->items->count()]) }} • {{ __('Currency') }}: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $order->currency ?? 'BDT' }}</span>
                 </div>
                 <div class="w-full sm:w-80 space-y-2 text-sm">
                     <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                        <span>Items Subtotal:</span>
+                        <span>{{ __('Items Subtotal:') }}</span>
                         <span class="font-medium text-gray-800 dark:text-gray-200">
                             {{ $currency }} {{ number_format((float) $order->subtotal, 2) }}
                         </span>
@@ -86,7 +86,7 @@
 
                     @if((float) $order->discount_amount > 0)
                         <div class="flex justify-between text-emerald-600 dark:text-emerald-400">
-                            <span>Discount:</span>
+                            <span>{{ __('Discount:') }}</span>
                             <span class="font-medium">
                                 - {{ $currency }} {{ number_format((float) $order->discount_amount, 2) }}
                             </span>
@@ -94,21 +94,21 @@
                     @endif
 
                     <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                        <span>Shipping Fee:</span>
+                        <span>{{ __('Shipping Fee:') }}</span>
                         <span class="font-medium text-gray-800 dark:text-gray-200">
                             {{ $currency }} {{ number_format((float) $order->shipping_amount, 2) }}
                         </span>
                     </div>
 
                     <div class="border-t border-gray-200 dark:border-white/10 pt-2 flex justify-between text-base font-bold text-gray-900 dark:text-white">
-                        <span>Grand Total:</span>
+                        <span>{{ __('Grand Total:') }}</span>
                         <span class="text-amber-600 dark:text-amber-400">
                             {{ $currency }} {{ number_format((float) $order->grand_total, 2) }}
                         </span>
                     </div>
 
                     <div class="flex justify-between text-xs pt-1 border-t border-dashed border-gray-200 dark:border-white/10">
-                        <span class="text-gray-500 dark:text-gray-400">Paid:</span>
+                        <span class="text-gray-500 dark:text-gray-400">{{ __('Paid:') }}</span>
                         <span class="font-semibold text-emerald-600 dark:text-emerald-400">
                             {{ $currency }} {{ number_format((float) $order->total_paid, 2) }}
                         </span>
@@ -116,7 +116,7 @@
 
                     @if($order->due_amount > 0)
                         <div class="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400">
-                            <span>Balance Due:</span>
+                            <span>{{ __('Balance Due:') }}</span>
                             <span>{{ $currency }} {{ number_format((float) $order->due_amount, 2) }}</span>
                         </div>
                     @endif

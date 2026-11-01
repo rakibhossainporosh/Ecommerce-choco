@@ -23,7 +23,7 @@ class EditAttribute extends EditRecord
                     if (! $record->canBeDeleted()) {
                         Notification::make()
                             ->danger()
-                            ->title('Cannot delete this attribute because it has associated attribute values.')
+                            ->title(__('Cannot delete this attribute because it has associated attribute values.'))
                             ->send();
 
                         $action->halt();

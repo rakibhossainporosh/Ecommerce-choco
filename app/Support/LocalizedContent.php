@@ -10,6 +10,47 @@ class LocalizedContent
      *
      * @param  array<string, string>  $defaults
      */
+    /**
+     * Phone numbers follow the active language: English uses 0-9, Bangla uses ০-৯.
+     */
+    public static function digits(?string $value): string
+    {
+        $value ??= '';
+
+        if (app()->getLocale() === 'bn') {
+            return strtr(self::asciiDigits($value), [
+                '0' => '০',
+                '1' => '১',
+                '2' => '২',
+                '3' => '৩',
+                '4' => '৪',
+                '5' => '৫',
+                '6' => '৬',
+                '7' => '৭',
+                '8' => '৮',
+                '9' => '৯',
+            ]);
+        }
+
+        return self::asciiDigits($value);
+    }
+
+    public static function asciiDigits(?string $value): string
+    {
+        return strtr($value ?? '', [
+            '০' => '0',
+            '১' => '1',
+            '২' => '2',
+            '৩' => '3',
+            '৪' => '4',
+            '৫' => '5',
+            '৬' => '6',
+            '৭' => '7',
+            '৮' => '8',
+            '৯' => '9',
+        ]);
+    }
+
     public static function text(?string $stored, array $defaults): string
     {
         $stored ??= '';

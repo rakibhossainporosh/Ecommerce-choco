@@ -17,8 +17,8 @@ class ListShippingMethods extends ListRecords
         return [
             CreateAction::make()
                 ->label('New Shipping Method')
-                ->modalHeading('Create Shipping Method')
-                ->modalDescription('Define delivery zones, shipping fees, and carrier partners.')
+                ->modalHeading(__('Create Shipping Method'))
+                ->modalDescription(__('Define delivery zones, shipping fees, and carrier partners.'))
                 ->modalIcon(Heroicon::OutlinedTruck)
                 ->modalWidth(Width::TwoExtraLarge),
         ];
