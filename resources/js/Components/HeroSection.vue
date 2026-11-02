@@ -1,11 +1,17 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { useI18n } from '../Composables/useI18n';
+import OccasionScene from './OccasionScene.vue';
+import OccasionCountdown from './OccasionCountdown.vue';
 
 defineEmits(['shopNow']);
 
 const { t, tm } = useI18n();
+const page = usePage();
+const occasion = computed(() => page.props.site_settings?.occasion || null);
+const campaignOn = computed(() => Boolean(occasion.value?.sections?.hero));
 
 const imagePaths = [
     '/images/storefront/hero-banner.jpg',
@@ -20,7 +26,9 @@ const slides = computed(() => {
         lead: slide.lead,
         accent: slide.accent,
         subtitle: slide.subtitle,
-        image: imagePaths[index] || imagePaths[0],
+        image: index === 0 && campaignOn.value && occasion.value?.hero_image
+            ? occasion.value.hero_image
+            : (imagePaths[index] || imagePaths[0]),
     }));
 });
 
@@ -57,7 +65,9 @@ const stopAutoPlay = () => {
 };
 
 onMounted(() => {
-    startAutoPlay();
+    if (!campaignOn.value) {
+        startAutoPlay();
+    }
 });
 
 onUnmounted(() => {
@@ -66,9 +76,32 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <section class="py-6 sm:py-8" @mouseenter="stopAutoPlay" @mouseleave="startAutoPlay">
+    <section v-if="campaignOn" class="py-6 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="relative overflow-hidden rounded-3xl bg-[#F6F1E8] border border-[#ECE5D8] shadow-[0_4px_24px_rgba(0,0,0,0.02)] min-h-[480px] sm:min-h-[600px] lg:min-h-[440px]">
+            <div class="campaign-hero" :data-occasion="occasion.key">
+                <div class="campaign-copy">
+                    <p>{{ occasion.label }}</p>
+                    <h1>{{ occasion.lines.hero }}</h1>
+                    <OccasionCountdown v-if="occasion.ends_at" :ends-at="occasion.ends_at" />
+                    <a
+                        href="#featured"
+                        class="shop-now"
+                        @click.prevent="$emit('shopNow')"
+                    >
+                        <span>{{ t('hero.shop_now') }}</span>
+                        <ArrowRight class="w-4 h-4" />
+                    </a>
+                </div>
+                <div class="campaign-art">
+                    <img v-if="occasion.hero_image" :src="occasion.hero_image" :alt="occasion.lines.hero" />
+                    <OccasionScene v-else :kind="occasion.key" />
+                </div>
+            </div>
+        </div>
+    </section>
+    <section v-else class="py-6 sm:py-8" @mouseenter="stopAutoPlay" @mouseleave="startAutoPlay">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="hero-card relative overflow-hidden rounded-3xl bg-[#F6F1E8] border border-[#ECE5D8] shadow-[0_4px_24px_rgba(0,0,0,0.02)] min-h-[480px] sm:min-h-[600px] lg:min-h-[440px]">
                 
                 <!-- Slides Container -->
                 <div 
@@ -102,6 +135,7 @@ onUnmounted(() => {
                                 :alt="t('hero.go_to', { number: index + 1 })"
                                 class="w-full h-full object-cover object-center lg:object-right rounded-b-3xl lg:rounded-b-none lg:rounded-r-3xl"
                             />
+                            <span v-if="index === 0 && campaignOn" class="hero-ribbon">{{ occasion.lines.hero }}</span>
                             <!-- Subtle soft gradient overlay on the left side of the image for seamless transition -->
                             <div class="hidden lg:block absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-[#F6F1E8] to-transparent pointer-events-none"></div>
                         </div>
@@ -138,3 +172,105 @@ onUnmounted(() => {
         </div>
     </section>
 </template>
+
+<style scoped>
+.hero-ribbon {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+    max-width: 70%;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    background: var(--campaign, #3f2a12);
+    color: var(--ink, #f8e7b0);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+}
+
+.campaign-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 28rem;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid color-mix(in srgb, var(--campaign) 35%, white);
+}
+
+.campaign-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.75rem 1.5rem;
+    background: var(--wash);
+}
+
+.campaign-copy p {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--campaign);
+}
+
+.campaign-copy h1 {
+    margin: 0;
+    max-width: 16ch;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: #1e293b;
+}
+
+.campaign-copy :deep(.countdown-cell) {
+    background: color-mix(in srgb, var(--campaign) 14%, white);
+    color: var(--campaign);
+}
+
+.shop-now {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: fit-content;
+    margin-top: 0.25rem;
+    padding: 0.8rem 1.4rem;
+    border-radius: 999px;
+    background: #e86a28;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.campaign-art {
+    position: relative;
+    min-height: 16rem;
+    background: var(--campaign);
+}
+
+.campaign-art img,
+.campaign-art :deep(svg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (min-width: 1024px) {
+    .campaign-hero {
+        grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+        min-height: 28rem;
+    }
+
+    .campaign-copy {
+        padding: 2.5rem 3rem;
+    }
+
+    .campaign-art {
+        min-height: 100%;
+    }
+}
+</style>

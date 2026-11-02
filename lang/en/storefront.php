@@ -76,6 +76,13 @@ return [
         'no_offers' => 'There are no special offers right now.',
         'empty_search' => 'Sorry, no products match ":query".',
         'empty_category' => 'Sorry, no products in this category.',
+        'campaign_sale' => 'Festival offers',
+        'campaign_all' => 'See all offers',
+        'campaign_ends' => 'Ends in',
+        'campaign_days' => 'Days',
+        'campaign_hours' => 'Hours',
+        'campaign_minutes' => 'Min',
+        'campaign_seconds' => 'Sec',
     ],
     'product' => [
         'add_to_cart' => 'Add to cart',

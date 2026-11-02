@@ -10,6 +10,8 @@ import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import CartDrawer from '../Components/CartDrawer.vue';
 import WishlistDrawer from '../Components/WishlistDrawer.vue';
+import OccasionRibbon from '../Components/OccasionRibbon.vue';
+import OccasionCountdown from '../Components/OccasionCountdown.vue';
 import { useCart } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
 
@@ -21,6 +23,7 @@ const props = defineProps({
 });
 
 const page = usePage();
+const occasion = computed(() => page.props.site_settings?.occasion || null);
 const { t, tm } = useI18n();
 const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
@@ -167,6 +170,11 @@ const submitReview = () => {
         <Header />
 
         <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <OccasionRibbon v-if="occasion" class="detail-campaign" :kind="occasion.key" :data-occasion="occasion.key">
+                <strong>{{ occasion.label }}</strong>
+                <span>{{ occasion.lines.products }}</span>
+                <OccasionCountdown v-if="occasion.ends_at" :ends-at="occasion.ends_at" />
+            </OccasionRibbon>
             <!-- Flash Notification -->
             <div v-if="page.props.flash?.success" class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3">
                 <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
@@ -184,7 +192,11 @@ const submitReview = () => {
                 <span class="text-[#1E293B] font-medium truncate">{{ productTitle }}</span>
             </nav>
 
-            <div class="flex flex-col md:flex-row gap-10 lg:gap-16 bg-white rounded-3xl p-6 lg:p-10 border border-[#EAE3D6] shadow-sm">
+            <div
+                class="flex flex-col md:flex-row gap-10 lg:gap-16 bg-white rounded-3xl p-6 lg:p-10 border shadow-sm"
+                :class="occasion ? 'border-transparent product-sheet' : 'border-[#EAE3D6]'"
+                :data-occasion="occasion?.key"
+            >
                 <!-- Gallery Column -->
                 <div class="w-full md:w-1/2 flex flex-col gap-4 shrink-0">
                     <div class="relative w-full bg-[#F7F3EC] rounded-2xl p-6 sm:p-8 flex items-center justify-center min-h-[350px] sm:min-h-[440px] border border-[#EAE3D6] overflow-hidden">
@@ -644,3 +656,19 @@ const submitReview = () => {
         <CartDrawer />
     </div>
 </template>
+
+<style scoped>
+.detail-campaign {
+    margin-bottom: 1.25rem;
+}
+
+.detail-campaign :deep(.countdown-cell) {
+    background: rgb(255 255 255 / 16%);
+    color: var(--ink);
+}
+
+.product-sheet {
+    border-color: color-mix(in srgb, var(--campaign) 42%, white);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--campaign) 16%, transparent);
+}
+</style>

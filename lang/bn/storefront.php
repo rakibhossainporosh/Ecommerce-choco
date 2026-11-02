@@ -76,6 +76,13 @@ return [
         'no_offers' => 'এখন কোনো বিশেষ অফার নেই।',
         'empty_search' => 'দুঃখিত, ":query" এর সাথে মিলে এমন কোনো পণ্য নেই।',
         'empty_category' => 'দুঃখিত, এই ক্যাটাগরিতে কোনো পণ্য নেই।',
+        'campaign_sale' => 'উৎসবের অফার',
+        'campaign_all' => 'সব অফার',
+        'campaign_ends' => 'সময় বাকি',
+        'campaign_days' => 'দিন',
+        'campaign_hours' => 'ঘণ্টা',
+        'campaign_minutes' => 'মিনিট',
+        'campaign_seconds' => 'সেকেন্ড',
     ],
     'product' => [
         'add_to_cart' => 'কার্টে যোগ করুন',

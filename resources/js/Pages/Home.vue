@@ -1,14 +1,17 @@
 <script setup>
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { Search, X, Tag } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import HeroSection from '../Components/HeroSection.vue';
+import OccasionSection from '../Components/OccasionSection.vue';
+import CampaignSale from '../Components/CampaignSale.vue';
 import CategoryFilter from '../Components/CategoryFilter.vue';
 import ProductCard from '../Components/ProductCard.vue';
 import CartDrawer from '../Components/CartDrawer.vue';
 import WishlistDrawer from '../Components/WishlistDrawer.vue';
 import Footer from '../Components/Footer.vue';
 import { useI18n } from '../Composables/useI18n';
+import { computed } from 'vue';
 
 const props = defineProps({
     categories: {
@@ -26,6 +29,37 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const page = usePage();
+
+const occasion = computed(() => page.props.site_settings?.occasion || null);
+
+const saleProducts = computed(() => {
+    const pinned = Array.isArray(occasion.value?.sale_ids) ? occasion.value.sale_ids : [];
+    const byId = new Map(props.products.map((product) => [product.id, product]));
+
+    if (pinned.length > 0) {
+        return pinned
+            .map((id) => byId.get(id))
+            .filter((product) => product)
+            .slice(0, 4);
+    }
+
+    return props.products
+        .filter((product) => Number(product.compare_at_price) > Number(product.price))
+        .slice(0, 4);
+});
+
+const showSale = computed(() => Boolean(occasion.value?.sections?.products) && saleProducts.value.length > 0);
+
+const catalogProducts = computed(() => {
+    if (!showSale.value) {
+        return props.products;
+    }
+
+    const hidden = new Set(saleProducts.value.map((product) => product.id));
+
+    return props.products.filter((product) => !hidden.has(product.id));
+});
 
 const updateFilters = (newFilters) => {
     const currentFilters = { ...props.filters, ...newFilters };
@@ -82,20 +116,24 @@ const emptyMessage = () => {
 
         <main>
             <!-- Hero Section -->
-            <HeroSection />
+            <OccasionSection part="hero">
+                <HeroSection />
+            </OccasionSection>
 
-            <!-- Category Filter & Sort -->
-            <CategoryFilter
-                :categories="categories"
-                :active-category="filters.category || 'all'"
-                :active-sort="filters.sort || 'newest'"
-                :is-offer="!!filters.offer"
-                @select-category="handleSelectCategory"
-                @select-sort="handleSelectSort"
-            />
+            <OccasionSection part="categories">
+                <CategoryFilter
+                    :categories="categories"
+                    :active-category="filters.category || 'all'"
+                    :active-sort="filters.sort || 'newest'"
+                    :is-offer="!!filters.offer"
+                    @select-category="handleSelectCategory"
+                    @select-sort="handleSelectSort"
+                />
+            </OccasionSection>
 
-            <!-- Product Grid -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+            <OccasionSection part="products">
+                <CampaignSale v-if="showSale" :products="saleProducts" />
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
                 <!-- Offer Result Indicator -->
                 <div v-if="filters.offer" class="mb-6 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-orange-50 to-amber-50 px-5 py-3.5 rounded-2xl border border-[#FDBA74] shadow-xs">
                     <div class="flex items-center gap-2.5 text-[#C2410C] text-sm">
@@ -146,14 +184,15 @@ const emptyMessage = () => {
                     </button>
                 </div>
                 
-                <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div v-else-if="catalogProducts.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                     <ProductCard
-                        v-for="product in products"
+                        v-for="product in catalogProducts"
                         :key="product.id"
                         :product="product"
                     />
                 </div>
-            </div>
+                </div>
+            </OccasionSection>
         </main>
 
         <!-- Footer -->

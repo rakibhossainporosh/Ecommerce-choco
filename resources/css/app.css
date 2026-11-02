@@ -21,3 +21,12 @@ body {
     background-color: var(--color-warm-bg);
     color: #1E293B;
 }
+
+[data-occasion='eid_fitr'] { --campaign: #0c4a3c; --ink: #f6e7b4; --wash: #eef6f3; }
+[data-occasion='eid_adha'] { --campaign: #3f2a12; --ink: #f8e7b0; --wash: #f7f3ea; }
+[data-occasion='durga_puja'] { --campaign: #8f1d32; --ink: #fde68a; --wash: #fdf2f4; }
+[data-occasion='kali_puja'] { --campaign: #312e81; --ink: #fde68a; --wash: #f3f2fb; }
+[data-occasion='noboborsho'] { --campaign: #be123c; --ink: #fff7ed; --wash: #fff5f6; }
+[data-occasion='christmas'] { --campaign: #166534; --ink: #f8fafc; --wash: #f1f8f3; }
+[data-occasion='halloween'] { --campaign: #3f2a14; --ink: #fdba74; --wash: #f8f4ee; }
+[data-occasion='new_year'] { --campaign: #0f172a; --ink: #f8e7b0; --wash: #f6f4ee; }
