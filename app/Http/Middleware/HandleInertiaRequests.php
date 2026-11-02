@@ -8,6 +8,7 @@ use App\Support\CatalogTranslator;
 use App\Support\LocaleManager;
 use App\Support\LocalizedContent;
 use App\Support\StorefrontOccasion;
+use App\Support\StorefrontTheme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
@@ -103,6 +104,7 @@ class HandleInertiaRequests extends Middleware
                         'footer_payment_methods' => $defaultPaymentMethods,
                         'shipping_inside_dhaka' => 60.0,
                         'shipping_outside_dhaka' => 120.0,
+                        'theme' => 'warm',
                     ];
                 }
 
@@ -151,6 +153,7 @@ class HandleInertiaRequests extends Middleware
                     'shipping_inside_dhaka' => (float) Setting::get('shipping_inside_dhaka', 60),
                     'shipping_outside_dhaka' => (float) Setting::get('shipping_outside_dhaka', 120),
                     'occasion' => StorefrontOccasion::present(),
+                    'theme' => StorefrontTheme::key(),
                 ];
             },
             'flash' => function () use ($request) {

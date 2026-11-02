@@ -269,7 +269,7 @@ const submitReview = () => {
 
                     <!-- Pricing -->
                     <div class="flex items-baseline gap-4 mb-6">
-                        <span class="text-3xl font-bold text-[#1E293B]">
+                        <span class="store-price text-3xl font-bold text-[#1E293B]">
                             {{ formatPrice(currentPrice) }}
                         </span>
                         <span

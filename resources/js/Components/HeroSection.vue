@@ -238,7 +238,7 @@ onUnmounted(() => {
     margin-top: 0.25rem;
     padding: 0.8rem 1.4rem;
     border-radius: 999px;
-    background: #e86a28;
+    background: var(--store-brand, #e86a28);
     color: white;
     font-size: 0.95rem;
     font-weight: 700;

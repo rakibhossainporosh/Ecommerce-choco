@@ -95,7 +95,7 @@ const formatPrice = (val) => {
 
                 <!-- Pricing -->
                 <div class="flex items-baseline gap-2 mt-2">
-                    <span class="text-base font-bold text-[#1E293B]">
+                    <span class="store-price text-base font-bold text-[#1E293B]">
                         {{ formatPrice(product.price) }}
                     </span>
                     <span

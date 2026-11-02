@@ -1,0 +1,373 @@
+/* Storefront themes. Warm is unstyled, so the current shop stays exactly as it is. */
+
+html[data-store-theme='grove'] {
+    --store-brand: #0e6b58;
+    --store-brand-hover: #0b5748;
+    --store-brand-deep: #084638;
+    --store-brand-soft: #d7efe7;
+    --store-page: #f3f7f5;
+    --store-wash: #e7f1ec;
+    --store-border: #d3e4dc;
+    --store-border-strong: #b7d0c6;
+    --store-ink: #14241e;
+    --store-ink-soft: #24382f;
+    --store-muted: #3f5c52;
+    --store-faint: #6d887e;
+    --store-on-primary: #f3faf6;
+    background: var(--store-page);
+    color: var(--store-ink);
+}
+
+html[data-store-theme='harbor'] {
+    --store-brand: #1d4ed8;
+    --store-brand-hover: #1e40af;
+    --store-brand-deep: #1e3a8a;
+    --store-brand-soft: #dbe7fb;
+    --store-page: #f4f7fb;
+    --store-wash: #e7eef8;
+    --store-border: #d5e0ee;
+    --store-border-strong: #b9c9de;
+    --store-ink: #0f172a;
+    --store-ink-soft: #1e293b;
+    --store-muted: #3e516b;
+    --store-faint: #6d83a0;
+    --store-on-primary: #f8fafc;
+    background: var(--store-page);
+    color: var(--store-ink);
+}
+
+html[data-store-theme='grove'] .bg-\[\#E86A28\],
+html[data-store-theme='harbor'] .bg-\[\#E86A28\],
+html[data-store-theme='grove'] .hover\:bg-\[\#E86A28\]:hover,
+html[data-store-theme='harbor'] .hover\:bg-\[\#E86A28\]:hover,
+html[data-store-theme='grove'] .selection\:bg-\[\#E86A28\] ::selection,
+html[data-store-theme='harbor'] .selection\:bg-\[\#E86A28\] ::selection,
+html[data-store-theme='grove'] .selection\:bg-\[\#E86A28\]::selection,
+html[data-store-theme='harbor'] .selection\:bg-\[\#E86A28\]::selection {
+    background-color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .hover\:bg-\[\#D35B1D\]:hover,
+html[data-store-theme='harbor'] .hover\:bg-\[\#D35B1D\]:hover,
+html[data-store-theme='grove'] .hover\:bg-\[\#D95F22\]:hover,
+html[data-store-theme='harbor'] .hover\:bg-\[\#D95F22\]:hover {
+    background-color: var(--store-brand-hover);
+}
+
+html[data-store-theme='grove'] .bg-\[\#E86A28\]\/10,
+html[data-store-theme='harbor'] .bg-\[\#E86A28\]\/10 {
+    background-color: color-mix(in srgb, var(--store-brand) 12%, transparent);
+}
+
+html[data-store-theme='grove'] .hover\:bg-\[\#E86A28\]\/50:hover,
+html[data-store-theme='harbor'] .hover\:bg-\[\#E86A28\]\/50:hover {
+    background-color: color-mix(in srgb, var(--store-brand) 50%, transparent);
+}
+
+html[data-store-theme='grove'] .text-\[\#E86A28\],
+html[data-store-theme='harbor'] .text-\[\#E86A28\],
+html[data-store-theme='grove'] .hover\:text-\[\#E86A28\]:hover,
+html[data-store-theme='harbor'] .hover\:text-\[\#E86A28\]:hover,
+html[data-store-theme='grove'] .group-hover\:text-\[\#E86A28\]:is(:where(.group):hover *),
+html[data-store-theme='harbor'] .group-hover\:text-\[\#E86A28\]:is(:where(.group):hover *) {
+    color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .text-\[\#C2410C\],
+html[data-store-theme='harbor'] .text-\[\#C2410C\],
+html[data-store-theme='grove'] .hover\:text-\[\#C2410C\]:hover,
+html[data-store-theme='harbor'] .hover\:text-\[\#C2410C\]:hover,
+html[data-store-theme='grove'] .text-\[\#9A3412\],
+html[data-store-theme='harbor'] .text-\[\#9A3412\] {
+    color: var(--store-brand-deep);
+}
+
+html[data-store-theme='grove'] .border-\[\#E86A28\],
+html[data-store-theme='harbor'] .border-\[\#E86A28\],
+html[data-store-theme='grove'] .hover\:border-\[\#E86A28\]:hover,
+html[data-store-theme='harbor'] .hover\:border-\[\#E86A28\]:hover,
+html[data-store-theme='grove'] .focus\:border-\[\#E86A28\]:focus,
+html[data-store-theme='harbor'] .focus\:border-\[\#E86A28\]:focus {
+    border-color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .border-\[\#E86A28\]\/30,
+html[data-store-theme='harbor'] .border-\[\#E86A28\]\/30,
+html[data-store-theme='grove'] .border-\[\#FDBA74\],
+html[data-store-theme='harbor'] .border-\[\#FDBA74\] {
+    border-color: var(--store-brand-soft);
+}
+
+html[data-store-theme='grove'] .fill-\[\#E86A28\],
+html[data-store-theme='harbor'] .fill-\[\#E86A28\] {
+    fill: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .accent-\[\#E86A28\],
+html[data-store-theme='harbor'] .accent-\[\#E86A28\] {
+    accent-color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .from-\[\#E86A28\],
+html[data-store-theme='harbor'] .from-\[\#E86A28\] {
+    --tw-gradient-from: var(--store-brand);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+
+html[data-store-theme='grove'] .ring-\[\#E86A28\],
+html[data-store-theme='harbor'] .ring-\[\#E86A28\],
+html[data-store-theme='grove'] .focus\:ring-\[\#E86A28\]:focus,
+html[data-store-theme='harbor'] .focus\:ring-\[\#E86A28\]:focus {
+    --tw-ring-color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .ring-\[\#E86A28\]\/20,
+html[data-store-theme='harbor'] .ring-\[\#E86A28\]\/20,
+html[data-store-theme='grove'] .focus\:ring-\[\#E86A28\]\/20:focus,
+html[data-store-theme='harbor'] .focus\:ring-\[\#E86A28\]\/20:focus {
+    --tw-ring-color: color-mix(in srgb, var(--store-brand) 22%, transparent);
+}
+
+html[data-store-theme='grove'] .ring-\[\#E86A28\]\/30,
+html[data-store-theme='harbor'] .ring-\[\#E86A28\]\/30 {
+    --tw-ring-color: color-mix(in srgb, var(--store-brand) 32%, transparent);
+}
+
+html[data-store-theme='grove'] .bg-\[\#FDFBF7\],
+html[data-store-theme='harbor'] .bg-\[\#FDFBF7\],
+html[data-store-theme='grove'] .bg-\[\#FAF7F2\],
+html[data-store-theme='harbor'] .bg-\[\#FAF7F2\],
+html[data-store-theme='grove'] .hover\:bg-\[\#FAF7F2\]:hover,
+html[data-store-theme='harbor'] .hover\:bg-\[\#FAF7F2\]:hover,
+html[data-store-theme='grove'] .bg-\[\#FFF7F2\],
+html[data-store-theme='harbor'] .bg-\[\#FFF7F2\],
+html[data-store-theme='grove'] .bg-\[\#FAF8F5\],
+html[data-store-theme='harbor'] .bg-\[\#FAF8F5\] {
+    background-color: var(--store-page);
+}
+
+html[data-store-theme='grove'] .bg-\[\#F6F1E8\],
+html[data-store-theme='harbor'] .bg-\[\#F6F1E8\],
+html[data-store-theme='grove'] .bg-\[\#F6F1E9\],
+html[data-store-theme='harbor'] .bg-\[\#F6F1E9\],
+html[data-store-theme='grove'] .bg-\[\#F7F3EC\],
+html[data-store-theme='harbor'] .bg-\[\#F7F3EC\],
+html[data-store-theme='grove'] .bg-\[\#F5EFE6\],
+html[data-store-theme='harbor'] .bg-\[\#F5EFE6\],
+html[data-store-theme='grove'] .bg-\[\#F4EFE6\],
+html[data-store-theme='harbor'] .bg-\[\#F4EFE6\],
+html[data-store-theme='grove'] .bg-\[\#F1EBE1\],
+html[data-store-theme='harbor'] .bg-\[\#F1EBE1\],
+html[data-store-theme='grove'] .bg-\[\#F0EAE1\],
+html[data-store-theme='harbor'] .bg-\[\#F0EAE1\],
+html[data-store-theme='grove'] .bg-\[\#FAF3EC\],
+html[data-store-theme='harbor'] .bg-\[\#FAF3EC\],
+html[data-store-theme='grove'] .bg-\[\#F1F5F9\],
+html[data-store-theme='harbor'] .bg-\[\#F1F5F9\] {
+    background-color: var(--store-wash);
+}
+
+html[data-store-theme='grove'] .from-\[\#F6F1E8\],
+html[data-store-theme='harbor'] .from-\[\#F6F1E8\] {
+    --tw-gradient-from: var(--store-wash);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+
+html[data-store-theme='grove'] .border-\[\#EAE3D6\],
+html[data-store-theme='harbor'] .border-\[\#EAE3D6\],
+html[data-store-theme='grove'] .border-\[\#ECE5D8\],
+html[data-store-theme='harbor'] .border-\[\#ECE5D8\],
+html[data-store-theme='grove'] .border-\[\#E2D9CD\],
+html[data-store-theme='harbor'] .border-\[\#E2D9CD\],
+html[data-store-theme='grove'] .hover\:border-\[\#E2D9CD\]:hover,
+html[data-store-theme='harbor'] .hover\:border-\[\#E2D9CD\]:hover,
+html[data-store-theme='grove'] .border-\[\#F0EAE1\],
+html[data-store-theme='harbor'] .border-\[\#F0EAE1\],
+html[data-store-theme='grove'] .hover\:border-\[\#F0EAE1\]:hover,
+html[data-store-theme='harbor'] .hover\:border-\[\#F0EAE1\]:hover,
+html[data-store-theme='grove'] .border-\[\#E2D8C5\],
+html[data-store-theme='harbor'] .border-\[\#E2D8C5\],
+html[data-store-theme='grove'] .border-\[\#E5DDD0\],
+html[data-store-theme='harbor'] .border-\[\#E5DDD0\],
+html[data-store-theme='grove'] .border-\[\#E2E8F0\],
+html[data-store-theme='harbor'] .border-\[\#E2E8F0\] {
+    border-color: var(--store-border);
+}
+
+html[data-store-theme='grove'] .bg-\[\#EAE3D6\],
+html[data-store-theme='harbor'] .bg-\[\#EAE3D6\],
+html[data-store-theme='grove'] .bg-\[\#EAE3D6\]\/60,
+html[data-store-theme='harbor'] .bg-\[\#EAE3D6\]\/60 {
+    background-color: var(--store-border);
+    border-color: transparent;
+}
+
+html[data-store-theme='grove'] .border-\[\#DCCFC0\],
+html[data-store-theme='harbor'] .border-\[\#DCCFC0\],
+html[data-store-theme='grove'] .hover\:border-\[\#DCCFC0\]:hover,
+html[data-store-theme='harbor'] .hover\:border-\[\#DCCFC0\]:hover,
+html[data-store-theme='grove'] .border-\[\#F1EBE1\],
+html[data-store-theme='harbor'] .border-\[\#F1EBE1\],
+html[data-store-theme='grove'] .hover\:border-\[\#CBD5E1\]:hover,
+html[data-store-theme='harbor'] .hover\:border-\[\#CBD5E1\]:hover {
+    border-color: var(--store-border-strong);
+}
+
+html[data-store-theme='grove'] .bg-\[\#DCCFC0\],
+html[data-store-theme='harbor'] .bg-\[\#DCCFC0\] {
+    background-color: var(--store-border-strong);
+}
+
+html[data-store-theme='grove'] .text-\[\#DCCFC0\],
+html[data-store-theme='harbor'] .text-\[\#DCCFC0\],
+html[data-store-theme='grove'] .text-\[\#CBD5E1\],
+html[data-store-theme='harbor'] .text-\[\#CBD5E1\],
+html[data-store-theme='grove'] .text-\[\#94A3B8\],
+html[data-store-theme='harbor'] .text-\[\#94A3B8\],
+html[data-store-theme='grove'] .placeholder-\[\#94A3B8\]::placeholder,
+html[data-store-theme='harbor'] .placeholder-\[\#94A3B8\]::placeholder {
+    color: var(--store-faint);
+}
+
+html[data-store-theme='grove'] .hover\:text-\[\#1E293B\]:hover,
+html[data-store-theme='harbor'] .hover\:text-\[\#1E293B\]:hover,
+html[data-store-theme='grove'] .text-\[\#1E293B\],
+html[data-store-theme='harbor'] .text-\[\#1E293B\],
+html[data-store-theme='grove'] .text-\[\#475569\],
+html[data-store-theme='harbor'] .text-\[\#475569\],
+html[data-store-theme='grove'] .text-\[\#64748B\],
+html[data-store-theme='harbor'] .text-\[\#64748B\] {
+    color: var(--store-ink);
+}
+
+html[data-store-theme='grove'] .text-\[\#475569\],
+html[data-store-theme='harbor'] .text-\[\#475569\],
+html[data-store-theme='grove'] .text-\[\#64748B\],
+html[data-store-theme='harbor'] .text-\[\#64748B\] {
+    color: var(--store-muted);
+}
+
+html[data-store-theme='grove'] .bg-\[\#1E293B\],
+html[data-store-theme='harbor'] .bg-\[\#1E293B\] {
+    background-color: var(--store-ink);
+    color: white;
+}
+
+html[data-store-theme='grove'] .hover\:bg-\[\#334155\]:hover,
+html[data-store-theme='harbor'] .hover\:bg-\[\#334155\]:hover {
+    background-color: var(--store-ink-soft);
+}
+
+html[data-store-theme='grove'] :where(.divide-\[\#F0EAE1\] > :not(:last-child)),
+html[data-store-theme='harbor'] :where(.divide-\[\#F0EAE1\] > :not(:last-child)),
+html[data-store-theme='grove'] :where(.divide-\[\#F5EFE6\] > :not(:last-child)),
+html[data-store-theme='harbor'] :where(.divide-\[\#F5EFE6\] > :not(:last-child)),
+html[data-store-theme='grove'] :where(.divide-\[\#F6F1E9\] > :not(:last-child)),
+html[data-store-theme='harbor'] :where(.divide-\[\#F6F1E9\] > :not(:last-child)) {
+    border-color: var(--store-border);
+}
+
+/* Primary and secondary together. Warm has no rules, so the current shop stays unchanged. */
+
+html[data-store-theme='grove'] body,
+html[data-store-theme='harbor'] body {
+    background-color: var(--store-page);
+    color: var(--store-ink);
+}
+
+html[data-store-theme='grove'] header,
+html[data-store-theme='harbor'] header {
+    background-color: var(--store-wash);
+    border-bottom-color: var(--store-border);
+}
+
+html[data-store-theme='grove'] header .bg-\[\#F6F1E9\],
+html[data-store-theme='harbor'] header .bg-\[\#F6F1E9\] {
+    background-color: white;
+}
+
+html[data-store-theme='grove'] .campaign[data-occasion],
+html[data-store-theme='harbor'] .campaign[data-occasion],
+html[data-store-theme='grove'] .campaign-hero[data-occasion],
+html[data-store-theme='harbor'] .campaign-hero[data-occasion],
+html[data-store-theme='grove'] .product-sheet[data-occasion],
+html[data-store-theme='harbor'] .product-sheet[data-occasion],
+html[data-store-theme='grove'] .detail-campaign[data-occasion],
+html[data-store-theme='harbor'] .detail-campaign[data-occasion] {
+    --campaign: var(--store-brand-deep);
+    --ink: var(--store-on-primary);
+    --wash: var(--store-wash);
+}
+
+html[data-store-theme='grove'] .occasion-bar[data-occasion],
+html[data-store-theme='harbor'] .occasion-bar[data-occasion] {
+    background-color: var(--store-brand-deep);
+    color: var(--store-on-primary);
+    background-image: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 22px,
+        rgb(255 255 255 / 16%) 22px,
+        rgb(255 255 255 / 16%) 23px
+    );
+}
+
+html[data-store-theme='grove'] .scene-field,
+html[data-store-theme='harbor'] .scene-field {
+    fill: var(--store-brand-deep);
+}
+
+html[data-store-theme='grove'] .scene-floor,
+html[data-store-theme='harbor'] .scene-floor {
+    fill: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .campaign-copy,
+html[data-store-theme='harbor'] .campaign-copy {
+    background: var(--store-wash);
+}
+
+html[data-store-theme='grove'] .campaign-copy h1,
+html[data-store-theme='harbor'] .campaign-copy h1 {
+    color: var(--store-ink);
+}
+
+html[data-store-theme='grove'] .campaign-copy p,
+html[data-store-theme='harbor'] .campaign-copy p {
+    color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .sale-countdown .countdown-cell,
+html[data-store-theme='harbor'] .sale-countdown .countdown-cell {
+    background: var(--store-wash);
+    color: var(--store-ink);
+}
+
+html[data-store-theme='grove'] .store-price,
+html[data-store-theme='harbor'] .store-price {
+    color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .bg-\[\#FAF7F2\].hover\:bg-\[\#E86A28\],
+html[data-store-theme='harbor'] .bg-\[\#FAF7F2\].hover\:bg-\[\#E86A28\] {
+    background-color: var(--store-brand);
+    border-color: var(--store-brand);
+    color: white;
+}
+
+html[data-store-theme='grove'] .bg-\[\#FAF7F2\].hover\:bg-\[\#E86A28\]:hover,
+html[data-store-theme='harbor'] .bg-\[\#FAF7F2\].hover\:bg-\[\#E86A28\]:hover {
+    background-color: var(--store-brand-hover);
+    color: white;
+}
+
+html[data-store-theme='grove'] footer,
+html[data-store-theme='harbor'] footer {
+    background-color: var(--store-wash);
+    border-top-color: var(--store-border);
+}
+
+html[data-store-theme='grove'] footer .text-\[\#1E293B\],
+html[data-store-theme='harbor'] footer .text-\[\#1E293B\] {
+    color: var(--store-brand-deep);
+}

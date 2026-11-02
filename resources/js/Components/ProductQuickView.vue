@@ -85,7 +85,7 @@ const handleAddToCart = () => {
                     </h2>
                     
                     <div class="flex items-center gap-3 mb-6">
-                        <span class="text-2xl font-bold text-[#1E293B]">
+                        <span class="store-price text-2xl font-bold text-[#1E293B]">
                             {{ formatPrice(product.price) }}
                         </span>
                         <span

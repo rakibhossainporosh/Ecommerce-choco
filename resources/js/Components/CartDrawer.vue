@@ -140,7 +140,7 @@ const formatPrice = (val) => {
                 <!-- Subtotal Row -->
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-base font-semibold text-[#64748B]">{{ t('cart.total') }}</span>
-                    <span class="text-2xl font-bold text-[#1E293B]">
+                    <span class="store-price text-2xl font-bold text-[#1E293B]">
                         {{ formatPrice(totalAmount) }}
                     </span>
                 </div>
