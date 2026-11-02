@@ -87,25 +87,28 @@ class OccasionSettings extends Page
                         Toggle::make('occasion_enabled')
                             ->label('Show the festival on the shop')
                             ->helperText('Off leaves every page exactly as it is today.'),
-                        Select::make('occasion_key')
-                            ->label('Festival')
-                            ->options(StorefrontOccasion::options())
-                            ->native(false)
-                            ->required(),
-                        Grid::make(2)->schema([
+                        Grid::make([
+                            'default' => 1,
+                            'lg' => 3,
+                        ])->schema([
+                            Select::make('occasion_key')
+                                ->label('Festival')
+                                ->options(StorefrontOccasion::options())
+                                ->native(false)
+                                ->required(),
                             DateTimePicker::make('occasion_starts_at')
                                 ->label('Starts')
                                 ->seconds(false)
                                 ->native(false)
                                 ->nullable()
-                                ->helperText('Leave blank to start as soon as you turn it on.'),
+                                ->helperText('Blank starts now.'),
                             DateTimePicker::make('occasion_ends_at')
                                 ->label('Ends')
                                 ->seconds(false)
                                 ->native(false)
                                 ->nullable()
                                 ->after('occasion_starts_at')
-                                ->helperText('Leave blank to keep it on until you turn it off. After this time the shop goes back to normal.'),
+                                ->helperText('Blank stays on until you turn it off.'),
                         ]),
                         FileUpload::make('occasion_hero_image')
                             ->label('Hero campaign image')
