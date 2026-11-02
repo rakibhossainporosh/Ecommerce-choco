@@ -19,6 +19,7 @@ use App\Payments\PaymentGatewayMode;
 use App\Payments\PaymentManager;
 use App\Services\AbandonedCartService;
 use App\Support\CatalogTranslator;
+use App\Support\CheckoutShipping;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -390,6 +391,7 @@ class StorefrontController extends Controller
     {
         return Inertia::render('Checkout', [
             'payment_methods' => $payments->checkoutOptions(),
+            'shipping_methods' => CheckoutShipping::options(),
         ]);
     }
 
@@ -411,6 +413,7 @@ class StorefrontController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'shipping_address_line' => 'required|string',
             'shipping_city' => 'required|string',
+            'shipping_method_id' => ['nullable', 'integer'],
             'shipping_amount' => 'required|numeric',
             'payment_method' => ['required', 'string', 'max:30', 'regex:/^[a-z0-9_]+$/'],
             'transaction_reference' => ['nullable', 'string', 'max:100'],
@@ -475,6 +478,12 @@ class StorefrontController extends Controller
                 $subtotal += $variant->selling_price * $item['quantity'];
             }
 
+            $shippingAmount = CheckoutShipping::quote(
+                $validated['shipping_city'],
+                isset($validated['shipping_method_id']) ? (int) $validated['shipping_method_id'] : null,
+                $subtotal,
+            );
+
             $discountAmount = 0;
             if ($request->filled('coupon_code')) {
                 $coupon = Coupon::where('code', $request->coupon_code)
@@ -507,10 +516,10 @@ class StorefrontController extends Controller
                 'shipping_address_line' => $validated['shipping_address_line'],
                 'shipping_city' => $validated['shipping_city'],
                 'shipping_area' => $validated['shipping_city'],
-                'shipping_amount' => $validated['shipping_amount'],
+                'shipping_amount' => $shippingAmount,
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
-                'grand_total' => $subtotal - $discountAmount + $validated['shipping_amount'],
+                'grand_total' => $subtotal - $discountAmount + $shippingAmount,
                 'status' => OrderStatus::Pending,
                 'payment_status' => PaymentStatus::Unpaid,
                 'payment_method' => $gateway->key(),

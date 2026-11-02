@@ -77,7 +77,7 @@ class PaymentGatewaySettings
                     continue;
                 }
 
-                if ($field['type'] === 'secret') {
+                if ($field['type'] === 'secret' || ($field['secret'] ?? false)) {
                     self::storeSecret($gateway->key(), $name, $row[$name]);
 
                     continue;
@@ -109,9 +109,9 @@ class PaymentGatewaySettings
             ];
 
             foreach ($gateway->settingsFields() as $field) {
-                $row[$field['key']] = match ($field['type']) {
-                    'secret' => null,
-                    'toggle' => self::bool($gateway->key(), $field['key'], $field['default'] ?? false),
+                $row[$field['key']] = match (true) {
+                    $field['type'] === 'secret', (bool) ($field['secret'] ?? false) => null,
+                    $field['type'] === 'toggle' => self::bool($gateway->key(), $field['key'], $field['default'] ?? false),
                     default => self::text($gateway->key(), $field['key']),
                 };
             }

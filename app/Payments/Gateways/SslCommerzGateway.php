@@ -3,7 +3,6 @@
 namespace App\Payments\Gateways;
 
 use App\Enums\PaymentTransactionStatus;
-use App\Exceptions\PaymentException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Payments\Data\PaymentOutcome;
@@ -14,7 +13,6 @@ use App\Support\PaymentGatewaySettings;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -65,7 +63,7 @@ class SslCommerzGateway extends AbstractGateway
                 'key' => 'sandbox',
                 'type' => 'toggle',
                 'label' => __('Sandbox'),
-                'helper' => __('Keep this on while testing. Turn it off only for live payments.'),
+                'helper' => __('Keep this on while testing. Turn it off only for live payments. A localhost shop can receive the browser return. The payment notification reaches the shop only when the site address is a public https domain.'),
                 'default' => true,
             ],
         ];
@@ -134,7 +132,12 @@ class SslCommerzGateway extends AbstractGateway
         }
 
         if ($outcome !== 'success') {
-            $this->failQuietly($payment);
+            $this->failQuietly(
+                $payment,
+                $outcome === 'cancel'
+                    ? __('storefront.checkout.payment_cancelled')
+                    : __('storefront.checkout.payment_failed'),
+            );
 
             return PaymentOutcome::failed(
                 $orderNumber,
@@ -307,33 +310,95 @@ class SslCommerzGateway extends AbstractGateway
             return PaymentOutcome::failed($orderNumber, __('storefront.checkout.payment_unconfirmed'));
         }
 
-        DB::transaction(function () use ($payment, $payload): void {
-            /** @var Payment $locked */
-            $locked = Payment::query()->whereKey($payment->getKey())->lockForUpdate()->firstOrFail();
-
-            if ($locked->isCompleted()) {
-                return;
-            }
-
-            $locked->metadata = array_merge($locked->metadata ?? [], [
-                'gateway' => $this->key(),
-                'val_id' => $payload['val_id'] ?? null,
-                'bank_tran_id' => $payload['bank_tran_id'] ?? null,
-                'card_type' => $payload['card_type'] ?? null,
-                'validation_status' => $payload['status'] ?? null,
-            ]);
-            $locked->save();
-
-            try {
-                $locked->markAsCompleted();
-            } catch (PaymentException) {
-                if (! $locked->fresh()->isCompleted()) {
-                    throw new PaymentGatewayException(__('storefront.checkout.payment_unconfirmed'));
-                }
-            }
-        });
+        $this->completeOnlinePayment($payment, [
+            'gateway' => $this->key(),
+            'val_id' => $payload['val_id'] ?? null,
+            'bank_tran_id' => $payload['bank_tran_id'] ?? null,
+            'card_type' => $payload['card_type'] ?? null,
+            'validation_status' => $payload['status'] ?? null,
+        ]);
 
         return PaymentOutcome::paid($orderNumber, __('storefront.success.paid_body'));
+    }
+
+    public function reconcile(Payment $payment): bool
+    {
+        if ($payment->isCompleted()) {
+            return true;
+        }
+
+        $transactionId = (string) $payment->transaction_id;
+
+        if ($transactionId === '') {
+            return false;
+        }
+
+        try {
+            $response = Http::connectTimeout(5)
+                ->timeout(20)
+                ->acceptJson()
+                ->get($this->endpoint('/validator/api/merchantTransIDvalidationAPI.php'), [
+                    'tran_id' => $transactionId,
+                    'store_id' => PaymentGatewaySettings::text($this->key(), 'store_id'),
+                    'store_passwd' => PaymentGatewaySettings::secret($this->key(), 'store_password'),
+                    'format' => 'json',
+                ]);
+        } catch (ConnectionException) {
+            throw new PaymentGatewayException(__('storefront.checkout.payment_unconfirmed'));
+        }
+
+        if (! $response->successful() || ! is_array($response->json())) {
+            throw new PaymentGatewayException(__('storefront.checkout.payment_unconfirmed'));
+        }
+
+        $body = $response->json();
+        $element = $body['element'] ?? null;
+        $row = is_array($element) && array_is_list($element) ? ($element[0] ?? null) : $element;
+
+        if (! is_array($row)) {
+            return false;
+        }
+
+        return $this->applyValidation($payment, $row, $payment->order?->order_number)->wasPaid();
+    }
+
+    public function refundOnline(Payment $payment, string $reason): void
+    {
+        $bankTranId = $payment->metadata['bank_tran_id'] ?? null;
+
+        if (! is_string($bankTranId) || $bankTranId === '') {
+            throw new PaymentGatewayException(__('This card payment has no bank reference to refund.'));
+        }
+
+        try {
+            $response = Http::connectTimeout(5)
+                ->timeout(20)
+                ->asForm()
+                ->acceptJson()
+                ->post($this->endpoint('/validator/api/merchantTransIDvalidationAPI.php'), [
+                    'bank_tran_id' => $bankTranId,
+                    'store_id' => PaymentGatewaySettings::text($this->key(), 'store_id'),
+                    'store_passwd' => PaymentGatewaySettings::secret($this->key(), 'store_password'),
+                    'refund_amount' => number_format((float) $payment->amount, 2, '.', ''),
+                    'refund_remarks' => mb_substr($reason !== '' ? $reason : 'Order refund', 0, 255),
+                    'v' => 1,
+                    'format' => 'json',
+                ]);
+        } catch (ConnectionException) {
+            throw new PaymentGatewayException(__('The card gateway could not be reached for the refund.'));
+        }
+
+        $body = $response->json();
+        $status = strtolower((string) (is_array($body) ? ($body['status'] ?? '') : ''));
+
+        if (! $response->successful() || ! in_array($status, ['success', 'processing'], true)) {
+            Log::warning('SSLCommerz refund was not accepted.', [
+                'payment' => $payment->payment_number,
+                'status' => $status,
+            ]);
+
+            throw new PaymentGatewayException(__('The card gateway did not accept the refund.'));
+        }
     }
 
     private function paymentFromRequest(Request $request): ?Payment
@@ -347,17 +412,9 @@ class SslCommerzGateway extends AbstractGateway
         return Payment::query()->where('transaction_id', $transactionId)->first();
     }
 
-    private function failQuietly(Payment $payment): void
+    private function failQuietly(Payment $payment, ?string $reason = null): void
     {
-        if ($payment->isCompleted() || $payment->isFailed()) {
-            return;
-        }
-
-        try {
-            $payment->markAsFailed('The customer did not complete the online payment.');
-        } catch (PaymentException) {
-            // A parallel confirmation may have completed this payment.
-        }
+        $this->abandonOnlinePayment($payment, $reason ?? __('storefront.checkout.payment_failed'));
     }
 
     private function endpoint(string $path): string
@@ -376,15 +433,6 @@ class SslCommerzGateway extends AbstractGateway
 
         return $scheme === 'https'
             && is_string($host)
-            && str_ends_with(strtolower($host), 'sslcommerz.com');
-    }
-
-    private function sameMoney(mixed $left, mixed $right): bool
-    {
-        if (! is_numeric($left) || ! is_numeric($right)) {
-            return false;
-        }
-
-        return abs(round((float) $left, 2) - round((float) $right, 2)) < 0.009;
+            && in_array(strtolower($host), ['sandbox.sslcommerz.com', 'securepay.sslcommerz.com'], true);
     }
 }

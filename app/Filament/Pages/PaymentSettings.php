@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\TranslatesPageNavigation;
+use App\Payments\PaymentGatewayMode;
 use App\Payments\PaymentManager;
 use App\Support\PaymentGatewaySettings;
 use BackedEnum;
@@ -10,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -129,6 +131,20 @@ class PaymentSettings extends Page
 
             $schema = [...$schema, ...$this->fieldRow($row)];
 
+            if ($gateway->mode() === PaymentGatewayMode::Redirect) {
+                $schema[] = TextEntry::make('return_address_'.$gateway->key())
+                    ->label('Return address')
+                    ->state(route('payments.return', ['gateway' => $gateway->key(), 'outcome' => 'success']))
+                    ->helperText('Paste this into the provider panel. Before an unpaid order is cancelled, the shop asks the provider whether the money was captured.');
+
+                if ($gateway->key() === 'sslcommerz') {
+                    $schema[] = TextEntry::make('ipn_address_'.$gateway->key())
+                        ->label('Payment notification address')
+                        ->state(route('payments.ipn', ['gateway' => $gateway->key()]))
+                        ->helperText('Paste this into SSLCommerz. It is called only when this shop has a public https address. A closed browser tab is still checked against SSLCommerz before the order is cancelled.');
+                }
+            }
+
             $sections[] = Section::make($gateway->label())
                 ->compact()
                 ->dense()
@@ -160,8 +176,9 @@ class PaymentSettings extends Page
             'textarea' => Textarea::make($name)
                 ->label($field['label'])
                 ->helperText($field['helper'])
-                ->rows(2)
-                ->maxLength($field['max'] ?? 500),
+                ->rows(($field['max'] ?? 500) > 1000 ? 4 : 2)
+                ->maxLength($field['max'] ?? 500)
+                ->dehydrated(fn (?string $state): bool => ! ($field['secret'] ?? false) || filled($state)),
             'toggle' => Toggle::make($name)
                 ->label($field['label'])
                 ->helperText($field['helper']),
@@ -187,12 +204,12 @@ class PaymentSettings extends Page
             return [$row[0]['component']];
         }
 
-        $spans = ($row[0]['field']['type'] === 'textarea' || $row[1]['field']['type'] === 'textarea')
-            ? [3, 9]
-            : [6, 6];
+        $left = $row[0]['field']['type'];
+        $right = $row[1]['field']['type'];
+        $spans = ($left === 'textarea') !== ($right === 'textarea') ? [3, 9] : [6, 6];
 
-        if ($row[0]['field']['type'] === 'textarea') {
-            $spans = array_reverse($spans);
+        if ($left === 'textarea' && $right !== 'textarea') {
+            $spans = [9, 3];
         }
 
         return [

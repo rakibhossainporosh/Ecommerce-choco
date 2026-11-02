@@ -25,4 +25,12 @@ return [
         'label' => 'Card / mobile banking',
         'description' => 'Pay online with card, bKash, Nagad, or internet banking. You come back here after payment.',
     ],
+    'bkash_checkout' => [
+        'label' => 'bKash checkout',
+        'description' => 'Pay on the official bKash page. The order is confirmed after bKash accepts the payment.',
+    ],
+    'nagad_checkout' => [
+        'label' => 'Nagad checkout',
+        'description' => 'Pay on the official Nagad page. The order is confirmed after Nagad accepts the payment.',
+    ],
 ];

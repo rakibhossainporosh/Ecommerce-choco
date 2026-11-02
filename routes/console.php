@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('carts:remind-abandoned')->everyTenMinutes()->withoutOverlapping();
+Schedule::command('payments:release-abandoned')->everyFifteenMinutes()->withoutOverlapping();

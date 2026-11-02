@@ -3,6 +3,7 @@
 namespace App\Payments\Contracts;
 
 use App\Models\Order;
+use App\Models\Payment;
 use App\Payments\Data\PaymentOutcome;
 use App\Payments\Data\PaymentStart;
 use App\Payments\PaymentGatewayMode;
@@ -48,4 +49,17 @@ interface PaymentGateway
     public function completeReturn(Request $request, string $outcome): PaymentOutcome;
 
     public function completeWebhook(Request $request): PaymentOutcome;
+
+    /**
+     * Ask the provider to refund a captured payment before the ledger is updated.
+     * Manual methods do nothing here. The shop still confirms those from the payment list.
+     */
+    public function refundOnline(Payment $payment, string $reason): void;
+
+    /**
+     * Ask the provider whether a pending payment was captured.
+     * True means the ledger is now paid. False means the provider has no captured payment.
+     * A gateway that cannot be reached throws, so the order is left open.
+     */
+    public function reconcile(Payment $payment): bool;
 }

@@ -6,6 +6,8 @@ use App\Casts\PaymentMethodCast;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentTransactionStatus;
 use App\Exceptions\PaymentException;
+use App\Payments\PaymentGatewayException;
+use App\Payments\PaymentManager;
 use Database\Factories\PaymentFactory;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -213,6 +215,23 @@ class Payment extends Model
      */
     public function refund(?string $reason = null, ?User $actor = null): self
     {
+        if ($this->status !== PaymentTransactionStatus::Completed) {
+            throw PaymentException::cannotRefundUncompletedPayment(
+                $this->payment_number,
+                $this->status->value
+            );
+        }
+
+        $method = $this->payment_method;
+        $slug = $method instanceof PaymentMethod ? $method->value : (is_string($method) ? $method : '');
+        $gateway = $slug !== '' ? app(PaymentManager::class)->find($slug) : null;
+
+        try {
+            $gateway?->refundOnline($this, trim((string) $reason));
+        } catch (PaymentGatewayException $exception) {
+            throw new PaymentException($exception->getMessage());
+        }
+
         return DB::transaction(function () use ($reason, $actor): self {
             /** @var self $lockedPayment */
             $lockedPayment = static::query()

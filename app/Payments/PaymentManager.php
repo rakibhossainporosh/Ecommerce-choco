@@ -3,8 +3,10 @@
 namespace App\Payments;
 
 use App\Payments\Contracts\PaymentGateway;
+use App\Payments\Gateways\BkashCheckoutGateway;
 use App\Payments\Gateways\CodGateway;
 use App\Payments\Gateways\ManualGateway;
+use App\Payments\Gateways\NagadCheckoutGateway;
 use App\Payments\Gateways\SslCommerzGateway;
 use App\Support\PaymentGatewaySettings;
 
@@ -26,6 +28,8 @@ class PaymentManager
         $this->register(new ManualGateway('rocket', 40));
         $this->register(new ManualGateway('bank_transfer', 50));
         $this->register(new SslCommerzGateway);
+        $this->register(new BkashCheckoutGateway);
+        $this->register(new NagadCheckoutGateway);
     }
 
     public function register(PaymentGateway $gateway): void

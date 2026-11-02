@@ -13,6 +13,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    shipping_methods: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const page = usePage();
@@ -24,17 +28,32 @@ const methods = computed(() => (props.payment_methods?.length ? props.payment_me
 const shippingDhaka = computed(() => Number(page.props.site_settings?.shipping_inside_dhaka || 60));
 const shippingOutside = computed(() => Number(page.props.site_settings?.shipping_outside_dhaka || 120));
 
-const shippingCharge = ref(shippingDhaka.value);
+const methodsForCity = (city) => {
+    const zone = city === 'Dhaka' ? 'inside' : 'outside';
+    const zoned = props.shipping_methods.filter((method) => method.zone === zone || method.zone === 'any');
+
+    return zoned.length ? zoned : props.shipping_methods;
+};
+
+const methodCharge = (method) => {
+    if (method?.free_shipping_threshold && totalAmount.value >= Number(method.free_shipping_threshold)) {
+        return 0;
+    }
+
+    return Number(method?.charge || 0);
+};
 
 const loggedInCustomer = page.props.customer;
+const initialCityMethods = methodsForCity('Dhaka');
 
 const form = useForm({
     customer_name: loggedInCustomer ? loggedInCustomer.name : '',
     customer_phone: loggedInCustomer ? loggedInCustomer.phone : '',
     customer_email: loggedInCustomer?.email || '',
     shipping_city: 'Dhaka',
+    shipping_method_id: initialCityMethods[0]?.id || null,
     shipping_address_line: '',
-    shipping_amount: shippingCharge.value,
+    shipping_amount: initialCityMethods[0] ? methodCharge(initialCityMethods[0]) : shippingDhaka.value,
     coupon_code: null,
     payment_method: methods.value[0]?.key || 'cod',
     transaction_reference: '',
@@ -43,6 +62,16 @@ const form = useForm({
         variant_id: item.variant_id || item.id,
         quantity: item.quantity
     }))
+});
+
+const selectedShipping = computed(() => methodsForCity(form.shipping_city).find((method) => method.id === form.shipping_method_id) || null);
+
+const shippingCharge = computed(() => {
+    if (selectedShipping.value) {
+        return methodCharge(selectedShipping.value);
+    }
+
+    return form.shipping_city === 'Dhaka' ? shippingDhaka.value : shippingOutside.value;
 });
 
 const couponCode = ref('');
@@ -97,6 +126,7 @@ const selectedMethod = computed(() => methods.value.find((method) => method.key 
 const paymentError = computed(() => form.errors.payment || form.errors.payment_method || page.props.errors?.payment || '');
 
 const submitOrder = () => {
+    form.shipping_amount = shippingCharge.value;
     form.cart_items = cartItems.value.map(item => ({
         id: item.id,
         variant_id: item.variant_id || item.id,
@@ -108,7 +138,10 @@ const submitOrder = () => {
 };
 
 const updateShipping = () => {
-    shippingCharge.value = form.shipping_city === 'Dhaka' ? shippingDhaka.value : shippingOutside.value;
+    const available = methodsForCity(form.shipping_city);
+    if (!available.some((method) => method.id === form.shipping_method_id)) {
+        form.shipping_method_id = available[0]?.id || null;
+    }
     form.shipping_amount = shippingCharge.value;
 };
 
@@ -174,11 +207,29 @@ watch(
                         <div>
                             <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.city') }} *</label>
                             <select v-model="form.shipping_city" @change="updateShipping" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all">
-                                <option value="Dhaka">{{ t('checkout.city_dhaka_option', { charge: shippingDhaka }) }}</option>
-                                <option value="Outside Dhaka">{{ t('checkout.city_outside_option', { charge: shippingOutside }) }}</option>
+                                <option value="Dhaka">{{ props.shipping_methods.length ? t('checkout.inside_dhaka') : t('checkout.city_dhaka_option', { charge: shippingDhaka }) }}</option>
+                                <option value="Outside Dhaka">{{ props.shipping_methods.length ? t('checkout.outside_dhaka') : t('checkout.city_outside_option', { charge: shippingOutside }) }}</option>
                             </select>
                             <span v-if="form.errors.shipping_city" class="text-red-500 text-xs mt-1">{{ form.errors.shipping_city }}</span>
                         </div>
+
+                        <fieldset v-if="methodsForCity(form.shipping_city).length" class="space-y-3">
+                            <legend class="text-sm font-semibold text-[#475569]">{{ t('checkout.shipping_method') }}</legend>
+                            <label
+                                v-for="method in methodsForCity(form.shipping_city)"
+                                :key="method.id"
+                                class="flex items-start gap-3 min-h-11 rounded-xl border p-4 cursor-pointer transition-colors"
+                                :class="form.shipping_method_id === method.id ? 'border-[#E86A28] bg-[#FFF7F2] ring-1 ring-[#E86A28]/30' : 'border-[#EAE3D6] bg-white hover:border-[#E2D9CD]'"
+                            >
+                                <input v-model="form.shipping_method_id" type="radio" class="mt-1 text-[#E86A28] focus:ring-[#E86A28]" :value="method.id" @change="updateShipping">
+                                <span class="min-w-0">
+                                    <span class="block font-semibold text-[#1E293B]">{{ method.name }}</span>
+                                    <span class="block text-sm text-[#64748B]">{{ method.estimate }}</span>
+                                </span>
+                                <span class="ml-auto font-semibold text-[#1E293B]">{{ methodCharge(method) === 0 ? t('checkout.shipping_free') : formatPrice(methodCharge(method)) }}</span>
+                            </label>
+                            <span v-if="form.errors.shipping_method_id" class="text-red-500 text-xs">{{ form.errors.shipping_method_id }}</span>
+                        </fieldset>
 
                         <div>
                             <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.full_address') }} *</label>
