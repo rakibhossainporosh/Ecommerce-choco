@@ -434,7 +434,6 @@ class StorefrontController extends Controller
             ]);
         }
 
-        // Stock availability verification before order placement
         foreach ($validated['cart_items'] as $item) {
             $variant = ProductVariant::with('inventory', 'product')->find($item['variant_id']);
             if ($variant && $variant->inventory && $variant->inventory->quantity < $item['quantity']) {
@@ -454,7 +453,6 @@ class StorefrontController extends Controller
         $order = DB::transaction(function () use ($validated, $request, $carts, $gateway) {
             $orderNumber = 'ORD-'.strtoupper(uniqid());
 
-            // Link authenticated customer or create/find by phone
             $customer = auth('customer')->user();
             if (! $customer) {
                 $customer = Customer::firstOrCreate(
@@ -496,7 +494,6 @@ class StorefrontController extends Controller
                         $discountAmount = $coupon->value;
                     }
 
-                    // Update usage count
                     $coupon->increment('used_count');
                 }
             }
@@ -509,7 +506,7 @@ class StorefrontController extends Controller
                 'customer_email' => $validated['customer_email'] ?? null,
                 'shipping_address_line' => $validated['shipping_address_line'],
                 'shipping_city' => $validated['shipping_city'],
-                'shipping_area' => $validated['shipping_city'], // fallback for area
+                'shipping_area' => $validated['shipping_city'],
                 'shipping_amount' => $validated['shipping_amount'],
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
