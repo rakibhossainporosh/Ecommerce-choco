@@ -3,11 +3,12 @@
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Filament\Resources\Orders\Actions\OrderActions;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
+use App\Payments\PaymentManager;
+use App\Support\PaymentMethodPresenter;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -101,10 +102,7 @@ class OrdersTable
                 TextColumn::make('payment_method')
                     ->label('Payment Method')
                     ->alignCenter()
-                    ->formatStateUsing(fn (?PaymentMethod $state): ?string => $state?->label()
-                        ?? (is_string($state) ? PaymentMethod::tryFrom($state)?->label() : null)
-                        ?? (string) $state
-                    )
+                    ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state))
                     ->sortable(),
 
                 TextColumn::make('grand_total')
@@ -147,9 +145,7 @@ class OrdersTable
 
                 SelectFilter::make('payment_method')
                     ->label('Payment Method')
-                    ->options(collect(PaymentMethod::cases())->mapWithKeys(fn (PaymentMethod $method) => [
-                        $method->value => $method->label(),
-                    ])->all()),
+                    ->options(fn (): array => app(PaymentManager::class)->options()),
 
                 Filter::make('placed_at')
                     ->form([

@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             SetApplicationLocale::class,
             HandleInertiaRequests::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'payments/*/ipn',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

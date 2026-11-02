@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Exceptions\PaymentException;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Customer;
@@ -13,6 +14,9 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\User;
+use App\Payments\PaymentGatewayException;
+use App\Payments\PaymentGatewayMode;
+use App\Payments\PaymentManager;
 use App\Services\AbandonedCartService;
 use App\Support\CatalogTranslator;
 use Illuminate\Http\JsonResponse;
@@ -382,20 +386,23 @@ class StorefrontController extends Controller
     /**
      * Display checkout page.
      */
-    public function checkout(): Response
+    public function checkout(PaymentManager $payments): Response
     {
-        return Inertia::render('Checkout');
+        return Inertia::render('Checkout', [
+            'payment_methods' => $payments->checkoutOptions(),
+        ]);
     }
 
     /**
      * Process checkout.
      */
-    public function processCheckout(Request $request, AbandonedCartService $carts)
+    public function processCheckout(Request $request, AbandonedCartService $carts, PaymentManager $payments)
     {
         $request->merge([
             'shipping_address_line' => $request->input('shipping_address_line', $request->input('shipping_address')),
             'shipping_amount' => $request->input('shipping_amount', 60),
             'cart_items' => $request->input('cart_items', $request->input('items')),
+            'payment_method' => strtolower((string) $request->input('payment_method', 'cod')),
         ]);
 
         $validated = $request->validate([
@@ -405,11 +412,27 @@ class StorefrontController extends Controller
             'shipping_address_line' => 'required|string',
             'shipping_city' => 'required|string',
             'shipping_amount' => 'required|numeric',
+            'payment_method' => ['required', 'string', 'max:30', 'regex:/^[a-z0-9_]+$/'],
+            'transaction_reference' => ['nullable', 'string', 'max:100'],
             'cart_items' => 'required|array|min:1',
             'cart_items.*.id' => 'required|exists:products,id',
             'cart_items.*.variant_id' => 'required|exists:product_variants,id',
             'cart_items.*.quantity' => 'required|integer|min:1',
         ]);
+
+        $gateway = $payments->checkoutGateway($validated['payment_method']);
+
+        if (! $gateway) {
+            return back()->withErrors([
+                'payment_method' => __('storefront.checkout.payment_unavailable'),
+            ]);
+        }
+
+        if ($gateway->mode() === PaymentGatewayMode::Redirect && blank($validated['customer_email'] ?? null)) {
+            return back()->withErrors([
+                'customer_email' => __('storefront.checkout.email_required_online'),
+            ]);
+        }
 
         // Stock availability verification before order placement
         foreach ($validated['cart_items'] as $item) {
@@ -428,7 +451,7 @@ class StorefrontController extends Controller
             }
         }
 
-        return DB::transaction(function () use ($validated, $request, $carts) {
+        $order = DB::transaction(function () use ($validated, $request, $carts, $gateway) {
             $orderNumber = 'ORD-'.strtoupper(uniqid());
 
             // Link authenticated customer or create/find by phone
@@ -493,7 +516,7 @@ class StorefrontController extends Controller
                 'grand_total' => $subtotal - $discountAmount + $validated['shipping_amount'],
                 'status' => OrderStatus::Pending,
                 'payment_status' => PaymentStatus::Unpaid,
-                'payment_method' => PaymentMethod::Cod,
+                'payment_method' => $gateway->key(),
             ]);
 
             foreach ($validated['cart_items'] as $item) {
@@ -516,19 +539,62 @@ class StorefrontController extends Controller
 
             $carts->markRecovered($order);
 
-            return redirect()->route('checkout.success', ['order_number' => $orderNumber]);
+            return $order;
         });
+
+        $reference = isset($validated['transaction_reference'])
+            ? trim(strip_tags($validated['transaction_reference']))
+            : null;
+
+        try {
+            $start = $gateway->start($order->fresh(), $reference !== '' ? $reference : null);
+        } catch (PaymentGatewayException $exception) {
+            $this->abandonUnpaidOrder($order);
+
+            return back()->withErrors(['payment' => $exception->getMessage()]);
+        } catch (PaymentException $exception) {
+            report($exception);
+            $this->abandonUnpaidOrder($order);
+
+            return back()->withErrors([
+                'payment' => __('storefront.checkout.payment_start_failed'),
+            ]);
+        }
+
+        if (filled($start->redirectUrl)) {
+            return Inertia::location($start->redirectUrl);
+        }
+
+        return redirect()->route('checkout.success', ['order_number' => $order->order_number]);
+    }
+
+    private function abandonUnpaidOrder(Order $order): void
+    {
+        if (! $order->canBeCancelled()) {
+            return;
+        }
+
+        $order->cancel(__('storefront.checkout.payment_start_failed'));
     }
 
     /**
      * Display checkout success page.
      */
-    public function checkoutSuccess(Request $request): Response
+    public function checkoutSuccess(Request $request, PaymentManager $payments): Response
     {
         $orderNumber = $request->query('order_number');
+        $notice = null;
+
+        if (is_string($orderNumber) && $orderNumber !== '') {
+            $order = Order::query()->where('order_number', $orderNumber)->first();
+            $method = $order?->payment_method;
+            $key = $method instanceof PaymentMethod ? $method->value : (is_string($method) ? $method : null);
+            $notice = $key ? $payments->find($key)?->successNotice($order) : null;
+        }
 
         return Inertia::render('CheckoutSuccess', [
-            'order_number' => $orderNumber,
+            'order_number' => is_string($orderNumber) ? $orderNumber : null,
+            'payment' => $notice,
         ]);
     }
 

@@ -1,18 +1,39 @@
 <script setup>
+import { computed, onMounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { CheckCircle, ShoppingBag, ArrowRight, Truck } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
+import { useCart } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
 
-defineProps({
+const props = defineProps({
     order_number: {
         type: String,
+        default: null
+    },
+    payment: {
+        type: Object,
         default: null
     }
 });
 
 const { t } = useI18n();
+const { clearCart } = useCart();
+
+const noticeClass = computed(() => {
+    if (props.payment?.mode === 'manual' || (props.payment?.mode === 'redirect' && !props.payment?.paid)) {
+        return 'bg-[#FFF7F2] border border-[#F0EAE1] text-[#9A3412]';
+    }
+
+    return 'bg-[#F0FDF4] border border-[#BBF7D0] text-[#166534]';
+});
+
+onMounted(() => {
+    if (props.order_number) {
+        clearCart();
+    }
+});
 </script>
 
 <template>
@@ -38,9 +59,16 @@ const { t } = useI18n();
                     <span class="block text-2xl font-bold text-[#E86A28]">{{ order_number }}</span>
                 </div>
 
-                <div class="bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl p-5 mb-10 text-sm md:text-base text-[#166534] font-medium flex items-center justify-center gap-3">
-                    <ShoppingBag class="w-5 h-5 shrink-0" />
-                    <span>{{ t('success.cod') }}</span>
+                <div class="rounded-xl p-5 mb-10 text-sm md:text-base font-medium text-left" :class="noticeClass">
+                    <div class="flex items-start gap-3">
+                        <ShoppingBag class="w-5 h-5 shrink-0 mt-0.5" />
+                        <div class="min-w-0">
+                            <p class="font-bold break-words">{{ payment?.title || t('success.cod') }}</p>
+                            <p class="mt-1 break-words">{{ payment?.body || t('success.cod') }}</p>
+                            <p v-if="payment?.account" class="mt-3 text-lg font-bold tracking-wide break-all">{{ payment.account }}</p>
+                            <p v-if="payment?.reference" class="mt-2 break-all">{{ t('success.manual_reference') }}: {{ payment.reference }}</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\PaymentMethodCast;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentTransactionStatus;
 use App\Exceptions\PaymentException;
@@ -56,7 +57,7 @@ class Payment extends Model
             'order_id' => 'integer',
             'customer_id' => 'integer',
             'recorded_by' => 'integer',
-            'payment_method' => PaymentMethod::class,
+            'payment_method' => PaymentMethodCast::class,
             'status' => PaymentTransactionStatus::class,
             'amount' => 'decimal:2',
             'paid_at' => 'datetime',

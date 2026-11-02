@@ -9,6 +9,7 @@ use App\Filament\Resources\Payments\PaymentResource;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Support\PaymentMethodPresenter;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ViewAction;
@@ -59,10 +60,7 @@ class PaymentsRelationManager extends RelationManager
                 TextColumn::make('payment_method')
                     ->label('Method')
                     ->badge()
-                    ->formatStateUsing(fn (?PaymentMethod $state): ?string => $state?->label()
-                        ?? (is_string($state) ? PaymentMethod::tryFrom($state)?->label() : null)
-                        ?? (string) $state
-                    )
+                    ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state))
                     ->sortable(),
 
                 TextColumn::make('status')

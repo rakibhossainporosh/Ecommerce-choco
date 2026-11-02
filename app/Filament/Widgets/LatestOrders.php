@@ -3,9 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaymentMethod;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
+use App\Support\PaymentMethodPresenter;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -51,10 +51,7 @@ class LatestOrders extends BaseWidget
 
                 TextColumn::make('payment_method')
                     ->label('Payment')
-                    ->formatStateUsing(fn (?PaymentMethod $state): ?string => $state?->label()
-                        ?? (is_string($state) ? PaymentMethod::tryFrom($state)?->label() : null)
-                        ?? (string) $state
-                    )
+                    ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state))
                     ->description(fn (Order $record): string => $record->payment_status?->label() ?? (string) $record->payment_status),
 
                 TextColumn::make('status')

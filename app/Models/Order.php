@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\PaymentMethodCast;
 use App\Enums\InventoryMovementType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
@@ -101,7 +102,7 @@ class Order extends Model
             'user_id' => 'integer',
             'status' => OrderStatus::class,
             'payment_status' => PaymentStatus::class,
-            'payment_method' => PaymentMethod::class,
+            'payment_method' => PaymentMethodCast::class,
             'subtotal' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'shipping_amount' => 'decimal:2',
@@ -259,6 +260,22 @@ class Order extends Model
     }
 
     /**
+     * Accept a known enum or any gateway slug that fits the payment column.
+     *
+     * @throws PaymentException
+     */
+    private function paymentMethodSlug(PaymentMethod|string $method): string
+    {
+        $slug = strtolower(trim($method instanceof PaymentMethod ? $method->value : $method));
+
+        if (preg_match('/^[a-z0-9_]{2,30}$/', $slug) !== 1) {
+            throw PaymentException::unknownMethod($slug);
+        }
+
+        return $slug;
+    }
+
+    /**
      * Record a payment transaction for this order atomically with row locking.
      *
      * @throws PaymentException
@@ -298,7 +315,7 @@ class Order extends Model
             }
 
             $txStatus = $status instanceof PaymentTransactionStatus ? $status : PaymentTransactionStatus::from($status);
-            $payMethod = $method instanceof PaymentMethod ? $method : PaymentMethod::from($method);
+            $payMethod = $this->paymentMethodSlug($method);
 
             /** @var Payment $payment */
             $payment = $lockedOrder->payments()->create([

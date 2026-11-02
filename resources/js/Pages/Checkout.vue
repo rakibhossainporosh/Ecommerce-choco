@@ -2,15 +2,24 @@
 import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X, AlertCircle } from 'lucide-vue-next';
+import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X, AlertCircle, Wallet } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import { useCart, setCartContact } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
 
+const props = defineProps({
+    payment_methods: {
+        type: Array,
+        default: () => [],
+    },
+});
+
 const page = usePage();
 const { t } = useI18n();
-const { cartItems, totalAmount, totalCount, clearCart } = useCart();
+const { cartItems, totalAmount, totalCount } = useCart();
+
+const methods = computed(() => (props.payment_methods?.length ? props.payment_methods : []));
 
 const shippingDhaka = computed(() => Number(page.props.site_settings?.shipping_inside_dhaka || 60));
 const shippingOutside = computed(() => Number(page.props.site_settings?.shipping_outside_dhaka || 120));
@@ -27,6 +36,8 @@ const form = useForm({
     shipping_address_line: '',
     shipping_amount: shippingCharge.value,
     coupon_code: null,
+    payment_method: methods.value[0]?.key || 'cod',
+    transaction_reference: '',
     cart_items: cartItems.value.map(item => ({
         id: item.id,
         variant_id: item.variant_id || item.id,
@@ -81,12 +92,18 @@ const grandTotal = computed(() => {
     return totalAmount.value - discountAmount.value + shippingCharge.value;
 });
 
+const selectedMethod = computed(() => methods.value.find((method) => method.key === form.payment_method) || methods.value[0] || null);
+
+const paymentError = computed(() => form.errors.payment || form.errors.payment_method || page.props.errors?.payment || '');
+
 const submitOrder = () => {
+    form.cart_items = cartItems.value.map(item => ({
+        id: item.id,
+        variant_id: item.variant_id || item.id,
+        quantity: item.quantity
+    }));
     form.post('/checkout', {
         preserveScroll: true,
-        onSuccess: () => {
-            clearCart();
-        }
     });
 };
 
@@ -147,9 +164,9 @@ watch(
                                 <span v-if="form.errors.customer_phone" class="text-red-500 text-xs mt-1">{{ form.errors.customer_phone }}</span>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.email') }}</label>
-                                <input v-model="form.customer_email" type="email" class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.email_placeholder')">
-                                <p class="text-xs text-[#94A3B8] mt-1">{{ t('checkout.email_hint') }}</p>
+                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.email') }}<span v-if="selectedMethod?.mode === 'redirect'"> *</span></label>
+                                <input v-model="form.customer_email" type="email" :required="selectedMethod?.mode === 'redirect'" class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.email_placeholder')">
+                                <p class="text-xs text-[#94A3B8] mt-1">{{ selectedMethod?.mode === 'redirect' ? t('checkout.email_hint_online') : t('checkout.email_hint') }}</p>
                                 <span v-if="form.errors.customer_email" class="text-red-500 text-xs mt-1">{{ form.errors.customer_email }}</span>
                             </div>
                         </div>
@@ -169,12 +186,53 @@ watch(
                             <span v-if="form.errors.shipping_address_line" class="text-red-500 text-xs mt-1">{{ form.errors.shipping_address_line }}</span>
                         </div>
 
+                        <fieldset class="pt-6 border-t border-[#F0EAE1] space-y-3">
+                            <legend class="text-sm font-semibold text-[#475569]">{{ t('checkout.payment_method') }}</legend>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label
+                                    v-for="method in methods"
+                                    :key="method.key"
+                                    class="flex items-start gap-3 min-h-11 rounded-xl border p-4 cursor-pointer transition-colors"
+                                    :class="form.payment_method === method.key ? 'border-[#E86A28] bg-[#FFF7F2] ring-1 ring-[#E86A28]/30' : 'border-[#EAE3D6] bg-white hover:border-[#E2D9CD]'"
+                                >
+                                    <input
+                                        v-model="form.payment_method"
+                                        type="radio"
+                                        name="payment_method"
+                                        class="mt-1 h-4 w-4 shrink-0 accent-[#E86A28]"
+                                        :value="method.key"
+                                    >
+                                    <span class="min-w-0">
+                                        <span class="block text-sm font-bold text-[#1E293B] break-words">{{ method.label }}</span>
+                                        <span class="block text-xs text-[#64748B] mt-1 break-words">{{ method.description }}</span>
+                                        <span v-if="method.account" class="block text-sm font-semibold text-[#E86A28] mt-2 break-all">{{ method.account }}</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div v-if="selectedMethod?.mode === 'manual'">
+                                <label class="block text-sm font-semibold text-[#475569] mb-2" for="transaction-reference">{{ t('checkout.transaction_reference') }}</label>
+                                <input
+                                    id="transaction-reference"
+                                    v-model="form.transaction_reference"
+                                    type="text"
+                                    maxlength="100"
+                                    class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all"
+                                    :placeholder="t('checkout.transaction_reference_placeholder')"
+                                >
+                                <p class="text-xs text-[#94A3B8] mt-1">{{ t('checkout.transaction_reference_hint') }}</p>
+                            </div>
+                        </fieldset>
+
                         <div class="pt-6 border-t border-[#F0EAE1]">
+                            <div v-if="paymentError" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-semibold flex items-start gap-2">
+                                <AlertCircle class="w-5 h-5 shrink-0" />
+                                <span class="break-words">{{ paymentError }}</span>
+                            </div>
                             <div v-if="form.errors.stock" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-semibold flex items-center gap-2">
                                 <AlertCircle class="w-5 h-5 shrink-0" />
                                 <span>{{ form.errors.stock }}</span>
                             </div>
-                            <div v-else-if="Object.keys(form.errors).length > 0" class="mb-4 p-3 bg-red-50 text-red-500 rounded-xl text-sm font-semibold">
+                            <div v-else-if="Object.keys(form.errors).some((key) => !['payment', 'payment_method', 'stock'].includes(key))" class="mb-4 p-3 bg-red-50 text-red-500 rounded-xl text-sm font-semibold">
                                 {{ t('checkout.form_errors') }}
                             </div>
                             <button type="submit" :disabled="form.processing" class="w-full py-4 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer">
@@ -263,9 +321,10 @@ watch(
                             </div>
                         </div>
 
-                        <div class="mt-6 flex items-center gap-3 text-sm text-[#475569] bg-[#FAF7F2] p-4 rounded-xl">
-                            <Truck class="w-5 h-5 text-[#E86A28]" />
-                            <span>{{ t('checkout.cod_note') }}</span>
+                        <div class="mt-6 flex items-start gap-3 text-sm text-[#475569] bg-[#FAF7F2] p-4 rounded-xl">
+                            <Truck v-if="!selectedMethod || selectedMethod.mode === 'cod'" class="w-5 h-5 text-[#E86A28] shrink-0" />
+                            <Wallet v-else class="w-5 h-5 text-[#E86A28] shrink-0" />
+                            <span class="break-words">{{ selectedMethod?.description || t('checkout.cod_note') }}</span>
                         </div>
                     </div>
                 </div>

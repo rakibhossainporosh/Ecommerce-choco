@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Payments\Schemas;
 
-use App\Enums\PaymentMethod;
 use App\Enums\PaymentTransactionStatus;
 use App\Models\Payment;
+use App\Support\PaymentMethodPresenter;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -51,10 +51,7 @@ class PaymentInfolist
                         TextEntry::make('payment_method')
                             ->label('Payment Method')
                             ->badge()
-                            ->formatStateUsing(fn (?PaymentMethod $state): ?string => $state?->label()
-                                ?? (is_string($state) ? PaymentMethod::tryFrom($state)?->label() : null)
-                                ?? (string) $state
-                            ),
+                            ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state)),
 
                         TextEntry::make('status')
                             ->label('Status')

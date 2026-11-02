@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Payments\Tables;
 
-use App\Enums\PaymentMethod;
 use App\Enums\PaymentTransactionStatus;
 use App\Models\Payment;
+use App\Payments\PaymentManager;
+use App\Support\PaymentMethodPresenter;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
@@ -56,10 +57,7 @@ class PaymentsTable
                 TextColumn::make('payment_method')
                     ->label('Method')
                     ->badge()
-                    ->formatStateUsing(fn (?PaymentMethod $state): ?string => $state?->label()
-                        ?? (is_string($state) ? PaymentMethod::tryFrom($state)?->label() : null)
-                        ?? (string) $state
-                    )
+                    ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state))
                     ->sortable(),
 
                 TextColumn::make('status')
@@ -99,7 +97,7 @@ class PaymentsTable
                     ->options(PaymentTransactionStatus::class),
 
                 SelectFilter::make('payment_method')
-                    ->options(PaymentMethod::class),
+                    ->options(fn (): array => app(PaymentManager::class)->options()),
             ])
             ->recordActions([
                 ViewAction::make(),

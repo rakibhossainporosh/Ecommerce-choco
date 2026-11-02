@@ -11,6 +11,11 @@ class PaymentException extends DomainException
         return new self("Cannot record payment for cancelled order [{$orderNumber}].");
     }
 
+    public static function unknownMethod(string $method): self
+    {
+        return new self("Unknown payment method [{$method}].");
+    }
+
     public static function invalidAmount(float $amount): self
     {
         return new self("Payment amount must be greater than zero. Given: [{$amount}].");

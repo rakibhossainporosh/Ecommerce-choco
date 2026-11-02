@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\SiteLocaleController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\StorefrontController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,14 @@ Route::post('/cart/remember', [CartController::class, 'remember'])->middleware('
 Route::get('/cart/recover/{token}', [CartController::class, 'recover'])->where('token', '[A-Za-z0-9]{40}')->name('cart.recover');
 Route::post('/checkout/apply-coupon', [StorefrontController::class, 'applyCoupon'])->middleware('throttle:20,1')->name('checkout.apply-coupon');
 Route::get('/checkout/success', [StorefrontController::class, 'checkoutSuccess'])->name('checkout.success');
+Route::get('/payments/{gateway}/{outcome}', [PaymentReturnController::class, 'returned'])
+    ->where('gateway', '[a-z0-9_]{2,30}')
+    ->where('outcome', 'success|fail|cancel')
+    ->name('payments.return');
+Route::post('/payments/{gateway}/ipn', [PaymentReturnController::class, 'ipn'])
+    ->where('gateway', '[a-z0-9_]{2,30}')
+    ->middleware('throttle:60,1')
+    ->name('payments.ipn');
 Route::get('/track-order', [StorefrontController::class, 'trackOrder'])->name('track.order');
 
 // Customer Authentication & Account Portal
