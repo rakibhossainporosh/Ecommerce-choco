@@ -1,20 +1,19 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { 
-    ShoppingBag, Plus, Minus, Heart, ChevronRight, Star, 
+import {
+    ShoppingBag, Plus, Minus, Heart, ChevronRight, Star,
     CheckCircle2, MessageSquare, ShieldCheck, Truck, RotateCcw,
-    ThumbsUp, Check, X
+    ThumbsUp, Check, X, ZoomIn,
 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
-import CartDrawer from '../../Components/CartDrawer.vue';
-import WishlistDrawer from '../../Components/WishlistDrawer.vue';
 import OccasionRibbon from '../../Components/OccasionRibbon.vue';
 import OccasionCountdown from '../../Components/OccasionCountdown.vue';
 import ProductCard from '../../Components/ProductCard.vue';
 import { useCart } from '../../Composables/useCart';
 import { useI18n } from '../../Composables/useI18n';
+import { useRecentlyViewed } from '../../Composables/useRecentlyViewed';
 
 const props = defineProps({
     product: {
@@ -41,6 +40,15 @@ const quantity = ref(1);
 const activeImage = ref(props.product.image);
 const showReviewForm = ref(false);
 const hoverRating = ref(0);
+const zoomOpen = ref(false);
+const galleryTouchX = ref(0);
+
+const { track, othersThan } = useRecentlyViewed();
+const recentProducts = computed(() => othersThan(props.product.id));
+
+onMounted(() => {
+    track(props.product);
+});
 
 const images = computed(() => {
     if (props.product.images && props.product.images.length > 0) {
@@ -48,6 +56,32 @@ const images = computed(() => {
     }
     return [props.product.image];
 });
+
+const activeImageIndex = computed(() => {
+    const index = images.value.findIndex((img) => img === activeImage.value);
+
+    return index >= 0 ? index : 0;
+});
+
+const stepGallery = (delta) => {
+    if (images.value.length < 2) {
+        return;
+    }
+
+    const next = (activeImageIndex.value + delta + images.value.length) % images.value.length;
+    activeImage.value = images.value[next];
+};
+
+const onGallerySwipe = (event) => {
+    const endX = event.changedTouches?.[0]?.clientX || 0;
+    const delta = endX - galleryTouchX.value;
+
+    if (Math.abs(delta) < 40) {
+        return;
+    }
+
+    stepGallery(delta < 0 ? 1 : -1);
+};
 
 const selectedOptions = ref({});
 if (props.product.available_options) {
@@ -175,7 +209,7 @@ const submitReview = () => {
     <div :class="pageShellClass">
         <Header />
 
-        <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8 w-full">
             <OccasionRibbon v-if="occasion" class="detail-campaign" :kind="occasion.key" :data-occasion="occasion.key">
                 <strong>{{ occasion.label }}</strong>
                 <span>{{ occasion.lines.products }}</span>
@@ -205,18 +239,38 @@ const submitReview = () => {
             >
                 <!-- Gallery Column -->
                 <div class="w-full md:w-1/2 flex flex-col gap-4 shrink-0">
-                    <div class="relative w-full bg-[#F7F3EC] rounded-2xl p-6 sm:p-8 flex items-center justify-center min-h-[350px] sm:min-h-[440px] border border-[#EAE3D6] overflow-hidden">
+                    <div
+                        class="relative w-full bg-[#F7F3EC] rounded-2xl p-6 sm:p-8 flex items-center justify-center min-h-[350px] sm:min-h-[440px] border border-[#EAE3D6] overflow-hidden group touch-pan-y cursor-zoom-in"
+                        role="button"
+                        tabindex="0"
+                        @click="zoomOpen = true"
+                        @keydown.enter.prevent="zoomOpen = true"
+                        @touchstart.passive="galleryTouchX = $event.changedTouches[0]?.clientX || 0"
+                        @touchend.passive="onGallerySwipe($event)"
+                    >
                         <img
                             :src="activeImage"
                             :alt="productTitle"
-                            class="w-full h-auto max-h-[440px] object-contain drop-shadow-md transition-transform duration-500 hover:scale-105"
+                            class="w-full h-auto max-h-[440px] mx-auto object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-105 pointer-events-none"
                         />
-                        <div v-if="!isCurrentInStock" class="absolute top-4 left-4 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-lg shadow-sm">
+                        <div v-if="!isCurrentInStock" class="absolute top-4 left-4 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-lg shadow-sm z-10 pointer-events-none">
                             {{ t('product.out_of_stock') }}
                         </div>
-                        <div v-else-if="currentComparePrice && currentComparePrice > currentPrice" class="absolute top-4 left-4 px-3 py-1 bg-[#E86A28] text-white text-xs font-bold rounded-lg shadow-sm">
+                        <div v-else-if="currentComparePrice && currentComparePrice > currentPrice" class="absolute top-4 left-4 px-3 py-1 bg-[#E86A28] text-white text-xs font-bold rounded-lg shadow-sm z-10 pointer-events-none">
                             {{ t('home.offer_badge') }}
                         </div>
+                        <button
+                            type="button"
+                            class="absolute bottom-4 right-4 z-10 h-9 px-3 bg-[#1E293B]/90 hover:bg-[#E86A28] text-white text-[11px] font-bold uppercase tracking-wider rounded-xl inline-flex items-center gap-1.5 transition-colors"
+                            @click.stop="zoomOpen = true"
+                        >
+                            <ZoomIn class="w-3.5 h-3.5" />
+                            Zoom
+                        </button>
+                        <template v-if="images.length > 1">
+                            <button type="button" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 text-[#1E293B] hidden sm:inline-flex items-center justify-center shadow-sm" @click.stop="stepGallery(-1)">‹</button>
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 text-[#1E293B] hidden sm:inline-flex items-center justify-center shadow-sm" @click.stop="stepGallery(1)">›</button>
+                        </template>
                     </div>
 
                     <!-- Thumbnails -->
@@ -660,12 +714,48 @@ const submitReview = () => {
                         <ProductCard v-for="item in relatedProducts" :key="item.id" :product="item" />
                     </div>
                 </div>
+
+                <div v-if="recentProducts.length" class="mt-10 pt-8 border-t border-[#EAE3D6]">
+                    <h2 class="text-xl sm:text-2xl font-bold text-[#1E293B] mb-5">{{ t('product.recently_viewed') }}</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <ProductCard v-for="item in recentProducts" :key="'recent-' + item.id" :product="item" />
+                    </div>
+                </div>
             </div>
         </main>
 
+        <Teleport to="body">
+            <div
+                v-if="zoomOpen && activeImage"
+                class="fixed inset-0 z-[60] bg-[#1E293B]/80 flex items-center justify-center p-4"
+                @click="zoomOpen = false"
+            >
+                <button type="button" class="absolute top-4 right-4 w-10 h-10 bg-white text-[#1E293B] rounded-xl inline-flex items-center justify-center" @click="zoomOpen = false">
+                    <X class="w-5 h-5" />
+                </button>
+                <img :src="activeImage" :alt="productTitle" class="max-h-[90vh] max-w-full object-contain" @click.stop />
+            </div>
+        </Teleport>
+
+        <div class="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#EAE3D6] bg-white/95 backdrop-blur-sm p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
+            <div class="flex items-center gap-2 max-w-7xl mx-auto">
+                <div class="min-w-0">
+                    <p class="text-sm font-bold text-[#E86A28] truncate">{{ formatPrice(currentPrice) }}</p>
+                </div>
+                <button
+                    type="button"
+                    class="ml-auto h-11 px-5 rounded-xl text-sm font-bold inline-flex items-center justify-center gap-2 shrink-0 transition-colors"
+                    :class="isCurrentInStock ? 'bg-[#E86A28] hover:bg-[#D35B1D] text-white' : 'bg-[#EAE3D6] text-[#94A3B8] cursor-not-allowed'"
+                    :disabled="!isCurrentInStock"
+                    @click="handleAddToCart"
+                >
+                    <ShoppingBag class="w-4 h-4" />
+                    {{ isCurrentInStock ? t('product.add_to_cart') : t('product.out_of_stock') }}
+                </button>
+            </div>
+        </div>
+
         <Footer />
-        <WishlistDrawer />
-        <CartDrawer />
     </div>
 </template>
 

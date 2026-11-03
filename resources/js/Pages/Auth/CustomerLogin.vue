@@ -85,7 +85,9 @@ const submit = () => {
                                 <input
                                     v-model="form.remember"
                                     type="checkbox"
-                                    class="rounded-sm border-[#EAE3D6] text-[#E86A28] focus:ring-[#E86A28]"
+                                    class="rounded-sm border-current"
+                                    :class="accentTextClass"
+                                    style="accent-color: currentColor"
                                 />
                                 <span>{{ t('auth.remember') }}</span>
                             </label>

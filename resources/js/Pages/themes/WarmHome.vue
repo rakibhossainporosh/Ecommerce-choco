@@ -6,8 +6,7 @@ import OccasionSection from '../../Components/OccasionSection.vue';
 import CampaignSale from '../../Components/CampaignSale.vue';
 import CategoryFilter from '../../Components/CategoryFilter.vue';
 import ProductCard from '../../Components/ProductCard.vue';
-import CartDrawer from '../../Components/CartDrawer.vue';
-import WishlistDrawer from '../../Components/WishlistDrawer.vue';
+import ProductGridSkeleton from '../../Components/ProductGridSkeleton.vue';
 import Footer from '../../Components/Footer.vue';
 import { useHomePage } from '../../Composables/useHomePage';
 
@@ -18,7 +17,7 @@ const props = defineProps({
 });
 
 const {
-    t, saleProducts, showSale, catalogProducts,
+    t, saleProducts, showSale, catalogProducts, isCatalogLoading,
     updateFilters, handleSearch, handleClearAllFilters,
     handleSelectCategory, handleSelectSort, emptyMessage,
 } = useHomePage(props);
@@ -75,7 +74,11 @@ const {
                         </button>
                     </div>
 
-                    <div v-if="products.length === 0" class="text-center py-20 bg-white rounded-2xl border border-[#EAE3D6] shadow-sm">
+                    <div v-if="isCatalogLoading" class="py-1">
+                        <ProductGridSkeleton :count="8" tone="warm" />
+                    </div>
+
+                    <div v-else-if="products.length === 0" class="text-center py-20 bg-white rounded-2xl border border-[#EAE3D6] shadow-sm">
                         <p class="text-lg text-[#64748B] font-medium">{{ emptyMessage() }}</p>
                         <button type="button" class="mt-4 px-6 py-2 bg-[#E86A28] text-white rounded-full font-medium hover:bg-[#D95F22]" @click="handleClearAllFilters">
                             {{ t('home.browse_all') }}
@@ -90,7 +93,5 @@ const {
         </main>
 
         <Footer />
-        <WishlistDrawer />
-        <CartDrawer />
     </div>
 </template>

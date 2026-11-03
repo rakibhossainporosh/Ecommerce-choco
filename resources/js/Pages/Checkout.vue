@@ -5,6 +5,7 @@ import axios from 'axios';
 import { ChevronRight, ArrowRight, ShoppingBag, Truck, Tag, X, AlertCircle, Wallet } from 'lucide-vue-next';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
+import ProductCard from '../Components/ProductCard.vue';
 import { useCart, setCartContact } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
 import { useStorefrontPageShell } from '../Composables/useStorefrontPageShell';
@@ -18,11 +19,18 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    suggestedProducts: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const page = usePage();
 const { t } = useI18n();
-const { pageClass, panelClass, primaryButtonClass, accentTextClass } = useStorefrontPageShell();
+const {
+    pageClass, panelClass, primaryButtonClass, accentTextClass, fieldClass, inkClass, mutedClass,
+    softPanelClass, choiceSelectedClass, choiceIdleClass,
+} = useStorefrontPageShell();
 const { cartItems, totalAmount, totalCount } = useCart();
 
 const methods = computed(() => (props.payment_methods?.length ? props.payment_methods : []));
@@ -166,49 +174,57 @@ watch(
         <Header />
 
         <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <nav class="flex items-center gap-2 text-sm text-[#64748B] mb-8">
-                <Link href="/" class="hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
+            <nav class="flex items-center gap-2 text-sm mb-8" :class="mutedClass">
+                <Link href="/" class="hover:opacity-80 transition-opacity" :class="accentTextClass">{{ t('header.home') }}</Link>
                 <ChevronRight class="w-4 h-4" />
-                <span class="text-[#1E293B] font-medium">{{ t('checkout.title') }}</span>
+                <span class="font-medium" :class="inkClass">{{ t('checkout.title') }}</span>
             </nav>
 
-            <div v-if="cartItems.length === 0" class="text-center py-20">
-                <ShoppingBag class="w-16 h-16 mx-auto text-[#DCCFC0] mb-4" />
-                <h2 class="text-2xl font-bold text-[#1E293B] mb-2">{{ t('checkout.empty') }}</h2>
-                <p class="text-[#64748B] mb-6">{{ t('checkout.empty_hint') }}</p>
-                <Link href="/" :class="[primaryButtonClass, 'px-6 py-3']">
-                    {{ t('checkout.back_home') }}
-                </Link>
+            <div v-if="cartItems.length === 0" class="py-12">
+                <div class="text-center mb-10">
+                    <ShoppingBag class="w-16 h-16 mx-auto mb-4 opacity-40" />
+                    <h2 class="text-2xl font-bold mb-2" :class="inkClass" style="font-family: var(--store-display, inherit)">{{ t('checkout.empty') }}</h2>
+                    <p class="mb-6" :class="mutedClass">{{ t('checkout.empty_hint') }}</p>
+                    <Link href="/" :class="[primaryButtonClass, 'px-6 py-3']">
+                        {{ t('checkout.back_home') }}
+                    </Link>
+                </div>
+                <section v-if="suggestedProducts.length" class="max-w-6xl mx-auto">
+                    <h3 class="text-lg font-semibold mb-4" :class="inkClass" style="font-family: var(--store-display, inherit)">{{ t('checkout.suggested') }}</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
+                        <ProductCard v-for="item in suggestedProducts" :key="item.id" :product="item" />
+                    </div>
+                </section>
             </div>
 
             <div v-else class="flex flex-col lg:flex-row gap-8">
                 <!-- Checkout Form -->
                 <div :class="[panelClass, 'w-full lg:w-2/3 p-6 md:p-8']">
-                    <h2 class="text-2xl font-bold text-[#1E293B] mb-6 border-b border-[#F0EAE1] pb-4">{{ t('checkout.delivery_info') }}</h2>
+                    <h2 class="text-2xl font-bold mb-6 border-b border-black/5 pb-4" :class="inkClass" style="font-family: var(--store-display, inherit)">{{ t('checkout.delivery_info') }}</h2>
                     
                     <form @submit.prevent="submitOrder" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.name') }} *</label>
-                                <input v-model="form.customer_name" type="text" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.name_placeholder')">
+                                <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.name') }} *</label>
+                                <input v-model="form.customer_name" type="text" required :class="fieldClass" :placeholder="t('checkout.name_placeholder')">
                                 <span v-if="form.errors.customer_name" class="text-red-500 text-xs mt-1">{{ form.errors.customer_name }}</span>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.phone') }} *</label>
-                                <input v-model="form.customer_phone" type="text" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" placeholder="01XXX-XXXXXX">
+                                <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.phone') }} *</label>
+                                <input v-model="form.customer_phone" type="text" required :class="fieldClass" placeholder="01XXX-XXXXXX">
                                 <span v-if="form.errors.customer_phone" class="text-red-500 text-xs mt-1">{{ form.errors.customer_phone }}</span>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.email') }}<span v-if="selectedMethod?.mode === 'redirect'"> *</span></label>
-                                <input v-model="form.customer_email" type="email" :required="selectedMethod?.mode === 'redirect'" class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.email_placeholder')">
-                                <p class="text-xs text-[#94A3B8] mt-1">{{ selectedMethod?.mode === 'redirect' ? t('checkout.email_hint_online') : t('checkout.email_hint') }}</p>
+                                <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.email') }}<span v-if="selectedMethod?.mode === 'redirect'"> *</span></label>
+                                <input v-model="form.customer_email" type="email" :required="selectedMethod?.mode === 'redirect'" :class="fieldClass" :placeholder="t('checkout.email_placeholder')">
+                                <p class="text-xs mt-1 opacity-70" :class="mutedClass">{{ selectedMethod?.mode === 'redirect' ? t('checkout.email_hint_online') : t('checkout.email_hint') }}</p>
                                 <span v-if="form.errors.customer_email" class="text-red-500 text-xs mt-1">{{ form.errors.customer_email }}</span>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.city') }} *</label>
-                            <select v-model="form.shipping_city" @change="updateShipping" required class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all">
+                            <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.city') }} *</label>
+                            <select v-model="form.shipping_city" required :class="fieldClass" @change="updateShipping">
                                 <option value="Dhaka">{{ props.shipping_methods.length ? t('checkout.inside_dhaka') : t('checkout.city_dhaka_option', { charge: shippingDhaka }) }}</option>
                                 <option value="Outside Dhaka">{{ props.shipping_methods.length ? t('checkout.outside_dhaka') : t('checkout.city_outside_option', { charge: shippingOutside }) }}</option>
                             </select>
@@ -216,67 +232,69 @@ watch(
                         </div>
 
                         <fieldset v-if="methodsForCity(form.shipping_city).length" class="space-y-3">
-                            <legend class="text-sm font-semibold text-[#475569]">{{ t('checkout.shipping_method') }}</legend>
+                            <legend class="text-sm font-semibold" :class="mutedClass">{{ t('checkout.shipping_method') }}</legend>
                             <label
                                 v-for="method in methodsForCity(form.shipping_city)"
                                 :key="method.id"
-                                class="flex items-start gap-3 min-h-11 rounded-xl border p-4 cursor-pointer transition-colors"
-                                :class="form.shipping_method_id === method.id ? 'border-[#E86A28] bg-[#FFF7F2] ring-1 ring-[#E86A28]/30' : 'border-[#EAE3D6] bg-white hover:border-[#E2D9CD]'"
+                                class="flex items-start gap-3 min-h-11 border p-4 cursor-pointer transition-colors rounded-xl"
+                                :class="form.shipping_method_id === method.id ? choiceSelectedClass : choiceIdleClass"
                             >
-                                <input v-model="form.shipping_method_id" type="radio" class="mt-1 text-[#E86A28] focus:ring-[#E86A28]" :value="method.id" @change="updateShipping">
+                                <input v-model="form.shipping_method_id" type="radio" class="mt-1" :class="accentTextClass" :value="method.id" @change="updateShipping">
                                 <span class="min-w-0">
-                                    <span class="block font-semibold text-[#1E293B]">{{ method.name }}</span>
-                                    <span class="block text-sm text-[#64748B]">{{ method.estimate }}</span>
+                                    <span class="block font-semibold" :class="inkClass">{{ method.name }}</span>
+                                    <span class="block text-sm" :class="mutedClass">{{ method.estimate }}</span>
                                 </span>
-                                <span class="ml-auto font-semibold text-[#1E293B]">{{ methodCharge(method) === 0 ? t('checkout.shipping_free') : formatPrice(methodCharge(method)) }}</span>
+                                <span class="ml-auto font-semibold" :class="inkClass">{{ methodCharge(method) === 0 ? t('checkout.shipping_free') : formatPrice(methodCharge(method)) }}</span>
                             </label>
                             <span v-if="form.errors.shipping_method_id" class="text-red-500 text-xs">{{ form.errors.shipping_method_id }}</span>
                         </fieldset>
 
                         <div>
-                            <label class="block text-sm font-semibold text-[#475569] mb-2">{{ t('checkout.full_address') }} *</label>
-                            <textarea v-model="form.shipping_address_line" required rows="3" class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all" :placeholder="t('checkout.address_placeholder')"></textarea>
+                            <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.full_address') }} *</label>
+                            <textarea v-model="form.shipping_address_line" required rows="3" :class="fieldClass" :placeholder="t('checkout.address_placeholder')"></textarea>
                             <span v-if="form.errors.shipping_address_line" class="text-red-500 text-xs mt-1">{{ form.errors.shipping_address_line }}</span>
                         </div>
 
-                        <fieldset class="pt-6 border-t border-[#F0EAE1] space-y-3">
-                            <legend class="text-sm font-semibold text-[#475569]">{{ t('checkout.payment_method') }}</legend>
+                        <fieldset class="pt-6 border-t border-black/5 space-y-3">
+                            <legend class="text-sm font-semibold" :class="mutedClass">{{ t('checkout.payment_method') }}</legend>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <label
                                     v-for="method in methods"
                                     :key="method.key"
-                                    class="flex items-start gap-3 min-h-11 rounded-xl border p-4 cursor-pointer transition-colors"
-                                    :class="form.payment_method === method.key ? 'border-[#E86A28] bg-[#FFF7F2] ring-1 ring-[#E86A28]/30' : 'border-[#EAE3D6] bg-white hover:border-[#E2D9CD]'"
+                                    class="flex items-start gap-3 min-h-11 border p-4 cursor-pointer transition-colors rounded-xl"
+                                    :class="form.payment_method === method.key ? choiceSelectedClass : choiceIdleClass"
                                 >
                                     <input
                                         v-model="form.payment_method"
                                         type="radio"
                                         name="payment_method"
-                                        class="mt-1 h-4 w-4 shrink-0 accent-[#E86A28]"
+                                        class="mt-1 h-4 w-4 shrink-0"
+                                        :class="accentTextClass"
+                                        style="accent-color: currentColor"
                                         :value="method.key"
                                     >
                                     <span class="min-w-0">
-                                        <span class="block text-sm font-bold text-[#1E293B] break-words">{{ method.label }}</span>
-                                        <span class="block text-xs text-[#64748B] mt-1 break-words">{{ method.description }}</span>
-                                        <span v-if="method.account" class="block text-sm font-semibold text-[#E86A28] mt-2 break-all">{{ method.account }}</span>
+                                        <span class="block text-sm font-bold break-words" :class="inkClass">{{ method.label }}</span>
+                                        <span class="block text-xs mt-1 break-words" :class="mutedClass">{{ method.description }}</span>
+                                        <span v-if="method.account" class="block text-sm font-semibold mt-2 break-all" :class="accentTextClass">{{ method.account }}</span>
                                     </span>
                                 </label>
                             </div>
                             <div v-if="selectedMethod?.mode === 'manual'">
-                                <label class="block text-sm font-semibold text-[#475569] mb-2" for="transaction-reference">{{ t('checkout.transaction_reference') }}</label>
+                                <label class="block text-sm font-semibold mb-2" :class="mutedClass" for="transaction-reference">{{ t('checkout.transaction_reference') }}</label>
                                 <input
                                     id="transaction-reference"
                                     v-model="form.transaction_reference"
                                     type="text"
                                     maxlength="100"
-                                    class="w-full border border-[#E2D9CD] rounded-xl px-4 py-3 bg-[#FAF7F2] focus:ring-2 focus:ring-[#E86A28]/20 focus:border-[#E86A28] transition-all"
+                                    :class="fieldClass"
                                     :placeholder="t('checkout.transaction_reference_placeholder')"
                                 >
-                                <p class="text-xs text-[#94A3B8] mt-1">{{ t('checkout.transaction_reference_hint') }}</p>
+                                <p class="text-xs mt-1 opacity-70" :class="mutedClass">{{ t('checkout.transaction_reference_hint') }}</p>
                             </div>
                         </fieldset>
 
-                        <div class="pt-6 border-t border-[#F0EAE1]">
+                        <div class="pt-6 border-t border-black/5">
                             <div v-if="paymentError" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-semibold flex items-start gap-2">
                                 <AlertCircle class="w-5 h-5 shrink-0" />
                                 <span class="break-words">{{ paymentError }}</span>
@@ -299,47 +317,47 @@ watch(
                 <!-- Order Summary -->
                 <div class="w-full lg:w-1/3">
                     <div :class="[panelClass, 'p-6 sticky top-8']">
-                        <h3 class="text-lg font-bold text-[#1E293B] mb-4">{{ t('checkout.order_summary') }}</h3>
+                        <h3 class="text-lg font-bold mb-4" :class="inkClass" style="font-family: var(--store-display, inherit)">{{ t('checkout.order_summary') }}</h3>
                         
                         <div class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
                             <div v-for="item in cartItems" :key="item.cartItemId || item.id" class="flex gap-4">
-                                <img :src="item.image" :alt="item.name" class="w-16 h-16 rounded-lg object-cover bg-[#F7F3EC] border border-[#EAE3D6]">
+                                <img :src="item.image" :alt="item.name" class="w-16 h-16 object-cover border border-black/10 bg-black/5">
                                 <div class="flex-1">
-                                    <h4 class="text-sm font-bold text-[#1E293B] line-clamp-2">{{ item.name }}</h4>
-                                    <div class="text-sm text-[#64748B] mt-1">{{ formatPrice(item.price) }} x {{ item.quantity }}</div>
+                                    <h4 class="text-sm font-bold line-clamp-2" :class="inkClass">{{ item.name }}</h4>
+                                    <div class="text-sm mt-1" :class="mutedClass">{{ formatPrice(item.price) }} x {{ item.quantity }}</div>
                                 </div>
-                                <div class="text-sm font-bold text-[#E86A28]">{{ formatPrice(item.price * item.quantity) }}</div>
+                                <div class="text-sm font-bold" :class="accentTextClass">{{ formatPrice(item.price * item.quantity) }}</div>
                             </div>
                         </div>
 
                         <div class="mt-4 mb-6">
                             <div v-if="!appliedCoupon">
-                                <label class="block text-sm font-medium text-[#475569] mb-2">{{ t('checkout.coupon') }}</label>
+                                <label class="block text-sm font-medium mb-2" :class="mutedClass">{{ t('checkout.coupon') }}</label>
                                 <div class="flex gap-2">
                                     <div class="relative flex-1">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Tag class="w-4 h-4 text-[#94A3B8]" />
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none opacity-50">
+                                            <Tag class="w-4 h-4" />
                                         </div>
-                                        <input 
-                                            v-model="couponCode" 
-                                            type="text" 
-                                            class="block w-full pl-9 pr-3 py-2.5 bg-[#F6F1E9] border border-transparent rounded-xl text-sm uppercase placeholder:normal-case placeholder-[#94A3B8] focus:bg-white focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-none transition-all"
+                                        <input
+                                            v-model="couponCode"
+                                            type="text"
+                                            :class="[fieldClass, 'pl-9 uppercase placeholder:normal-case']"
                                             :placeholder="t('checkout.coupon_placeholder')"
                                             @keyup.enter="applyCoupon"
                                         />
                                     </div>
-                                    <button 
+                                    <button
                                         @click="applyCoupon"
                                         type="button"
                                         :disabled="applyingCoupon || !couponCode.trim()"
-                                        class="px-4 py-2.5 bg-[#1E293B] text-white text-sm font-semibold rounded-xl hover:bg-[#334155] transition-colors disabled:opacity-50"
+                                        :class="[primaryButtonClass, 'px-4 py-2.5 text-sm']"
                                     >
                                         {{ applyingCoupon ? t('checkout.applying_short') : t('checkout.apply') }}
                                     </button>
                                 </div>
                                 <p v-if="couponError" class="mt-2 text-[13px] text-red-500">{{ couponError }}</p>
                             </div>
-                            <div v-else class="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl p-3">
+                            <div v-else class="flex items-center justify-between bg-green-50 border border-green-200 p-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                                         <Tag class="w-4 h-4" />
@@ -355,12 +373,12 @@ watch(
                             </div>
                         </div>
 
-                        <div class="border-t border-[#F0EAE1] pt-4 space-y-3">
-                            <div class="flex justify-between text-sm font-medium text-[#64748B]">
+                        <div class="border-t border-black/5 pt-4 space-y-3">
+                            <div class="flex justify-between text-sm font-medium" :class="mutedClass">
                                 <span>{{ t('checkout.subtotal_items', { count: totalCount }) }}</span>
                                 <span>{{ formatPrice(totalAmount) }}</span>
                             </div>
-                            <div class="flex justify-between text-sm font-medium text-[#64748B]">
+                            <div class="flex justify-between text-sm font-medium" :class="mutedClass">
                                 <span>{{ t('checkout.shipping') }}</span>
                                 <span>{{ formatPrice(shippingCharge) }}</span>
                             </div>
@@ -368,16 +386,16 @@ watch(
                                 <span>{{ t('checkout.discount') }} ({{ appliedCoupon }})</span>
                                 <span>- {{ formatPrice(discountAmount) }}</span>
                             </div>
-                            <div class="flex justify-between text-lg font-bold text-[#1E293B] pt-3 border-t border-[#F0EAE1]">
+                            <div class="flex justify-between text-lg font-bold pt-3 border-t border-black/5" :class="inkClass">
                                 <span>{{ t('checkout.grand_total') }}</span>
-                                <span class="text-[#E86A28]">{{ formatPrice(grandTotal) }}</span>
+                                <span :class="accentTextClass">{{ formatPrice(grandTotal) }}</span>
                             </div>
                         </div>
 
-                        <div class="mt-6 flex items-start gap-3 text-sm text-[#475569] bg-[#FAF7F2] p-4 rounded-xl">
-                            <Truck v-if="!selectedMethod || selectedMethod.mode === 'cod'" class="w-5 h-5 text-[#E86A28] shrink-0" />
-                            <Wallet v-else class="w-5 h-5 text-[#E86A28] shrink-0" />
-                            <span class="break-words">{{ selectedMethod?.description || t('checkout.cod_note') }}</span>
+                        <div :class="[softPanelClass, 'mt-6 flex items-start gap-3 text-sm p-4']" :style="{ color: 'inherit' }">
+                            <Truck v-if="!selectedMethod || selectedMethod.mode === 'cod'" class="w-5 h-5 shrink-0" :class="accentTextClass" />
+                            <Wallet v-else class="w-5 h-5 shrink-0" :class="accentTextClass" />
+                            <span class="break-words" :class="mutedClass">{{ selectedMethod?.description || t('checkout.cod_note') }}</span>
                         </div>
                     </div>
                 </div>

@@ -212,6 +212,67 @@ class StorefrontController extends Controller
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    protected function formatStorefrontCard(Product $product): array
+    {
+        $imageMap = $this->storefrontImageMap();
+        $variant = $product->defaultVariant;
+        $primaryMedia = $product->media->firstWhere('is_primary', true) ?? $product->media->first();
+        $fallbackImage = $imageMap[$product->slug] ?? '/images/storefront/product-1.jpg';
+        $image = $primaryMedia
+            ? asset('storage/'.ltrim($primaryMedia->path, '/'))
+            : $fallbackImage;
+        $inventory = $variant?->inventory;
+
+        return [
+            'id' => $product->id,
+            'default_variant_id' => $variant?->id,
+            'name' => $product->name,
+            'display_name' => CatalogTranslator::product($product->slug, 'name', $product->name),
+            'slug' => $product->slug,
+            'category_name' => $product->categories->first()?->name ?? __('storefront.product.general'),
+            'category_display_name' => $product->categories->first()
+                ? CatalogTranslator::category($product->categories->first()->slug, $product->categories->first()->name)
+                : __('storefront.product.general'),
+            'category_slug' => $product->categories->first()?->slug ?? 'general',
+            'price' => (float) ($variant?->selling_price ?? 0),
+            'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
+            'image' => $image,
+            'fallback_image' => $fallbackImage,
+            'short_description' => $product->short_description,
+            'display_short_description' => CatalogTranslator::product($product->slug, 'short_description', $product->short_description),
+            'is_featured' => (bool) $product->is_featured,
+            'rating' => round((float) ($product->reviews_avg_rating ?? 5.0), 1),
+            'reviews_count' => (int) ($product->reviews_count ?? 0),
+            'stock_quantity' => $inventory ? (int) $inventory->quantity : null,
+            'is_in_stock' => $inventory ? $inventory->quantity > 0 : true,
+        ];
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     */
+    protected function suggestedStorefrontProducts(int $limit = 8)
+    {
+        return Product::query()
+            ->where('products.is_active', true)
+            ->with([
+                'categories:id,name,slug',
+                'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
+                'defaultVariant.inventory',
+                'media',
+            ])
+            ->withAvg(['reviews' => fn ($q) => $q->where('is_approved', true)], 'rating')
+            ->withCount(['reviews' => fn ($q) => $q->where('is_approved', true)])
+            ->latest('products.id')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Product $product): array => $this->formatStorefrontCard($product))
+            ->values();
+    }
+
+    /**
      * Apply storefront search conditions to products query.
      */
     protected function applySearchCondition($query, string $search)
@@ -449,6 +510,7 @@ class StorefrontController extends Controller
         return Inertia::render('Checkout', [
             'payment_methods' => $payments->checkoutOptions(),
             'shipping_methods' => CheckoutShipping::options(),
+            'suggestedProducts' => $this->suggestedStorefrontProducts(8),
         ]);
     }
 

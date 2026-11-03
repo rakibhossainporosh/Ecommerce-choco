@@ -5,9 +5,8 @@ import Header from '../../Components/Header.vue';
 import HeroSection from '../../Components/HeroSection.vue';
 import CampaignSale from '../../Components/CampaignSale.vue';
 import ProductCard from '../../Components/ProductCard.vue';
-import CartDrawer from '../../Components/CartDrawer.vue';
-import WishlistDrawer from '../../Components/WishlistDrawer.vue';
 import Footer from '../../Components/Footer.vue';
+import ProductGridSkeleton from '../../Components/ProductGridSkeleton.vue';
 import { useHomePage } from '../../Composables/useHomePage';
 
 const props = defineProps({
@@ -17,7 +16,7 @@ const props = defineProps({
 });
 
 const {
-    t, saleProducts, showSale, catalogProducts,
+    t, saleProducts, showSale, catalogProducts, isCatalogLoading,
     updateFilters, handleSearch, handleClearAllFilters,
     handleSelectCategory, handleSelectSort, emptyMessage,
 } = useHomePage(props);
@@ -128,14 +127,17 @@ const onSortChange = (event) => {
                     </button>
                 </div>
 
-                <div v-if="products.length === 0" class="text-center py-20 bg-white border border-[#1a2e28]/10">
+                <div v-if="isCatalogLoading" class="py-2">
+                    <ProductGridSkeleton :count="8" tone="grove" />
+                </div>
+
+                <div v-else-if="products.length === 0" class="text-center py-20 bg-white border border-[#1a2e28]/10">
                     <p class="text-xl font-semibold" style="font-family: var(--store-display)">{{ emptyMessage() }}</p>
                     <button type="button" class="mt-5 h-10 px-5 bg-[#1a2e28] text-white text-xs font-semibold uppercase tracking-[0.12em]" @click="handleClearAllFilters">
                         {{ t('home.browse_all') }}
                     </button>
                 </div>
 
-                <!-- Dense catalog grid — industry standard product density -->
                 <div v-else-if="catalogProducts.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-4">
                     <ProductCard v-for="product in catalogProducts" :key="product.id" :product="product" />
                 </div>
@@ -143,7 +145,5 @@ const onSortChange = (event) => {
         </main>
 
         <Footer />
-        <WishlistDrawer />
-        <CartDrawer />
     </div>
 </template>

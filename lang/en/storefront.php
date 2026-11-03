@@ -191,6 +191,7 @@ return [
         'empty' => 'Your cart is empty',
         'empty_hint' => 'Add something you like, then come back to checkout.',
         'back_home' => 'Back to shop',
+        'suggested' => 'Popular right now',
         'contact' => 'Contact details',
         'name' => 'Full name',
         'phone' => 'Phone number',

@@ -1,4 +1,4 @@
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { useI18n } from './useI18n';
 
@@ -6,6 +6,26 @@ export function useHomePage(props) {
     const { t } = useI18n();
     const page = usePage();
     const occasion = computed(() => page.props.site_settings?.occasion || null);
+    const isCatalogLoading = ref(false);
+    let removeStart = null;
+    let removeFinish = null;
+
+    onMounted(() => {
+        removeStart = router.on('start', (event) => {
+            const visitUrl = String(event?.detail?.visit?.url || '');
+            if (visitUrl.includes('/') && !visitUrl.includes('/product/') && !visitUrl.includes('/checkout')) {
+                isCatalogLoading.value = true;
+            }
+        });
+        removeFinish = router.on('finish', () => {
+            isCatalogLoading.value = false;
+        });
+    });
+
+    onUnmounted(() => {
+        removeStart?.();
+        removeFinish?.();
+    });
 
     const saleProducts = computed(() => {
         const pinned = Array.isArray(occasion.value?.sale_ids) ? occasion.value.sale_ids : [];
@@ -87,6 +107,7 @@ export function useHomePage(props) {
         t,
         page,
         occasion,
+        isCatalogLoading,
         saleProducts,
         showSale,
         catalogProducts,

@@ -6,13 +6,13 @@ export function useStorefrontPageShell() {
 
     const pageClass = computed(() => {
         if (theme.value === 'grove') {
-            return 'min-h-screen bg-[#f3efe8] text-[#1a2e28] flex flex-col font-hind-siliguri';
+            return 'store-page min-h-screen bg-[#f3efe8] text-[#1a2e28] flex flex-col font-hind-siliguri';
         }
         if (theme.value === 'harbor') {
-            return 'min-h-screen bg-[#f4f7fb] text-[#0f172a] flex flex-col font-hind-siliguri';
+            return 'store-page min-h-screen bg-[#f4f7fb] text-[#0f172a] flex flex-col font-hind-siliguri';
         }
 
-        return 'min-h-screen bg-[#FDFBF7] text-[#1E293B] flex flex-col font-hind-siliguri';
+        return 'store-page min-h-screen bg-[#FDFBF7] text-[#1E293B] flex flex-col font-hind-siliguri';
     });
 
     const panelClass = computed(() => {
@@ -81,6 +81,61 @@ export function useStorefrontPageShell() {
         return 'text-[#64748B]';
     });
 
+    const softPanelClass = computed(() => {
+        if (theme.value === 'grove') {
+            return 'bg-[#f3efe8]/80 border border-[#1a2e28]/10';
+        }
+        if (theme.value === 'harbor') {
+            return 'bg-[#f4f7fb] border border-[#d5e0ee] rounded-sm';
+        }
+
+        return 'bg-[#FAF7F2] border border-[#EAE3D6] rounded-2xl';
+    });
+
+    const choiceSelectedClass = computed(() => {
+        if (theme.value === 'grove') {
+            return 'border-[#0e6b58] bg-[#eef6f3] ring-1 ring-[#0e6b58]/25';
+        }
+        if (theme.value === 'harbor') {
+            return 'border-[#1d4ed8] bg-[#eff6ff] ring-1 ring-[#1d4ed8]/25 rounded-sm';
+        }
+
+        return 'border-[#E86A28] bg-[#FFF7F2] ring-1 ring-[#E86A28]/30';
+    });
+
+    const choiceIdleClass = computed(() => {
+        if (theme.value === 'grove') {
+            return 'border-[#1a2e28]/12 bg-white hover:border-[#0e6b58]/40';
+        }
+        if (theme.value === 'harbor') {
+            return 'border-[#d5e0ee] bg-white hover:border-[#1d4ed8]/40 rounded-sm';
+        }
+
+        return 'border-[#EAE3D6] bg-white hover:border-[#E2D9CD]';
+    });
+
+    const tabActiveClass = computed(() => {
+        if (theme.value === 'grove') {
+            return 'bg-[#1a2e28] text-white';
+        }
+        if (theme.value === 'harbor') {
+            return 'bg-[#1d4ed8] text-white rounded-sm';
+        }
+
+        return 'bg-[#E86A28] text-white shadow-sm rounded-xl';
+    });
+
+    const tabIdleClass = computed(() => {
+        if (theme.value === 'grove') {
+            return 'bg-white text-[#5c6f67] hover:text-[#1a2e28] border border-[#1a2e28]/12';
+        }
+        if (theme.value === 'harbor') {
+            return 'bg-white text-[#3e516b] hover:text-[#0f172a] border border-[#d5e0ee] rounded-sm';
+        }
+
+        return 'bg-white text-[#64748B] hover:text-[#1E293B] border border-[#EAE3D6] rounded-xl';
+    });
+
     return {
         theme,
         pageClass,
@@ -90,5 +145,10 @@ export function useStorefrontPageShell() {
         accentTextClass,
         inkClass,
         mutedClass,
+        softPanelClass,
+        choiceSelectedClass,
+        choiceIdleClass,
+        tabActiveClass,
+        tabIdleClass,
     };
 }

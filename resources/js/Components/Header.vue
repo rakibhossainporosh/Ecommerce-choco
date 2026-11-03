@@ -4,6 +4,8 @@ import WarmHeader from './themes/WarmHeader.vue';
 import GroveHeader from './themes/GroveHeader.vue';
 import HarborHeader from './themes/HarborHeader.vue';
 import CartToast from './CartToast.vue';
+import CartDrawer from './CartDrawer.vue';
+import WishlistDrawer from './WishlistDrawer.vue';
 
 defineProps({
     searchQuery: {
@@ -24,4 +26,6 @@ const View = resolveThemeComponent({
 <template>
     <component :is="View" :search-query="searchQuery" @search="$emit('search', $event)" />
     <CartToast />
+    <WishlistDrawer />
+    <CartDrawer />
 </template>

@@ -103,11 +103,11 @@ const {
                     </div>
 
                     <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-                        <button type="button" class="relative p-2.5 text-[#0f172a] hover:bg-[#f4f7fb] rounded-sm" :title="t('header.wishlist')" @click="openWishlist">
+                        <button type="button" class="relative z-10 p-2.5 text-[#0f172a] hover:bg-[#f4f7fb] rounded-sm" :title="t('header.wishlist')" @click.stop="openWishlist()">
                             <Heart class="w-5 h-5" />
                             <span v-if="wishlistCount > 0" class="absolute top-1 right-1 min-w-4 h-4 px-1 bg-[#1d4ed8] text-white text-[10px] font-bold rounded-sm flex items-center justify-center">{{ wishlistCount }}</span>
                         </button>
-                        <button type="button" class="relative inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-sm" :title="t('header.cart')" @click="openCart">
+                        <button type="button" class="relative z-10 inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-sm" :title="t('header.cart')" @click.stop="openCart()">
                             <ShoppingBag class="w-5 h-5" />
                             <span class="hidden sm:inline text-xs font-bold uppercase tracking-wider">{{ t('header.cart') }}</span>
                             <span v-if="totalCount > 0" class="min-w-5 h-5 px-1 bg-white text-[#1d4ed8] text-[11px] font-black rounded-sm flex items-center justify-center">{{ totalCount }}</span>

@@ -7,8 +7,6 @@ import {
 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
-import CartDrawer from '../../Components/CartDrawer.vue';
-import WishlistDrawer from '../../Components/WishlistDrawer.vue';
 import OccasionRibbon from '../../Components/OccasionRibbon.vue';
 import OccasionCountdown from '../../Components/OccasionCountdown.vue';
 import ProductCard from '../../Components/ProductCard.vue';
@@ -409,7 +407,5 @@ const onMainImageError = () => {
         </Teleport>
 
         <Footer />
-        <WishlistDrawer />
-        <CartDrawer />
     </div>
 </template>

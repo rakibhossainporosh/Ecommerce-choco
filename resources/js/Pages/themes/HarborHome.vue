@@ -5,9 +5,8 @@ import Header from '../../Components/Header.vue';
 import HeroSection from '../../Components/HeroSection.vue';
 import CampaignSale from '../../Components/CampaignSale.vue';
 import ProductCard from '../../Components/ProductCard.vue';
-import CartDrawer from '../../Components/CartDrawer.vue';
-import WishlistDrawer from '../../Components/WishlistDrawer.vue';
 import Footer from '../../Components/Footer.vue';
+import ProductGridSkeleton from '../../Components/ProductGridSkeleton.vue';
 import { useHomePage } from '../../Composables/useHomePage';
 
 const props = defineProps({
@@ -17,7 +16,7 @@ const props = defineProps({
 });
 
 const {
-    t, saleProducts, showSale, catalogProducts,
+    t, saleProducts, showSale, catalogProducts, isCatalogLoading,
     updateFilters, handleSearch, handleClearAllFilters,
     handleSelectCategory, handleSelectSort, emptyMessage,
 } = useHomePage(props);
@@ -154,7 +153,11 @@ const scrollToFeatured = () => {
                                     </button>
                                 </div>
 
-                                <div v-if="products.length === 0" class="text-center py-16">
+                                <div v-if="isCatalogLoading" class="py-1">
+                                    <ProductGridSkeleton :count="8" tone="harbor" />
+                                </div>
+
+                                <div v-else-if="products.length === 0" class="text-center py-16">
                                     <p class="font-bold">{{ emptyMessage() }}</p>
                                     <button type="button" class="mt-4 h-10 px-5 bg-[#1d4ed8] text-white text-xs font-black uppercase tracking-wider rounded-sm" @click="handleClearAllFilters">{{ t('home.browse_all') }}</button>
                                 </div>
@@ -170,7 +173,5 @@ const scrollToFeatured = () => {
         </main>
 
         <Footer />
-        <WishlistDrawer />
-        <CartDrawer />
     </div>
 </template>

@@ -34,18 +34,18 @@ const submit = () => {
             <div class="max-w-md w-full">
                 <div :class="[panelClass, 'p-8 sm:p-10']">
                     <div class="text-center mb-8">
-                        <div class="w-14 h-14 bg-[#FAF7F2] text-[#E86A28] border border-[#EAE3D6] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xs">
+                        <div class="w-14 h-14 border flex items-center justify-center mx-auto mb-4" :class="[accentTextClass, panelClass]">
                             <UserPlus class="w-7 h-7" />
                         </div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-[#1E293B]">{{ t('auth.register_title') }}</h1>
-                        <p class="text-sm text-[#64748B] mt-2">{{ t('auth.register_intro') }}</p>
+                        <h1 class="text-2xl sm:text-3xl font-bold" :class="inkClass" style="font-family: var(--store-display, inherit)">{{ t('auth.register_title') }}</h1>
+                        <p class="text-sm mt-2" :class="mutedClass">{{ t('auth.register_intro') }}</p>
                     </div>
 
                     <form @submit.prevent="submit" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.name') }} *</label>
+                            <label class="block text-xs font-semibold uppercase mb-1.5" :class="mutedClass">{{ t('auth.name') }} *</label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none opacity-50">
                                     <User class="w-4 h-4" />
                                 </div>
                                 <input
@@ -53,16 +53,16 @@ const submit = () => {
                                     type="text"
                                     required
                                     :placeholder="t('auth.register_name_placeholder')"
-                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-[#FAF7F2] focus:bg-white transition-all"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
                                 />
                             </div>
                             <p v-if="form.errors.name" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.name }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.phone') }} *</label>
+                            <label class="block text-xs font-semibold uppercase mb-1.5" :class="mutedClass">{{ t('auth.phone') }} *</label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none opacity-50">
                                     <Phone class="w-4 h-4" />
                                 </div>
                                 <input
@@ -70,32 +70,32 @@ const submit = () => {
                                     type="tel"
                                     required
                                     :placeholder="t('auth.phone_placeholder')"
-                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-[#FAF7F2] focus:bg-white transition-all"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
                                 />
                             </div>
                             <p v-if="form.errors.phone" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.phone }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.email') }}</label>
+                            <label class="block text-xs font-semibold uppercase mb-1.5" :class="mutedClass">{{ t('auth.email') }}</label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none opacity-50">
                                     <Mail class="w-4 h-4" />
                                 </div>
                                 <input
                                     v-model="form.email"
                                     type="email"
                                     placeholder="user@example.com"
-                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-[#FAF7F2] focus:bg-white transition-all"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
                                 />
                             </div>
                             <p v-if="form.errors.email" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.email }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.password_min_hint') }} *</label>
+                            <label class="block text-xs font-semibold uppercase mb-1.5" :class="mutedClass">{{ t('auth.password_min_hint') }} *</label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none opacity-50">
                                     <Lock class="w-4 h-4" />
                                 </div>
                                 <input
@@ -103,16 +103,16 @@ const submit = () => {
                                     type="password"
                                     required
                                     placeholder="••••••••"
-                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-[#FAF7F2] focus:bg-white transition-all"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
                                 />
                             </div>
                             <p v-if="form.errors.password" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.password }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.confirm_password') }} *</label>
+                            <label class="block text-xs font-semibold uppercase mb-1.5" :class="mutedClass">{{ t('auth.confirm_password') }} *</label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none opacity-50">
                                     <Lock class="w-4 h-4" />
                                 </div>
                                 <input
@@ -120,7 +120,7 @@ const submit = () => {
                                     type="password"
                                     required
                                     placeholder="••••••••"
-                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-[#FAF7F2] focus:bg-white transition-all"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
                                 />
                             </div>
                         </div>

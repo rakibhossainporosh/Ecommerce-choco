@@ -94,11 +94,11 @@ const navCategories = computed(() => (categories || []).filter((cat) => cat.slug
                     <Link :href="page.props.customer ? '/account' : '/login'" class="p-2 text-[#b7d0c6] hover:text-white" :title="page.props.customer ? t('header.account') : t('header.login')">
                         <User class="w-5 h-5" />
                     </Link>
-                    <button type="button" class="relative p-2 text-[#b7d0c6] hover:text-white" :title="t('header.wishlist')" @click="openWishlist">
+                    <button type="button" class="relative z-10 p-2 text-[#b7d0c6] hover:text-white" :title="t('header.wishlist')" @click.stop="openWishlist()">
                         <Heart class="w-5 h-5" />
                         <span v-if="wishlistCount > 0" class="absolute top-1 right-0.5 min-w-4 h-4 px-1 bg-[#9fd6c4] text-[#1a2e28] text-[10px] font-bold rounded-full flex items-center justify-center">{{ wishlistCount }}</span>
                     </button>
-                    <button type="button" class="relative p-2 text-[#b7d0c6] hover:text-white" :title="t('header.cart')" @click="openCart">
+                    <button type="button" class="relative z-10 p-2 text-[#b7d0c6] hover:text-white" :title="t('header.cart')" @click.stop="openCart()">
                         <ShoppingBag class="w-5 h-5" />
                         <span v-if="totalCount > 0" class="absolute top-1 right-0.5 min-w-4 h-4 px-1 bg-[#9fd6c4] text-[#1a2e28] text-[10px] font-bold rounded-full flex items-center justify-center">{{ totalCount }}</span>
                     </button>

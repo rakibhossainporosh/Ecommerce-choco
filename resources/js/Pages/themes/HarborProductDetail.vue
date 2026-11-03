@@ -7,8 +7,6 @@ import {
 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
-import CartDrawer from '../../Components/CartDrawer.vue';
-import WishlistDrawer from '../../Components/WishlistDrawer.vue';
 import OccasionRibbon from '../../Components/OccasionRibbon.vue';
 import OccasionCountdown from '../../Components/OccasionCountdown.vue';
 import ProductCard from '../../Components/ProductCard.vue';
@@ -36,6 +34,8 @@ onMounted(() => {
 });
 
 const imageFailed = ref(false);
+const zoomOpen = ref(false);
+const galleryTouchX = ref(0);
 
 watch(activeImage, () => {
     imageFailed.value = false;
@@ -48,6 +48,32 @@ const onMainImageError = () => {
         return;
     }
     imageFailed.value = true;
+};
+
+const activeImageIndex = computed(() => {
+    const index = images.value.findIndex((img) => img === activeImage.value);
+
+    return index >= 0 ? index : 0;
+});
+
+const stepGallery = (delta) => {
+    if (images.value.length < 2) {
+        return;
+    }
+
+    const next = (activeImageIndex.value + delta + images.value.length) % images.value.length;
+    activeImage.value = images.value[next];
+};
+
+const onGallerySwipe = (event) => {
+    const endX = event.changedTouches?.[0]?.clientX || 0;
+    const delta = endX - galleryTouchX.value;
+
+    if (Math.abs(delta) < 40) {
+        return;
+    }
+
+    stepGallery(delta < 0 ? 1 : -1);
 };
 </script>
 
@@ -78,12 +104,20 @@ const onMainImageError = () => {
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                     <div class="lg:col-span-5 bg-white border border-[#d5e0ee] rounded-sm p-3">
-                        <div class="relative aspect-square bg-[#f4f7fb] border border-[#e7eef8] rounded-sm overflow-hidden">
+                        <div
+                            class="relative aspect-square bg-[#f4f7fb] border border-[#e7eef8] rounded-sm overflow-hidden group touch-pan-y cursor-zoom-in"
+                            role="button"
+                            tabindex="0"
+                            @click="!imageFailed && (zoomOpen = true)"
+                            @keydown.enter.prevent="!imageFailed && (zoomOpen = true)"
+                            @touchstart.passive="galleryTouchX = $event.changedTouches[0]?.clientX || 0"
+                            @touchend.passive="onGallerySwipe($event)"
+                        >
                             <img
                                 v-if="!imageFailed"
                                 :src="activeImage"
                                 :alt="productTitle"
-                                class="w-full h-full object-cover"
+                                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03] pointer-events-none"
                                 @error="onMainImageError"
                             />
                             <div
@@ -92,6 +126,10 @@ const onMainImageError = () => {
                             >
                                 {{ productTitle }}
                             </div>
+                            <template v-if="images.length > 1 && !imageFailed">
+                                <button type="button" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/95 text-[#0f172a] hidden sm:inline-flex items-center justify-center rounded-sm shadow-sm" @click.stop="stepGallery(-1)">‹</button>
+                                <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/95 text-[#0f172a] hidden sm:inline-flex items-center justify-center rounded-sm shadow-sm" @click.stop="stepGallery(1)">›</button>
+                            </template>
                         </div>
                         <div v-if="images.length > 1" class="mt-3 flex gap-2 overflow-x-auto">
                             <button
@@ -277,8 +315,19 @@ const onMainImageError = () => {
             </div>
         </div>
 
+        <Teleport to="body">
+            <div
+                v-if="zoomOpen && activeImage && !imageFailed"
+                class="fixed inset-0 z-[60] bg-[#0f172a]/80 flex items-center justify-center p-4"
+                @click="zoomOpen = false"
+            >
+                <button type="button" class="absolute top-4 right-4 w-10 h-10 bg-white text-[#0f172a] rounded-sm inline-flex items-center justify-center" @click="zoomOpen = false">
+                    <X class="w-5 h-5" />
+                </button>
+                <img :src="activeImage" :alt="productTitle" class="max-h-[90vh] max-w-full object-contain" @click.stop />
+            </div>
+        </Teleport>
+
         <Footer />
-        <WishlistDrawer />
-        <CartDrawer />
     </div>
 </template>

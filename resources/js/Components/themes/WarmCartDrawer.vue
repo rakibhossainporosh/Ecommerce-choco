@@ -22,34 +22,14 @@ const formatPrice = (val) => {
 </script>
 
 <template>
-    <!-- Overlay Backdrop -->
-    <Transition
-        enter-active-class="transition-opacity duration-300 ease-out"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition-opacity duration-200 ease-in"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-    >
+    <Teleport to="body">
+        <template v-if="isCartOpen">
         <div
-            v-if="isCartOpen"
+            class="store-drawer fixed inset-0 bg-black/40 backdrop-blur-xs z-[80]"
             @click="closeCart"
-            class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50"
         ></div>
-    </Transition>
-
-    <!-- Slide-over Drawer matching screenshot -->
-    <Transition
-        enter-active-class="transition-transform duration-300 ease-out"
-        enter-from-class="translate-x-full"
-        enter-to-class="translate-x-0"
-        leave-active-class="transition-transform duration-200 ease-in"
-        leave-from-class="translate-x-0"
-        leave-to-class="translate-x-full"
-    >
         <div
-            v-if="isCartOpen"
-            class="fixed inset-y-0 right-0 max-w-sm sm:max-w-md w-full bg-white shadow-2xl z-50 flex flex-col justify-between border-l border-[#EAE3D6]"
+            class="store-drawer fixed inset-y-0 right-0 max-w-sm sm:max-w-md w-full bg-white shadow-2xl z-[90] flex flex-col justify-between border-l border-[#EAE3D6]"
         >
             <!-- Header -->
             <div class="px-6 py-5 border-b border-[#F0EAE1] flex items-center justify-between">
@@ -161,5 +141,6 @@ const formatPrice = (val) => {
                 </Link>
             </div>
         </div>
-    </Transition>
+        </template>
+    </Teleport>
 </template>

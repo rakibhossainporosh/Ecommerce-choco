@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import { useI18n } from '../Composables/useI18n';
+import { useStorefrontPageShell } from '../Composables/useStorefrontPageShell';
 
 const props = defineProps({
     items: {
@@ -13,6 +14,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const { pageClass, primaryButtonClass, inkClass, mutedClass } = useStorefrontPageShell();
 
 onMounted(() => {
     if (!props.items.length) {
@@ -37,14 +39,15 @@ onMounted(() => {
 <template>
     <Head :title="t('cart.title')" />
 
-    <div class="store-page min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
+    <div :class="pageClass">
         <Header />
 
         <main class="flex-1 max-w-xl mx-auto px-4 py-20 text-center w-full">
-            <p v-if="items.length" class="text-lg font-semibold">{{ t('cart.recovering') }}</p>
+            <p v-if="items.length" class="text-lg font-semibold" :class="inkClass">{{ t('cart.recovering') }}</p>
             <template v-else>
-                <p class="text-lg font-semibold">{{ t('cart.recover_empty') }}</p>
-                <Link href="/" class="inline-flex mt-6 bg-[#E86A28] text-white font-semibold px-5 py-3 rounded-xl">
+                <p class="text-lg font-semibold" :class="inkClass">{{ t('cart.recover_empty') }}</p>
+                <p class="mt-2 text-sm" :class="mutedClass">{{ t('checkout.empty_hint') }}</p>
+                <Link href="/" :class="[primaryButtonClass, 'inline-flex mt-6 px-5 py-3']">
                     {{ t('cart.recover_home') }}
                 </Link>
             </template>
