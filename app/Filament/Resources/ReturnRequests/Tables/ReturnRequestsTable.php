@@ -40,7 +40,8 @@ class ReturnRequestsTable
                     ->sortable()
                     ->searchable()
                     ->weight('bold')
-                    ->copyable(),
+                    ->copyable()
+                    ->alignCenter(),
 
                 TextColumn::make('customer_name')
                     ->label('Customer')
@@ -54,31 +55,36 @@ class ReturnRequestsTable
                             $q->whereHas('user', fn ($sub) => $sub->where('name', 'like', "%{$search}%"))
                                 ->orWhereHas('order', fn ($sub) => $sub->where('customer_name', 'like', "%{$search}%"));
                         });
-                    }),
+                    })
+                    ->alignCenter(),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->alignCenter(),
 
                 TextColumn::make('refund_amount')
                     ->label('Refund Amount')
                     ->formatStateUsing($currencyFormat)
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->alignCenter(),
 
                 TextColumn::make('reason')
                     ->label('Reason')
                     ->limit(35)
                     ->tooltip(fn (ReturnRequest $record): ?string => $record->reason)
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Submitted At')
                     ->dateTime('M j, Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->alignCenter(),
             ])
             ->defaultSort('created_at', 'desc')
             ->paginated(! app()->runningUnitTests())
