@@ -175,6 +175,7 @@ class OrdersTable
                 OrderActions::makeShipAction(),
                 OrderActions::makeDeliverAction(),
                 OrderActions::makeCancelAction(),
+                OrderActions::makeRefundAction(),
             ])
             ->toolbarActions([])
             ->recordUrl(fn (Order $record): ?string => OrderResource::canView($record) ? OrderResource::getUrl('view', ['record' => $record]) : null);

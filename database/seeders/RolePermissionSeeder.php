@@ -206,6 +206,7 @@ class RolePermissionSeeder extends Seeder
             $managerPermissions[] = 'reviews.update';
             $managerPermissions[] = 'reviews.delete';
             $managerPermissions[] = 'returns.view';
+            $managerPermissions[] = 'returns.create';
             $managerPermissions[] = 'returns.update';
             $managerPermissions[] = 'returns.delete';
             $managerPermissions[] = 'activities.view';

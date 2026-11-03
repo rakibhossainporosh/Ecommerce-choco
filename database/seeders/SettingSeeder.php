@@ -213,6 +213,15 @@ class SettingSeeder extends Seeder
                 'is_public' => true,
                 'is_system' => false,
             ],
+            [
+                'key' => 'return_window_days',
+                'label' => 'Return Window (Days)',
+                'value' => '3',
+                'type' => SettingType::Integer,
+                'group' => 'orders',
+                'is_public' => true,
+                'is_system' => false,
+            ],
         ];
 
         foreach ($settings as $setting) {

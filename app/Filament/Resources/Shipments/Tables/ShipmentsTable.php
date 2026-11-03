@@ -191,6 +191,10 @@ class ShipmentsTable
                             ->send();
                     }),
             ])
-            ->toolbarActions([]);
+            ->toolbarActions([])
+            ->striped()
+            ->emptyStateHeading(__('No shipments yet'))
+            ->emptyStateDescription(__('Create a consignment when an order is ready to pack and dispatch.'))
+            ->emptyStateIcon(Heroicon::OutlinedTruck);
     }
 }

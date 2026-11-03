@@ -422,7 +422,7 @@ test('I. Order confirmation creates exactly one pending to confirmed status hist
         ->and($history->order_id)->toBe($order->id);
 });
 
-test('J. Subsequent lifecycle transitions and cancellation do not mutate stock in CAT-9F', function () {
+test('J. Fulfillment transitions do not re-deduct stock; cancel after confirm restores stock', function () {
     $variant = ProductVariant::factory()->create();
     $inventory = Inventory::create([
         'product_variant_id' => $variant->id,
@@ -457,7 +457,7 @@ test('J. Subsequent lifecycle transitions and cancellation do not mutate stock i
     expect($inventory->fresh()->quantity)->toBe(7)
         ->and(InventoryMovement::count())->toBe(1);
 
-    // Cancellation of a confirmed order does not restore stock in CAT-9F
+    // Cancellation of a confirmed order restores reserved stock
     $order2 = Order::factory()->create(['status' => OrderStatus::Pending]);
     OrderItem::factory()->create([
         'order_id' => $order2->id,
@@ -470,8 +470,8 @@ test('J. Subsequent lifecycle transitions and cancellation do not mutate stock i
 
     $order2->cancel('Customer requested cancellation');
     expect($order2->fresh()->status)->toBe(OrderStatus::Cancelled)
-        ->and($inventory->fresh()->quantity)->toBe(5)
-        ->and(InventoryMovement::count())->toBe(2);
+        ->and($inventory->fresh()->quantity)->toBe(7)
+        ->and(InventoryMovement::count())->toBe(3);
 });
 
 test('K. Filament confirm action catches InventoryException and displays error notification', function () {

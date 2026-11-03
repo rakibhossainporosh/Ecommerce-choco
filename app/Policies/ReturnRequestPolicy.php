@@ -30,7 +30,7 @@ class ReturnRequestPolicy
 
     public function delete(User $user, ReturnRequest $returnRequest): bool
     {
-        if ($returnRequest->status === ReturnRequestStatus::Completed) {
+        if ($returnRequest->status !== ReturnRequestStatus::Pending) {
             return false;
         }
 

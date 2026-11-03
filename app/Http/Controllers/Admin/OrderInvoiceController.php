@@ -16,7 +16,7 @@ class OrderInvoiceController extends Controller
     {
         $user = $request->user();
 
-        if (! $user || ! $user->can_access_admin_panel) {
+        if (! $user || ! $user->can_access_admin_panel || ! $user->can('view', $order)) {
             abort(403, 'Unauthorized access to order invoice.');
         }
 

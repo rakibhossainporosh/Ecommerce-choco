@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Orders\Actions;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentTransactionStatus;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Exceptions\InventoryException;
+use App\Exceptions\ShippingException;
 use App\Models\Order;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -117,14 +119,16 @@ class OrderActions
                 }
 
                 try {
-                    $record->ship();
+                    /** @var User|null $user */
+                    $user = auth()->user();
+                    $record->shipWithConsignment($user);
 
                     Notification::make()
                         ->title(__('Order Shipped'))
-                        ->body(__('Order #:number has been marked as shipped.', ['number' => $record->order_number]))
+                        ->body(__('Order #:number has been marked as shipped and consignment updated.', ['number' => $record->order_number]))
                         ->success()
                         ->send();
-                } catch (InvalidOrderTransitionException $e) {
+                } catch (InvalidOrderTransitionException|ShippingException $e) {
                     Notification::make()
                         ->title(__('Transition Failed'))
                         ->body($e->getMessage())
@@ -231,6 +235,53 @@ class OrderActions
                 } catch (InvalidOrderTransitionException $e) {
                     Notification::make()
                         ->title(__('Cancellation Failed'))
+                        ->body($e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
+    }
+
+    /**
+     * Refund completed payments on an order (post-return / goodwill).
+     */
+    public static function makeRefundAction(): Action
+    {
+        return Action::make('refund')
+            ->label('Refund')
+            ->icon(Heroicon::OutlinedBanknotes)
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading(fn (Order $record): string => __('Refund Order #:number', ['number' => $record->order_number]))
+            ->modalDescription(__('Refund all completed payments on this order and mark it refunded when applicable.'))
+            ->visible(fn (?Order $record): bool => $record instanceof Order
+                && (auth()->user()?->can('refund', $record) ?? false)
+                && $record->payments()->where('status', PaymentTransactionStatus::Completed)->exists()
+            )
+            ->authorize('refund')
+            ->action(function (Order $record): void {
+                if (! auth()->user()?->can('refund', $record)) {
+                    abort(403);
+                }
+
+                try {
+                    /** @var User|null $user */
+                    $user = auth()->user();
+                    $record->refundCompletedPayments(__('Admin refund'), $user);
+
+                    $fresh = $record->fresh();
+                    if ($fresh?->status === OrderStatus::Returned && $fresh->canTransitionTo(OrderStatus::Refunded)) {
+                        $fresh->markAsRefunded($user);
+                    }
+
+                    Notification::make()
+                        ->title(__('Refund Processed'))
+                        ->body(__('Completed payments for order #:number were refunded.', ['number' => $record->order_number]))
+                        ->success()
+                        ->send();
+                } catch (\Throwable $e) {
+                    Notification::make()
+                        ->title(__('Refund Failed'))
                         ->body($e->getMessage())
                         ->danger()
                         ->send();

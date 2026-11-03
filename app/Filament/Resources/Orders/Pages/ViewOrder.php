@@ -46,6 +46,7 @@ class ViewOrder extends ViewRecord
             OrderActions::makeShipAction(),
             OrderActions::makeDeliverAction(),
             OrderActions::makeCancelAction(),
+            OrderActions::makeRefundAction(),
         ];
     }
 }

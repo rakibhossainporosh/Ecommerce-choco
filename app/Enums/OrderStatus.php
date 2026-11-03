@@ -48,9 +48,9 @@ enum OrderStatus: string implements HasLabel
             self::Confirmed => [self::Processing, self::Cancelled],
             self::Processing => [self::Shipped, self::Cancelled],
             self::Shipped => [self::Delivered],
-            self::Delivered => [],
+            self::Delivered => [self::Returned],
             self::Cancelled => [],
-            self::Returned => [],
+            self::Returned => [self::Refunded],
             self::Refunded => [],
         };
     }
@@ -77,7 +77,7 @@ enum OrderStatus: string implements HasLabel
     public function isTerminal(): bool
     {
         return match ($this) {
-            self::Delivered, self::Cancelled, self::Returned, self::Refunded => true,
+            self::Cancelled, self::Refunded => true,
             default => false,
         };
     }

@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
+use App\Enums\ReturnRequestStatus;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\ReturnRequest;
 use App\Services\SmsService;
+use App\Support\ReturnItemValidator;
+use App\Support\ReturnPolicySettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -161,42 +166,116 @@ class CustomerAuthController extends Controller
             return redirect()->route('customer.login');
         }
 
-        $orders = Order::query()
+        $ordersQuery = Order::query()
             ->where(function ($q) use ($customer) {
                 $q->where('customer_id', $customer->id)
                     ->orWhere('customer_phone', $customer->phone);
-            })
+            });
+
+        $orders = (clone $ordersQuery)
             ->with([
                 'items',
                 'statusHistories' => function ($q) {
+                    $q->latest();
+                },
+                'returnRequests' => function ($q) {
                     $q->latest();
                 },
             ])
             ->latest()
             ->get()
             ->map(function (Order $order) {
+                $openReturn = $order->returnRequests
+                    ->first(fn (ReturnRequest $returnRequest) => in_array($returnRequest->status, [
+                        ReturnRequestStatus::Pending,
+                        ReturnRequestStatus::Approved,
+                        ReturnRequestStatus::Received,
+                    ], true));
+
+                $remainingByItem = ReturnItemValidator::remainingQuantities($order);
+                $returnableItems = $order->items
+                    ->filter(fn ($item): bool => (int) ($remainingByItem[$item->id] ?? 0) > 0)
+                    ->map(function ($item) use ($remainingByItem) {
+                        $remaining = (int) ($remainingByItem[$item->id] ?? 0);
+
+                        return [
+                            'id' => $item->id,
+                            'name' => $item->variant_name ?? $item->product_name,
+                            'quantity' => (int) $item->quantity,
+                            'remaining_quantity' => $remaining,
+                            'unit_price' => (float) $item->unit_price,
+                            'line_total' => (float) $item->line_total,
+                        ];
+                    })
+                    ->values();
+
                 return [
                     'id' => $order->id,
                     'order_number' => $order->order_number,
                     'status' => $order->status->value,
                     'payment_status' => $order->payment_status->value,
-                    'payment_method' => $order->payment_method->value,
+                    'payment_method' => is_object($order->payment_method)
+                        ? $order->payment_method->value
+                        : (string) $order->payment_method,
                     'grand_total' => (float) $order->grand_total,
                     'subtotal' => (float) $order->subtotal,
                     'shipping_amount' => (float) $order->shipping_amount,
                     'created_at' => $order->created_at->format('d M Y, h:i A'),
                     'shipping_address' => $order->shipping_address_line.', '.$order->shipping_city,
                     'items_count' => $order->items->sum('quantity'),
-                    'items' => $order->items->map(function ($item) {
-                        return [
-                            'name' => $item->variant_name ?? $item->product_name,
-                            'quantity' => $item->quantity,
-                            'unit_price' => (float) $item->unit_price,
-                            'line_total' => (float) $item->line_total,
-                        ];
-                    }),
+                    'can_request_return' => $order->status === OrderStatus::Delivered
+                        && $order->isWithinReturnWindow()
+                        && $openReturn === null
+                        && $returnableItems->isNotEmpty(),
+                    'return_request' => $openReturn ? [
+                        'id' => $openReturn->id,
+                        'status' => $openReturn->status->value,
+                        'refund_amount' => (float) $openReturn->refund_amount,
+                        'reason' => $openReturn->reason,
+                        'created_at' => $openReturn->created_at?->format('d M Y, h:i A'),
+                    ] : null,
+                    'items' => $returnableItems,
                 ];
             });
+
+        $returnRequests = ReturnRequest::query()
+            ->where(function ($q) use ($customer, $ordersQuery) {
+                $q->where('customer_id', $customer->id)
+                    ->orWhereIn('order_id', (clone $ordersQuery)->select('id'));
+            })
+            ->with(['order:id,order_number', 'items'])
+            ->latest()
+            ->get()
+            ->map(fn (ReturnRequest $returnRequest) => [
+                'id' => $returnRequest->id,
+                'rma_number' => $returnRequest->rma_number,
+                'order_number' => $returnRequest->order?->order_number,
+                'status' => $returnRequest->status->value,
+                'status_label' => $returnRequest->status->label(),
+                'reason' => $returnRequest->reason,
+                'admin_note' => in_array($returnRequest->status, [
+                    ReturnRequestStatus::Rejected,
+                    ReturnRequestStatus::Cancelled,
+                ], true)
+                    ? $returnRequest->admin_note
+                    : null,
+                'refund_amount' => (float) $returnRequest->refund_amount,
+                'items_count' => $returnRequest->items->sum('quantity'),
+                'can_cancel' => $returnRequest->status === ReturnRequestStatus::Pending,
+                'created_at' => $returnRequest->created_at?->format('d M Y, h:i A'),
+            ]);
+
+        $notifications = $customer->notifications()
+            ->latest()
+            ->limit(20)
+            ->get()
+            ->map(fn ($notification): array => [
+                'id' => $notification->id,
+                'title' => (string) data_get($notification->data, 'title', __('Notification')),
+                'body' => (string) data_get($notification->data, 'body', ''),
+                'read' => $notification->read_at !== null,
+                'created_at' => $notification->created_at?->format('d M Y, h:i A'),
+            ]);
 
         return Inertia::render('Customer/Account', [
             'customer' => [
@@ -207,11 +286,51 @@ class CustomerAuthController extends Controller
                 'member_since' => $customer->created_at->format('d M Y'),
             ],
             'orders' => $orders,
+            'return_requests' => $returnRequests,
+            'notifications' => $notifications,
+            'return_window_days' => ReturnPolicySettings::windowDays(),
             'stats' => [
                 'total_orders' => $orders->count(),
                 'total_spent' => $orders->sum('grand_total'),
             ],
         ]);
+    }
+
+    /**
+     * Mark a customer database notification as read.
+     */
+    public function markNotificationRead(Request $request, string $notification): RedirectResponse
+    {
+        $customer = Auth::guard('customer')->user();
+
+        if (! $customer) {
+            return redirect()->route('customer.login');
+        }
+
+        $record = $customer->notifications()->whereKey($notification)->firstOrFail();
+        $record->markAsRead();
+
+        return redirect()
+            ->route('customer.account', ['tab' => $request->string('tab')->toString() ?: 'notifications'])
+            ->with('success', __('storefront.account.notification_marked_read'));
+    }
+
+    /**
+     * Mark all customer database notifications as read.
+     */
+    public function markAllNotificationsRead(): RedirectResponse
+    {
+        $customer = Auth::guard('customer')->user();
+
+        if (! $customer) {
+            return redirect()->route('customer.login');
+        }
+
+        $customer->unreadNotifications->markAsRead();
+
+        return redirect()
+            ->route('customer.account', ['tab' => 'notifications'])
+            ->with('success', __('storefront.account.notifications_marked_read'));
     }
 
     /**

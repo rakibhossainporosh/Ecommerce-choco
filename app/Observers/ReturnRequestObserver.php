@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Customer;
 use App\Models\ReturnRequest;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -18,10 +19,11 @@ class ReturnRequestObserver
 
         if ($users && $users->isNotEmpty()) {
             $orderNumber = $returnRequest->order?->order_number ?? $returnRequest->order_id;
+            $rma = $returnRequest->rma_number ?? '#'.$returnRequest->id;
 
             Notification::make()
                 ->title(__('New Return Request'))
-                ->body(__('A return request has been submitted for Order #:number.', ['number' => $orderNumber]))
+                ->body(__('Return :rma submitted for Order #:number.', ['rma' => $rma, 'number' => $orderNumber]))
                 ->warning()
                 ->icon('heroicon-o-arrow-path')
                 ->actions([
@@ -38,40 +40,45 @@ class ReturnRequestObserver
      */
     public function updated(ReturnRequest $returnRequest): void
     {
-        if ($returnRequest->wasChanged('status') && $returnRequest->user) {
-            $statusLabel = $returnRequest->status->label();
-            $orderNumber = $returnRequest->order?->order_number ?? $returnRequest->order_id;
-
-            Notification::make()
-                ->title(__('Return request update'))
-                ->body(__('Your return request for Order #:number has been updated to :status.', ['number' => $orderNumber, 'status' => $statusLabel]))
-                ->icon($returnRequest->status->getIcon())
-                ->color($returnRequest->status->getColor())
-                ->sendToDatabase($returnRequest->user);
+        if (! $returnRequest->wasChanged('status')) {
+            return;
         }
-    }
 
-    /**
-     * Handle the ReturnRequest "deleted" event.
-     */
-    public function deleted(ReturnRequest $returnRequest): void
-    {
-        //
-    }
+        $statusLabel = $returnRequest->status->label();
+        $orderNumber = $returnRequest->order?->order_number ?? $returnRequest->order_id;
+        $rma = $returnRequest->rma_number ?? '#'.$returnRequest->id;
+        $body = __('Return :rma for Order #:number is now :status.', [
+            'rma' => $rma,
+            'number' => $orderNumber,
+            'status' => $statusLabel,
+        ]);
 
-    /**
-     * Handle the ReturnRequest "restored" event.
-     */
-    public function restored(ReturnRequest $returnRequest): void
-    {
-        //
-    }
+        $notifiables = collect();
 
-    /**
-     * Handle the ReturnRequest "force deleted" event.
-     */
-    public function forceDeleted(ReturnRequest $returnRequest): void
-    {
-        //
+        if ($returnRequest->customer instanceof Customer) {
+            $notifiables->push($returnRequest->customer);
+        } elseif ($returnRequest->customer_id) {
+            $customer = Customer::query()->find($returnRequest->customer_id);
+            if ($customer) {
+                $notifiables->push($customer);
+            }
+        }
+
+        if ($returnRequest->user instanceof User) {
+            $notifiables->push($returnRequest->user);
+        }
+
+        $notifiables = $notifiables->unique(fn ($model) => $model::class.'#'.$model->getKey());
+
+        if ($notifiables->isEmpty()) {
+            return;
+        }
+
+        Notification::make()
+            ->title(__('Return request update'))
+            ->body($body)
+            ->icon($returnRequest->status->getIcon())
+            ->color($returnRequest->status->getColor())
+            ->sendToDatabase($notifiables);
     }
 }

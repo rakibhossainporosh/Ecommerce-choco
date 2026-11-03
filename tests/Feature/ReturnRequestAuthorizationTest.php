@@ -28,6 +28,7 @@ test('admin has full access to return requests', function () {
 
 test('manager has full access to return requests', function () {
     expect($this->manager->can('returns.view'))->toBeTrue()
+        ->and($this->manager->can('returns.create'))->toBeTrue()
         ->and($this->manager->can('returns.update'))->toBeTrue()
         ->and($this->manager->can('returns.delete'))->toBeTrue();
 });

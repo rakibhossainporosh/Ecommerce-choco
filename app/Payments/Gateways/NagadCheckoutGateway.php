@@ -244,11 +244,13 @@ class NagadCheckoutGateway extends AbstractGateway
             throw new PaymentGatewayException(__('This Nagad payment has no reference to refund.'));
         }
 
+        $refundAmount = (float) ($payment->metadata['refund_amount_override'] ?? $payment->amount);
+
         $plain = json_encode([
             'merchantId' => PaymentGatewaySettings::text($this->key(), 'merchant_id'),
             'orderId' => $orderId,
             'paymentRefId' => $reference,
-            'amount' => number_format((float) $payment->amount, 2, '.', ''),
+            'amount' => number_format($refundAmount, 2, '.', ''),
             'referenceMessage' => mb_substr($reason !== '' ? $reason : 'Order refund', 0, 120),
         ], JSON_THROW_ON_ERROR);
 

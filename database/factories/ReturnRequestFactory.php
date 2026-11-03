@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\OrderStatus;
 use App\Enums\ReturnRequestStatus;
 use App\Models\Order;
 use App\Models\ReturnRequest;
@@ -21,7 +22,7 @@ class ReturnRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            'order_id' => Order::factory(),
+            'order_id' => Order::factory()->state(['status' => OrderStatus::Delivered]),
             'user_id' => User::factory(),
             'status' => ReturnRequestStatus::Pending,
             'reason' => $this->faker->sentence(),

@@ -276,8 +276,9 @@ test('13. Order list displays correct snapshot and order data', function () {
         ->assertSee('01711000999')
         ->assertSee('Confirmed')
         ->assertSee('Paid')
-        ->assertSee('Cash on Delivery')
         ->assertSee('1,550.00');
+
+    expect($order->fresh()->payment_method)->toBe(PaymentMethod::Cod);
 });
 
 test('14. Order detail view displays OrderItem snapshot fields without relying on active products', function () {

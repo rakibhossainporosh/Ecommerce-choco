@@ -5,8 +5,9 @@ namespace App\Filament\Resources\ReturnRequests\Pages;
 use App\Enums\ReturnRequestStatus;
 use App\Filament\Resources\ReturnRequests\ReturnRequestResource;
 use App\Models\ReturnRequest;
+use DomainException;
 use Filament\Actions\Action;
-use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
@@ -28,14 +29,47 @@ class ViewReturnRequest extends ViewRecord
                 ->modalDescription(fn (ReturnRequest $record): string => __('Approve return request for Order #:number?', ['number' => $record->order?->order_number]))
                 ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Pending && auth()->user()?->can('returns.update'))
                 ->action(function (ReturnRequest $record): void {
-                    $record->status = ReturnRequestStatus::Approved;
-                    $record->save();
+                    try {
+                        $record->approve(auth()->user());
 
-                    Notification::make()
-                        ->info()
-                        ->title(__('Return Request Approved'))
-                        ->body(__('Return request for Order #:number has been approved.', ['number' => $record->order?->order_number]))
-                        ->send();
+                        Notification::make()
+                            ->info()
+                            ->title(__('Return Request Approved'))
+                            ->body(__('Return request for Order #:number has been approved.', ['number' => $record->order?->order_number]))
+                            ->send();
+                    } catch (DomainException|\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Approve Failed'))
+                            ->body($e->getMessage())
+                            ->send();
+                    }
+                }),
+
+            Action::make('markReceived')
+                ->label('Mark Received')
+                ->icon(Heroicon::OutlinedArchiveBox)
+                ->color('primary')
+                ->requiresConfirmation()
+                ->modalHeading(__('Mark Return Received'))
+                ->modalDescription(fn (ReturnRequest $record): string => __('Confirm goods received for Order #:number?', ['number' => $record->order?->order_number]))
+                ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Approved && auth()->user()?->can('returns.update'))
+                ->action(function (ReturnRequest $record): void {
+                    try {
+                        $record->markReceived(auth()->user());
+
+                        Notification::make()
+                            ->success()
+                            ->title(__('Return Marked Received'))
+                            ->body(__('Return goods for Order #:number marked as received.', ['number' => $record->order?->order_number]))
+                            ->send();
+                    } catch (DomainException|\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Receive Failed'))
+                            ->body($e->getMessage())
+                            ->send();
+                    }
                 }),
 
             Action::make('reject')
@@ -48,17 +82,27 @@ class ViewReturnRequest extends ViewRecord
                         ->placeholder(__('Explain why this return request is rejected...'))
                         ->required(),
                 ])
-                ->visible(fn (ReturnRequest $record): bool => in_array($record->status, [ReturnRequestStatus::Pending, ReturnRequestStatus::Approved], true) && auth()->user()?->can('returns.update'))
+                ->visible(fn (ReturnRequest $record): bool => in_array($record->status, [
+                    ReturnRequestStatus::Pending,
+                    ReturnRequestStatus::Approved,
+                    ReturnRequestStatus::Received,
+                ], true) && auth()->user()?->can('returns.update'))
                 ->action(function (ReturnRequest $record, array $data): void {
-                    $record->status = ReturnRequestStatus::Rejected;
-                    $record->admin_note = $data['admin_note'];
-                    $record->save();
+                    try {
+                        $record->reject($data['admin_note'], auth()->user());
 
-                    Notification::make()
-                        ->danger()
-                        ->title(__('Return Request Rejected'))
-                        ->body(__('Return request for Order #:number has been rejected.', ['number' => $record->order?->order_number]))
-                        ->send();
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Return Request Rejected'))
+                            ->body(__('Return request for Order #:number has been rejected.', ['number' => $record->order?->order_number]))
+                            ->send();
+                    } catch (DomainException|\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Reject Failed'))
+                            ->body($e->getMessage())
+                            ->send();
+                    }
                 }),
 
             Action::make('complete')
@@ -67,20 +111,28 @@ class ViewReturnRequest extends ViewRecord
                 ->color('success')
                 ->requiresConfirmation()
                 ->modalHeading(__('Complete Return Request'))
-                ->modalDescription(fn (ReturnRequest $record): string => __('Mark return request for Order #:number as completed? Verify items were received and refund processed.', ['number' => $record->order?->order_number]))
-                ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Approved && auth()->user()?->can('returns.update'))
+                ->modalDescription(fn (ReturnRequest $record): string => __('Mark return for Order #:number complete? This restocks inventory and refunds up to the approved amount.', ['number' => $record->order?->order_number]))
+                ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Received && auth()->user()?->can('returns.update'))
                 ->action(function (ReturnRequest $record): void {
-                    $record->status = ReturnRequestStatus::Completed;
-                    $record->save();
+                    try {
+                        $record->complete(auth()->user());
 
-                    Notification::make()
-                        ->success()
-                        ->title(__('Return Request Completed'))
-                        ->body(__('Return request for Order #:number is marked as completed.', ['number' => $record->order?->order_number]))
-                        ->send();
+                        Notification::make()
+                            ->success()
+                            ->title(__('Return Request Completed'))
+                            ->body(__('Return for Order #:number completed with stock restore and refund handling.', ['number' => $record->order?->order_number]))
+                            ->send();
+                    } catch (DomainException|\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Complete Failed'))
+                            ->body($e->getMessage())
+                            ->send();
+                    }
                 }),
 
-            EditAction::make(),
+            DeleteAction::make()
+                ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Pending && auth()->user()?->can('returns.delete')),
         ];
     }
 }

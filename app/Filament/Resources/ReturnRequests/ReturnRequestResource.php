@@ -4,7 +4,6 @@ namespace App\Filament\Resources\ReturnRequests;
 
 use App\Enums\ReturnRequestStatus;
 use App\Filament\Concerns\TranslatesResourceNavigation;
-use App\Filament\Resources\ReturnRequests\Pages\EditReturnRequest;
 use App\Filament\Resources\ReturnRequests\Pages\ListReturnRequests;
 use App\Filament\Resources\ReturnRequests\Pages\ViewReturnRequest;
 use App\Filament\Resources\ReturnRequests\Schemas\ReturnRequestForm;
@@ -37,7 +36,7 @@ class ReturnRequestResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Return Requests';
 
-    protected static ?string $recordTitleAttribute = 'id';
+    protected static ?string $recordTitleAttribute = 'rma_number';
 
     public static function getNavigationBadge(): ?string
     {
@@ -83,23 +82,27 @@ class ReturnRequestResource extends Resource
         return [
             'index' => ListReturnRequests::route('/'),
             'view' => ViewReturnRequest::route('/{record}'),
-            'edit' => EditReturnRequest::route('/{record}/edit'),
         ];
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['order.customer', 'user']);
+            ->with(['order.customer', 'user', 'items.orderItem', 'statusHistories.changedBy']);
+    }
+
+    /**
+     * Returns are managed through approve / reject / complete lifecycle actions.
+     */
+    public static function canEdit(Model $record): bool
+    {
+        return false;
     }
 
     public static function canDelete(Model $record): bool
     {
         /** @var ReturnRequest $record */
-        if ($record->status === ReturnRequestStatus::Completed) {
-            return false;
-        }
-
-        return parent::canDelete($record);
+        return $record->status === ReturnRequestStatus::Pending
+            && parent::canDelete($record);
     }
 }

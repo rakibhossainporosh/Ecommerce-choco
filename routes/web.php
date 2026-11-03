@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\OrderInvoiceController;
 use App\Http\Controllers\Admin\SiteLocaleController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\CustomerReturnController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\StorefrontController;
@@ -39,6 +40,18 @@ Route::post('/register', [CustomerAuthController::class, 'register'])->middlewar
 Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
 Route::get('/account', [CustomerAuthController::class, 'showAccount'])->name('customer.account');
 Route::post('/account/profile', [CustomerAuthController::class, 'updateProfile'])->middleware('throttle:15,1')->name('customer.profile.update');
+Route::post('/account/orders/{order}/returns', [CustomerReturnController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('customer.orders.returns.store');
+Route::delete('/account/returns/{returnRequest}', [CustomerReturnController::class, 'destroy'])
+    ->middleware('throttle:10,1')
+    ->name('customer.returns.destroy');
+Route::post('/account/notifications/{notification}/read', [CustomerAuthController::class, 'markNotificationRead'])
+    ->middleware('throttle:30,1')
+    ->name('customer.notifications.read');
+Route::post('/account/notifications/read-all', [CustomerAuthController::class, 'markAllNotificationsRead'])
+    ->middleware('throttle:15,1')
+    ->name('customer.notifications.read-all');
 
 // Footer & Static Pages
 Route::inertia('/about-us', 'Static/About')->name('page.about');

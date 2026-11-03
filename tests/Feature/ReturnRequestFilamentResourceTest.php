@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Enums\ReturnRequestStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Orders\RelationManagers\ReturnRequestsRelationManager;
-use App\Filament\Resources\ReturnRequests\Pages\EditReturnRequest;
 use App\Filament\Resources\ReturnRequests\Pages\ListReturnRequests;
 use App\Filament\Resources\ReturnRequests\Pages\ViewReturnRequest;
 use App\Filament\Resources\ReturnRequests\ReturnRequestResource;
@@ -37,17 +37,17 @@ test('can list return requests', function () {
 test('can create return request via modal', function () {
     $this->actingAs($this->admin);
 
-    $order = Order::factory()->create(['grand_total' => 500]);
+    $order = Order::factory()->create(['grand_total' => 500, 'status' => OrderStatus::Delivered]);
     $user = User::factory()->create();
 
     Livewire::test(ListReturnRequests::class)
         ->callAction('create', [
             'order_id' => $order->id,
             'user_id' => $user->id,
-            'status' => ReturnRequestStatus::Pending->value,
             'reason' => 'Defective screen',
             'admin_note' => 'Will check this one closely.',
             'refund_amount' => 500,
+            'line_items' => [],
         ])
         ->assertHasNoActionErrors();
 
@@ -58,8 +58,8 @@ test('can create return request via modal', function () {
     ]);
 });
 
-test('can edit return request', function () {
-    $order = Order::factory()->create(['grand_total' => 100]);
+test('can approve return request via lifecycle action', function () {
+    $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
     $returnRequest = ReturnRequest::factory()->create([
         'order_id' => $order->id,
         'status' => ReturnRequestStatus::Pending,
@@ -68,14 +68,22 @@ test('can edit return request', function () {
 
     $this->actingAs($this->admin);
 
-    Livewire::test(EditReturnRequest::class, ['record' => $returnRequest->id])
-        ->fillForm([
-            'status' => ReturnRequestStatus::Approved->value,
-        ])
-        ->call('save')
-        ->assertHasNoFormErrors();
+    Livewire::test(ViewReturnRequest::class, ['record' => $returnRequest->id])
+        ->callAction('approve')
+        ->assertHasNoActionErrors();
 
     expect($returnRequest->fresh()->status)->toBe(ReturnRequestStatus::Approved);
+});
+
+test('return request resource disables free edit and completed delete', function () {
+    $this->actingAs($this->admin);
+
+    $pending = ReturnRequest::factory()->create(['status' => ReturnRequestStatus::Pending]);
+    $completed = ReturnRequest::factory()->create(['status' => ReturnRequestStatus::Completed]);
+
+    expect(ReturnRequestResource::canEdit($pending))->toBeFalse()
+        ->and(ReturnRequestResource::canDelete($pending))->toBeTrue()
+        ->and(ReturnRequestResource::canDelete($completed))->toBeFalse();
 });
 
 test('return request resource displays navigation badge for pending requests', function () {
@@ -99,18 +107,17 @@ test('list return requests renders status filter tabs with badges', function () 
     $component = Livewire::test(ListReturnRequests::class);
     $tabs = $component->instance()->getTabs();
 
-    expect($tabs)->toHaveKeys(['all', 'pending', 'approved', 'completed', 'rejected'])
+    expect($tabs)->toHaveKeys(['all', 'pending', 'approved', 'received', 'completed', 'rejected', 'cancelled'])
         ->and((string) $tabs['pending']->getBadge())->toBe('1')
         ->and((string) $tabs['approved']->getBadge())->toBe('1')
         ->and((string) $tabs['all']->getBadge())->toBe('2');
 });
 
-test('admin can approve, reject, and complete return request via actions', function () {
+test('admin can approve, receive, reject, and complete return request via actions', function () {
     $this->actingAs($this->admin);
 
     $returnRequest = ReturnRequest::factory()->create(['status' => ReturnRequestStatus::Pending]);
 
-    // Test approve action
     Livewire::test(ViewReturnRequest::class, ['record' => $returnRequest->getRouteKey()])
         ->assertActionVisible('approve')
         ->callAction('approve')
@@ -118,7 +125,13 @@ test('admin can approve, reject, and complete return request via actions', funct
 
     expect($returnRequest->fresh()->status)->toBe(ReturnRequestStatus::Approved);
 
-    // Test complete action
+    Livewire::test(ViewReturnRequest::class, ['record' => $returnRequest->getRouteKey()])
+        ->assertActionVisible('markReceived')
+        ->callAction('markReceived')
+        ->assertHasNoActionErrors();
+
+    expect($returnRequest->fresh()->status)->toBe(ReturnRequestStatus::Received);
+
     Livewire::test(ViewReturnRequest::class, ['record' => $returnRequest->getRouteKey()])
         ->assertActionVisible('complete')
         ->callAction('complete')
@@ -126,7 +139,6 @@ test('admin can approve, reject, and complete return request via actions', funct
 
     expect($returnRequest->fresh()->status)->toBe(ReturnRequestStatus::Completed);
 
-    // Test reject action on pending
     $newRequest = ReturnRequest::factory()->create(['status' => ReturnRequestStatus::Pending]);
 
     Livewire::test(ViewReturnRequest::class, ['record' => $newRequest->getRouteKey()])
@@ -148,7 +160,7 @@ test('ReturnRequestsRelationManager is registered in OrderResource relations', f
 test('ReturnRequestsRelationManager renders on order view page and supports actions', function () {
     $this->actingAs($this->admin);
 
-    $order = Order::factory()->create(['grand_total' => 1200]);
+    $order = Order::factory()->create(['grand_total' => 1200, 'status' => OrderStatus::Delivered]);
     $returnRequest = ReturnRequest::factory()->create([
         'order_id' => $order->id,
         'user_id' => $this->admin->id,

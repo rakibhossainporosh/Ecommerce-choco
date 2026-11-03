@@ -67,7 +67,9 @@ return [
     'return_status' => [
         'pending' => 'Pending',
         'approved' => 'Approved',
+        'received' => 'Received',
         'rejected' => 'Rejected',
+        'cancelled' => 'Cancelled',
         'completed' => 'Completed',
     ],
     'inventory_movement' => [
@@ -75,6 +77,7 @@ return [
         'adjustment_in' => 'Stock In',
         'adjustment_out' => 'Stock Out',
         'sale' => 'Sale',
+        'return' => 'Return / Restock',
     ],
     'payment_transaction' => [
         'pending' => 'Pending',

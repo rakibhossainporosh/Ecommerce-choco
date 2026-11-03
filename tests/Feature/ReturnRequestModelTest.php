@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Enums\ReturnRequestStatus;
 use App\Models\Order;
 use App\Models\ReturnRequest;
@@ -9,7 +10,7 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 uses(LazilyRefreshDatabase::class);
 
 test('return request can be created', function () {
-    $order = Order::factory()->create(['grand_total' => 100]);
+    $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
     $returnRequest = ReturnRequest::factory()->create([
         'order_id' => $order->id,
         'status' => ReturnRequestStatus::Pending,

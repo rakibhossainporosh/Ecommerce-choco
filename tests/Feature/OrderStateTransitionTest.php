@@ -182,34 +182,41 @@ test('8. Invalid transitions are rejected', function () {
     }
 });
 
-test('9. Terminal states cannot transition into normal states', function () {
-    $terminalStates = [
-        OrderStatus::Delivered,
-        OrderStatus::Cancelled,
-        OrderStatus::Returned,
-        OrderStatus::Refunded,
+test('9. Hard-terminal and post-delivery states cannot re-enter fulfillment', function () {
+    expect(OrderStatus::Cancelled->isTerminal())->toBeTrue()
+        ->and(OrderStatus::Refunded->isTerminal())->toBeTrue()
+        ->and(OrderStatus::Delivered->isTerminal())->toBeFalse()
+        ->and(OrderStatus::Returned->isTerminal())->toBeFalse()
+        ->and(OrderStatus::Delivered->allowedTransitions())->toBe([OrderStatus::Returned])
+        ->and(OrderStatus::Returned->allowedTransitions())->toBe([OrderStatus::Refunded])
+        ->and(OrderStatus::Cancelled->allowedTransitions())->toBeEmpty()
+        ->and(OrderStatus::Refunded->allowedTransitions())->toBeEmpty();
+
+    $blocked = [
+        [OrderStatus::Delivered, OrderStatus::Pending],
+        [OrderStatus::Delivered, OrderStatus::Confirmed],
+        [OrderStatus::Delivered, OrderStatus::Processing],
+        [OrderStatus::Delivered, OrderStatus::Shipped],
+        [OrderStatus::Returned, OrderStatus::Pending],
+        [OrderStatus::Returned, OrderStatus::Delivered],
+        [OrderStatus::Cancelled, OrderStatus::Pending],
+        [OrderStatus::Refunded, OrderStatus::Returned],
     ];
 
-    $normalTargets = [
-        OrderStatus::Pending,
-        OrderStatus::Confirmed,
-        OrderStatus::Processing,
-        OrderStatus::Shipped,
-    ];
+    foreach ($blocked as [$from, $to]) {
+        $order = Order::factory()->create(['status' => $from]);
 
-    foreach ($terminalStates as $terminal) {
-        expect($terminal->isTerminal())->toBeTrue()
-            ->and($terminal->allowedTransitions())->toBeEmpty();
+        expect($order->canTransitionTo($to))->toBeFalse();
 
-        foreach ($normalTargets as $target) {
-            $order = Order::factory()->create(['status' => $terminal]);
-
-            expect($order->canTransitionTo($target))->toBeFalse();
-
-            expect(fn () => $order->transitionTo($target))
-                ->toThrow(InvalidOrderTransitionException::class, "Cannot transition order from {$terminal->value} to {$target->value}.");
-        }
+        expect(fn () => $order->transitionTo($to))
+            ->toThrow(InvalidOrderTransitionException::class, "Cannot transition order from {$from->value} to {$to->value}.");
     }
+
+    $delivered = Order::factory()->create(['status' => OrderStatus::Delivered]);
+    expect($delivered->canTransitionTo(OrderStatus::Returned))->toBeTrue();
+
+    $returned = Order::factory()->create(['status' => OrderStatus::Returned]);
+    expect($returned->canTransitionTo(OrderStatus::Refunded))->toBeTrue();
 });
 
 test('10. Cancellation requires a non-empty reason', function () {

@@ -1,12 +1,28 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
 import { useI18n } from '../../Composables/useI18n';
 import { useStorefrontPageShell } from '../../Composables/useStorefrontPageShell';
 
+const page = usePage();
 const { t, tm } = useI18n();
 const { pageClass, panelClass, inkClass, mutedClass } = useStorefrontPageShell();
+
+const returnWindowDays = computed(() => Number(page.props.site_settings?.return_window_days || 3));
+
+const returnPoints = computed(() => {
+    const points = tm('pages.returns.points');
+
+    if (!Array.isArray(points)) {
+        return [];
+    }
+
+    return points.map((point) =>
+        String(point).replace(/:days/g, String(returnWindowDays.value))
+    );
+});
 </script>
 
 <template>
@@ -23,7 +39,7 @@ const { pageClass, panelClass, inkClass, mutedClass } = useStorefrontPageShell()
                     <p class="text-lg leading-relaxed">{{ t('pages.returns.intro') }}</p>
                     <h2 class="text-xl font-semibold mt-8 mb-4" :class="inkClass">{{ t('pages.returns.rules_title') }}</h2>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li v-for="(point, index) in tm('pages.returns.points')" :key="index">{{ point }}</li>
+                        <li v-for="(point, index) in returnPoints" :key="index">{{ point }}</li>
                     </ul>
                     <h2 class="text-xl font-semibold mt-8 mb-4" :class="inkClass">{{ t('pages.returns.refund_title') }}</h2>
                     <p class="leading-relaxed">{{ t('pages.returns.refund') }}</p>

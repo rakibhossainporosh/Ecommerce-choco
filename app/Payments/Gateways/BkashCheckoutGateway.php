@@ -253,11 +253,13 @@ class BkashCheckoutGateway extends AbstractGateway
             throw new PaymentGatewayException(__('This bKash payment has no transaction reference to refund.'));
         }
 
+        $refundAmount = (float) ($payment->metadata['refund_amount_override'] ?? $payment->amount);
+
         $token = $this->grantToken();
         $response = $this->post('/tokenized/checkout/payment/refund', $token, [
             'paymentID' => $paymentId,
             'trxID' => $trxId,
-            'amount' => number_format((float) $payment->amount, 2, '.', ''),
+            'amount' => number_format($refundAmount, 2, '.', ''),
             'sku' => 'order',
             'reason' => mb_substr($reason !== '' ? $reason : 'Order refund', 0, 255),
         ]);

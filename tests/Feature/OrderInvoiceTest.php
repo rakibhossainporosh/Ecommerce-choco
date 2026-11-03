@@ -52,6 +52,15 @@ test('2. Regular user without admin access cannot view order invoice', function 
         ->assertForbidden();
 });
 
+test('2b. Admin panel user without orders.view cannot view order invoice', function () {
+    $user = User::factory()->create(['can_access_admin_panel' => true]);
+    $order = Order::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('admin.orders.invoice', $order))
+        ->assertForbidden();
+});
+
 test('3. Admin can view order invoice with complete order data and item snapshots', function () {
     $admin = User::factory()->create(['can_access_admin_panel' => true]);
     $admin->assignRole('Admin');

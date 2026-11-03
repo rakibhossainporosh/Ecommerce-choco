@@ -7,9 +7,13 @@ use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Filament\Resources\ReturnRequests\ReturnRequestResource;
 use App\Models\Order;
 use App\Models\ReturnRequest;
+use App\Support\ReturnItemValidator;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -40,9 +44,26 @@ class ReturnRequestsRelationManager extends RelationManager
 
         /** @var Order $order */
         $order = $this->getOwnerRecord();
+        $order->loadMissing('items');
+
+        $remaining = ReturnItemValidator::remainingQuantities($order);
+
+        $itemOptions = $order->items
+            ->filter(fn ($item): bool => (int) ($remaining[$item->id] ?? 0) > 0)
+            ->mapWithKeys(fn ($item): array => [
+                $item->id => ($item->variant_name ?: $item->product_name)
+                    .' × remaining '.($remaining[$item->id] ?? 0),
+            ])
+            ->all();
 
         return $table
             ->columns([
+                TextColumn::make('rma_number')
+                    ->label('RMA #')
+                    ->searchable()
+                    ->weight('bold')
+                    ->copyable(),
+
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -53,6 +74,11 @@ class ReturnRequestsRelationManager extends RelationManager
                     ->formatStateUsing($currencyFormat)
                     ->sortable()
                     ->weight('bold'),
+
+                TextColumn::make('items_count')
+                    ->label('Items')
+                    ->counts('items')
+                    ->badge(),
 
                 TextColumn::make('reason')
                     ->label('Reason')
@@ -80,12 +106,6 @@ class ReturnRequestsRelationManager extends RelationManager
                     ->modalWidth(Width::TwoExtraLarge)
                     ->visible(fn (): bool => auth()->user()?->can('returns.create') ?? false)
                     ->form([
-                        Select::make('status')
-                            ->options(ReturnRequestStatus::class)
-                            ->default(ReturnRequestStatus::Pending)
-                            ->required()
-                            ->prefixIcon(Heroicon::OutlinedCheckCircle),
-
                         TextInput::make('refund_amount')
                             ->label('Refund Amount')
                             ->prefix(config('currency.symbol', '৳'))
@@ -93,7 +113,7 @@ class ReturnRequestsRelationManager extends RelationManager
                             ->minValue(0)
                             ->default((float) $order->grand_total)
                             ->required()
-                            ->helperText(__('Order grand total is :amount', [
+                            ->helperText(__('Synced from lines. Empty lines auto-return all remaining units (default refund :amount).', [
                                 'amount' => '৳'.number_format((float) $order->grand_total, 2),
                             ])),
 
@@ -109,11 +129,53 @@ class ReturnRequestsRelationManager extends RelationManager
                             ->placeholder(__('Internal review notes or remarks...'))
                             ->rows(3)
                             ->columnSpanFull(),
+
+                        Repeater::make('line_items')
+                            ->label('Return Line Items')
+                            ->helperText(__('Leave empty to auto-return every remaining unit.'))
+                            ->default([])
+                            ->schema([
+                                Select::make('order_item_id')
+                                    ->label('Order Item')
+                                    ->options($itemOptions)
+                                    ->required()
+                                    ->searchable(),
+
+                                TextInput::make('quantity')
+                                    ->label('Qty')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(1)
+                                    ->required(),
+
+                                TextInput::make('refund_amount')
+                                    ->label('Line Refund')
+                                    ->numeric()
+                                    ->prefix(config('currency.symbol', '৳'))
+                                    ->minValue(0)
+                                    ->default(0)
+                                    ->required(),
+                            ])
+                            ->columns(3)
+                            ->columnSpanFull()
+                            ->addActionLabel(__('Add return item')),
                     ])
                     ->mutateFormDataUsing(function (array $data) use ($order): array {
                         $data['user_id'] = $order->user_id;
+                        $data['customer_id'] = $order->customer_id;
+                        $data['status'] = ReturnRequestStatus::Pending;
 
                         return $data;
+                    })
+                    ->using(function (array $data) use ($order): ReturnRequest {
+                        $lineItems = $data['line_items'] ?? [];
+                        unset($data['line_items']);
+
+                        return ReturnRequest::createPendingForOrder(
+                            $order,
+                            $data,
+                            is_array($lineItems) ? $lineItems : [],
+                        );
                     }),
             ])
             ->recordActions([
@@ -129,14 +191,47 @@ class ReturnRequestsRelationManager extends RelationManager
                     ->modalDescription(__('Approve this return request?'))
                     ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Pending && auth()->user()?->can('returns.update'))
                     ->action(function (ReturnRequest $record): void {
-                        $record->status = ReturnRequestStatus::Approved;
-                        $record->save();
+                        try {
+                            $record->approve(auth()->user());
 
-                        Notification::make()
-                            ->info()
-                            ->title(__('Return Request Approved'))
-                            ->body(__('Return request has been approved.'))
-                            ->send();
+                            Notification::make()
+                                ->info()
+                                ->title(__('Return Request Approved'))
+                                ->body(__('Return request has been approved.'))
+                                ->send();
+                        } catch (DomainException|\Throwable $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Approve Failed'))
+                                ->body($e->getMessage())
+                                ->send();
+                        }
+                    }),
+
+                Action::make('markReceived')
+                    ->label('Mark Received')
+                    ->icon(Heroicon::OutlinedArchiveBox)
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->modalHeading(__('Mark Return Received'))
+                    ->modalDescription(__('Confirm return goods have been received?'))
+                    ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Approved && auth()->user()?->can('returns.update'))
+                    ->action(function (ReturnRequest $record): void {
+                        try {
+                            $record->markReceived(auth()->user());
+
+                            Notification::make()
+                                ->success()
+                                ->title(__('Return Marked Received'))
+                                ->body(__('Return goods marked as received.'))
+                                ->send();
+                        } catch (DomainException|\Throwable $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Receive Failed'))
+                                ->body($e->getMessage())
+                                ->send();
+                        }
                     }),
 
                 Action::make('reject')
@@ -149,17 +244,27 @@ class ReturnRequestsRelationManager extends RelationManager
                             ->placeholder(__('Explain why this return request is rejected...'))
                             ->required(),
                     ])
-                    ->visible(fn (ReturnRequest $record): bool => in_array($record->status, [ReturnRequestStatus::Pending, ReturnRequestStatus::Approved], true) && auth()->user()?->can('returns.update'))
+                    ->visible(fn (ReturnRequest $record): bool => in_array($record->status, [
+                        ReturnRequestStatus::Pending,
+                        ReturnRequestStatus::Approved,
+                        ReturnRequestStatus::Received,
+                    ], true) && auth()->user()?->can('returns.update'))
                     ->action(function (ReturnRequest $record, array $data): void {
-                        $record->status = ReturnRequestStatus::Rejected;
-                        $record->admin_note = $data['admin_note'];
-                        $record->save();
+                        try {
+                            $record->reject($data['admin_note'], auth()->user());
 
-                        Notification::make()
-                            ->danger()
-                            ->title(__('Return Request Rejected'))
-                            ->body(__('Return request has been rejected.'))
-                            ->send();
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Return Request Rejected'))
+                                ->body(__('Return request has been rejected.'))
+                                ->send();
+                        } catch (DomainException|\Throwable $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Reject Failed'))
+                                ->body($e->getMessage())
+                                ->send();
+                        }
                     }),
 
                 Action::make('complete')
@@ -168,18 +273,28 @@ class ReturnRequestsRelationManager extends RelationManager
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading(__('Complete Return Request'))
-                    ->modalDescription(__('Mark return request as completed? Verify items were received and refund processed.'))
-                    ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Approved && auth()->user()?->can('returns.update'))
+                    ->modalDescription(__('Mark return complete? This restocks inventory and refunds up to the approved amount.'))
+                    ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Received && auth()->user()?->can('returns.update'))
                     ->action(function (ReturnRequest $record): void {
-                        $record->status = ReturnRequestStatus::Completed;
-                        $record->save();
+                        try {
+                            $record->complete(auth()->user());
 
-                        Notification::make()
-                            ->success()
-                            ->title(__('Return Request Completed'))
-                            ->body(__('Return request is marked as completed.'))
-                            ->send();
+                            Notification::make()
+                                ->success()
+                                ->title(__('Return Request Completed'))
+                                ->body(__('Return completed with stock restore and refund handling.'))
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Complete Failed'))
+                                ->body($e->getMessage())
+                                ->send();
+                        }
                     }),
+
+                DeleteAction::make()
+                    ->visible(fn (ReturnRequest $record): bool => $record->status === ReturnRequestStatus::Pending && auth()->user()?->can('returns.delete')),
             ]);
     }
 

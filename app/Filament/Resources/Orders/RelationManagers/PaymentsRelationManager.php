@@ -4,11 +4,12 @@ namespace App\Filament\Resources\Orders\RelationManagers;
 
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentTransactionStatus;
+use App\Exceptions\PaymentException;
 use App\Filament\Concerns\TranslatesRelationManagerTitle;
 use App\Filament\Resources\Payments\PaymentResource;
-use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\User;
 use App\Support\PaymentMethodPresenter;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -20,10 +21,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Enums\Width;
+use Filament\Support\Exceptions\Halt;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class PaymentsRelationManager extends RelationManager
 {
@@ -160,17 +163,33 @@ class PaymentsRelationManager extends RelationManager
                             ->columnSpanFull()
                             ->nullable(),
                     ])
-                    ->mutateFormDataUsing(function (array $data): array {
+                    ->using(function (array $data): Payment {
                         /** @var Order $order */
                         $order = $this->getOwnerRecord();
 
-                        $data['customer_id'] = $order->customer_id ?? Customer::where('user_id', $order->user_id)->value('id');
-                        $data['currency'] = $order->currency ?? 'BDT';
-                        if (auth()->check()) {
-                            $data['recorded_by'] = auth()->id();
-                        }
+                        try {
+                            /** @var User|null $user */
+                            $user = auth()->user();
 
-                        return $data;
+                            return $order->recordPayment(
+                                amount: (float) $data['amount'],
+                                method: $data['payment_method'] ?? PaymentMethod::Cod,
+                                status: $data['status'] ?? PaymentTransactionStatus::Completed,
+                                transactionId: $data['transaction_id'] ?? null,
+                                accountNumber: $data['account_number'] ?? null,
+                                notes: $data['notes'] ?? null,
+                                recordedBy: $user,
+                                paidAt: isset($data['paid_at']) ? Carbon::parse($data['paid_at']) : null,
+                            );
+                        } catch (PaymentException $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Payment Failed'))
+                                ->body($e->getMessage())
+                                ->send();
+
+                            throw new Halt;
+                        }
                     }),
             ])
             ->recordActions([

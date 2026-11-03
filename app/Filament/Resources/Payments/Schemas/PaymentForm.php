@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Payments\Schemas;
 
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentTransactionStatus;
 use App\Models\Customer;
@@ -22,7 +23,11 @@ class PaymentForm
             ->components([
                 Select::make('order_id')
                     ->label('Order')
-                    ->relationship('order', 'order_number')
+                    ->relationship(
+                        'order',
+                        'order_number',
+                        fn ($query) => $query->where('status', '!=', OrderStatus::Cancelled),
+                    )
                     ->getOptionLabelFromRecordUsing(fn (Order $record): string => "{$record->order_number} — {$record->customer_name} (Due: ৳".number_format($record->due_amount, 2).')')
                     ->searchable()
                     ->preload()

@@ -811,9 +811,15 @@
                         <span style="font-size: 1rem;">👤</span>
                         <strong style="font-size: 0.9375rem; color: var(--cov-text-title);">{{ __('Customer Profile') }}</strong>
                     </div>
-                    <span class="cov-badge" style="background: rgba(59, 130, 246, 0.14); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
-                        {{ __('Verified Customer') }}
-                    </span>
+                    @if($order->customer_id)
+                        <span class="cov-badge" style="background: rgba(59, 130, 246, 0.14); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                            {{ __('Registered Customer') }}
+                        </span>
+                    @else
+                        <span class="cov-badge" style="background: var(--cov-sku-bg); color: var(--cov-text-muted); border: 1px solid var(--cov-border);">
+                            {{ __('Guest Checkout') }}
+                        </span>
+                    @endif
                 </div>
 
                 <div class="cov-card-body" style="display: flex; flex-direction: column; gap: 0.875rem;">

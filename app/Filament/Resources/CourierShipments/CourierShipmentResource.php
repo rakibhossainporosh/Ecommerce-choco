@@ -17,6 +17,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class CourierShipmentResource extends Resource
 {
@@ -128,5 +129,22 @@ class CourierShipmentResource extends Resource
             'create' => Pages\CreateCourierShipment::route('/create'),
             'edit' => Pages\EditCourierShipment::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Only draft courier consignments remain freely editable.
+     */
+    public static function canEdit(Model $record): bool
+    {
+        /** @var CourierShipment $record */
+        return $record->status === CourierShipmentStatus::Pending
+            && parent::canEdit($record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        /** @var CourierShipment $record */
+        return $record->status === CourierShipmentStatus::Pending
+            && parent::canDelete($record);
     }
 }

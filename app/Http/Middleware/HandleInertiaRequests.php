@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Support\CatalogTranslator;
 use App\Support\LocaleManager;
 use App\Support\LocalizedContent;
+use App\Support\ReturnPolicySettings;
 use App\Support\StorefrontOccasion;
 use App\Support\StorefrontTheme;
 use Illuminate\Http\Request;
@@ -104,6 +105,7 @@ class HandleInertiaRequests extends Middleware
                         'footer_payment_methods' => $defaultPaymentMethods,
                         'shipping_inside_dhaka' => 60.0,
                         'shipping_outside_dhaka' => 120.0,
+                        'return_window_days' => ReturnPolicySettings::windowDays(),
                         'theme' => 'warm',
                     ];
                 }
@@ -152,6 +154,7 @@ class HandleInertiaRequests extends Middleware
                     'footer_payment_methods' => $paymentMethods,
                     'shipping_inside_dhaka' => (float) Setting::get('shipping_inside_dhaka', 60),
                     'shipping_outside_dhaka' => (float) Setting::get('shipping_outside_dhaka', 120),
+                    'return_window_days' => ReturnPolicySettings::windowDays(),
                     'occasion' => StorefrontOccasion::present(),
                     'theme' => StorefrontTheme::key(),
                 ];

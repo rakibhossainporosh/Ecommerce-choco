@@ -67,7 +67,9 @@ return [
     'return_status' => [
         'pending' => 'অপেক্ষমাণ',
         'approved' => 'অনুমোদিত',
+        'received' => 'পণ্য গৃহীত',
         'rejected' => 'প্রত্যাখ্যাত',
+        'cancelled' => 'বাতিল',
         'completed' => 'সম্পন্ন',
     ],
     'inventory_movement' => [
@@ -75,6 +77,7 @@ return [
         'adjustment_in' => 'স্টক বাড়ানো',
         'adjustment_out' => 'স্টক কমানো',
         'sale' => 'বিক্রি',
+        'return' => 'রিটার্ন / স্টক ফেরত',
     ],
     'payment_transaction' => [
         'pending' => 'অপেক্ষমাণ',

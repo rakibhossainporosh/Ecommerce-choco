@@ -10,7 +10,9 @@ enum ReturnRequestStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Pending = 'pending';
     case Approved = 'approved';
+    case Received = 'received';
     case Rejected = 'rejected';
+    case Cancelled = 'cancelled';
     case Completed = 'completed';
 
     public static function values(): array
@@ -33,7 +35,9 @@ enum ReturnRequestStatus: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Pending => 'warning',
             self::Approved => 'info',
+            self::Received => 'primary',
             self::Rejected => 'danger',
+            self::Cancelled => 'gray',
             self::Completed => 'success',
         };
     }
@@ -43,7 +47,9 @@ enum ReturnRequestStatus: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Pending => 'heroicon-o-clock',
             self::Approved => 'heroicon-o-check-circle',
+            self::Received => 'heroicon-o-archive-box',
             self::Rejected => 'heroicon-o-x-circle',
+            self::Cancelled => 'heroicon-o-no-symbol',
             self::Completed => 'heroicon-o-check-badge',
         };
     }

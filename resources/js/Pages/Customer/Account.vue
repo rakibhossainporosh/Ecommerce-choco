@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { 
-    Package, ShoppingBag, LogOut, Phone, Mail, Calendar, 
-    Truck, ChevronRight, CheckCircle2, Edit3
+import {
+    Package, ShoppingBag, LogOut, Phone, Mail, Calendar,
+    Truck, ChevronRight, CheckCircle2, Edit3, RotateCcw, X, Bell
 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
@@ -19,6 +19,18 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    return_requests: {
+        type: Array,
+        default: () => [],
+    },
+    return_window_days: {
+        type: Number,
+        default: 3,
+    },
+    notifications: {
+        type: Array,
+        default: () => [],
+    },
     stats: {
         type: Object,
         default: () => ({ total_orders: 0, total_spent: 0 }),
@@ -31,7 +43,13 @@ const {
     pageClass, panelClass, primaryButtonClass, accentTextClass, inkClass, mutedClass, fieldClass,
     softPanelClass, tabActiveClass, tabIdleClass,
 } = useStorefrontPageShell();
-const activeTab = ref('orders');
+
+const tabFromUrl = page.url.includes('tab=returns')
+    ? 'returns'
+    : (page.url.includes('tab=notifications') ? 'notifications' : 'orders');
+const activeTab = ref(tabFromUrl);
+const unreadNotifications = computed(() => props.notifications.filter((n) => !n.read).length);
+const returnOrder = ref(null);
 
 const profileForm = useForm({
     name: props.customer.name,
@@ -39,6 +57,11 @@ const profileForm = useForm({
     current_password: '',
     new_password: '',
     new_password_confirmation: '',
+});
+
+const returnForm = useForm({
+    reason: '',
+    items: [],
 });
 
 const updateProfile = () => {
@@ -65,13 +88,104 @@ const getStatusBadge = (status) => {
         processing: { text: t('account.status_processing'), class: 'bg-indigo-100 text-indigo-800' },
         shipped: { text: t('account.status_shipped'), class: 'bg-purple-100 text-purple-800' },
         delivered: { text: t('account.status_delivered'), class: 'bg-emerald-100 text-emerald-800' },
-        cancelled: { text: t('account.status_cancelled'), class: 'bg-rose-100 text-rose-800' },
+        returned: { text: t('account.status_returned'), class: 'bg-slate-200 text-slate-800' },
+        refunded: { text: t('account.status_refunded'), class: 'bg-slate-200 text-slate-800' },
+        approved: { text: t('account.status_confirmed'), class: 'bg-blue-100 text-blue-800' },
+        received: { text: t('account.return_status_received'), class: 'bg-indigo-100 text-indigo-800' },
+        completed: { text: t('account.status_delivered'), class: 'bg-emerald-100 text-emerald-800' },
+        rejected: { text: t('account.status_cancelled'), class: 'bg-rose-100 text-rose-800' },
+        cancelled: { text: t('account.status_cancelled'), class: 'bg-slate-200 text-slate-700' },
     };
     return badges[status] || { text: status, class: 'bg-gray-100 text-gray-800' };
 };
 
+const cancelReturn = (ret) => {
+    if (!ret?.can_cancel) {
+        return;
+    }
+
+    router.delete(`/account/returns/${ret.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            activeTab.value = 'returns';
+        },
+    });
+};
+
+const markNotificationRead = (notification) => {
+    if (!notification?.id || notification.read) {
+        return;
+    }
+
+    router.post(`/account/notifications/${notification.id}/read`, { tab: 'notifications' }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            activeTab.value = 'notifications';
+        },
+    });
+};
+
+const markAllNotificationsRead = () => {
+    router.post('/account/notifications/read-all', {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            activeTab.value = 'notifications';
+        },
+    });
+};
+
 const paymentLabel = (method) => {
     return method === 'cod' ? t('account.payment_cod') : method;
+};
+
+const openReturnModal = (order) => {
+    returnOrder.value = order;
+    returnForm.reason = '';
+    returnForm.items = (order.items || [])
+        .filter((item) => Number(item.remaining_quantity ?? item.quantity) > 0)
+        .map((item) => {
+            const max = Number(item.remaining_quantity ?? item.quantity);
+
+            return {
+                order_item_id: item.id,
+                quantity: max,
+                selected: true,
+                max,
+                name: item.name,
+            };
+        });
+    returnForm.clearErrors();
+};
+
+const closeReturnModal = () => {
+    returnOrder.value = null;
+    returnForm.reset();
+};
+
+const selectedReturnItems = computed(() =>
+    returnForm.items.filter((item) => item.selected && item.quantity > 0)
+);
+
+const submitReturn = () => {
+    if (!returnOrder.value) {
+        return;
+    }
+
+    returnForm
+        .transform((data) => ({
+            reason: data.reason,
+            items: selectedReturnItems.value.map((item) => ({
+                order_item_id: item.order_item_id,
+                quantity: Number(item.quantity),
+            })),
+        }))
+        .post(`/account/orders/${returnOrder.value.id}/returns`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeReturnModal();
+                activeTab.value = 'returns';
+            },
+        });
 };
 </script>
 
@@ -91,6 +205,11 @@ const paymentLabel = (method) => {
             <div v-if="page.props.flash?.success" class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3">
                 <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
                 <span class="text-sm font-semibold">{{ page.props.flash.success }}</span>
+            </div>
+
+            <div v-if="page.props.flash?.error" class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-3">
+                <X class="w-5 h-5 text-rose-600 shrink-0" />
+                <span class="text-sm font-semibold">{{ page.props.flash.error }}</span>
             </div>
 
             <div :class="[panelClass, 'p-6 sm:p-8 mb-8']">
@@ -142,7 +261,7 @@ const paymentLabel = (method) => {
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 mb-6 border-b border-black/10 pb-2">
+            <div class="flex flex-wrap items-center gap-2 mb-6 border-b border-black/10 pb-2">
                 <button
                     @click="activeTab = 'orders'"
                     type="button"
@@ -151,6 +270,26 @@ const paymentLabel = (method) => {
                 >
                     <Package class="w-4 h-4" />
                     <span>{{ t('account.orders_tab', { count: orders.length }) }}</span>
+                </button>
+
+                <button
+                    @click="activeTab = 'returns'"
+                    type="button"
+                    class="px-5 py-2.5 text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
+                    :class="activeTab === 'returns' ? tabActiveClass : tabIdleClass"
+                >
+                    <RotateCcw class="w-4 h-4" />
+                    <span>{{ t('account.returns_tab', { count: return_requests.length }) }}</span>
+                </button>
+
+                <button
+                    @click="activeTab = 'notifications'"
+                    type="button"
+                    class="px-5 py-2.5 text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
+                    :class="activeTab === 'notifications' ? tabActiveClass : tabIdleClass"
+                >
+                    <Bell class="w-4 h-4" />
+                    <span>{{ t('account.notifications_tab', { count: unreadNotifications }) }}</span>
                 </button>
 
                 <button
@@ -186,7 +325,7 @@ const paymentLabel = (method) => {
                             </span>
                         </div>
 
-                        <div class="flex items-center gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
                             <span class="text-lg font-bold" :class="inkClass">
                                 {{ formatPrice(order.grand_total) }}
                             </span>
@@ -197,6 +336,22 @@ const paymentLabel = (method) => {
                                 <Truck class="w-3.5 h-3.5" />
                                 <span>{{ t('account.track_order') }}</span>
                             </Link>
+                            <button
+                                v-if="order.can_request_return"
+                                type="button"
+                                @click="openReturnModal(order)"
+                                :class="[primaryButtonClass, 'px-4 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer']"
+                            >
+                                <RotateCcw class="w-3.5 h-3.5" />
+                                <span>{{ t('account.request_return') }}</span>
+                            </button>
+                            <span
+                                v-else-if="order.return_request"
+                                class="text-xs font-bold px-2.5 py-1 rounded-full"
+                                :class="getStatusBadge(order.return_request.status).class"
+                            >
+                                {{ t('account.return_open_status', { status: order.return_request.status }) }}
+                            </span>
                         </div>
                     </div>
 
@@ -231,6 +386,97 @@ const paymentLabel = (method) => {
                     >
                         <span>{{ t('account.shop') }}</span>
                     </Link>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'returns'" class="space-y-6">
+                <div
+                    v-for="ret in return_requests"
+                    :key="ret.id"
+                    :class="[panelClass, 'p-6 sm:p-8']"
+                >
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h3 class="text-lg font-bold" :class="inkClass">{{ t('account.order') }} #{{ ret.order_number }}</h3>
+                                <span v-if="ret.rma_number" class="text-xs font-semibold" :class="mutedClass">{{ ret.rma_number }}</span>
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full" :class="getStatusBadge(ret.status).class">
+                                    {{ ret.status_label || ret.status }}
+                                </span>
+                            </div>
+                            <p class="text-xs mt-1" :class="mutedClass">{{ ret.created_at }}</p>
+                        </div>
+                        <div class="text-sm font-semibold" :class="inkClass">
+                            {{ t('account.return_refund_amount', { amount: formatPrice(ret.refund_amount) }) }}
+                        </div>
+                    </div>
+                    <p class="text-sm mt-4" :class="mutedClass">{{ ret.reason }}</p>
+                    <p
+                        v-if="ret.admin_note"
+                        class="text-sm mt-2 text-rose-700"
+                    >
+                        {{ t('account.return_admin_note', { note: ret.admin_note }) }}
+                    </p>
+                    <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                        <p class="text-xs" :class="mutedClass">{{ t('account.return_items_count', { count: ret.items_count || 0 }) }}</p>
+                        <button
+                            v-if="ret.can_cancel"
+                            type="button"
+                            class="text-xs font-semibold text-rose-700 hover:text-rose-800 underline-offset-2 hover:underline"
+                            @click="cancelReturn(ret)"
+                        >
+                            {{ t('account.return_cancel_request') }}
+                        </button>
+                    </div>
+                </div>
+
+                <div v-if="return_requests.length === 0" :class="[panelClass, 'p-12 text-center']">
+                    <RotateCcw class="w-16 h-16 opacity-30 mx-auto mb-4" />
+                    <h3 class="text-xl font-bold" :class="inkClass">{{ t('account.return_empty_title') }}</h3>
+                    <p class="text-sm mt-1" :class="mutedClass">{{ t('account.return_empty_body') }}</p>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'notifications'" class="space-y-4">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="text-lg font-bold" :class="inkClass">{{ t('account.notifications_tab', { count: unreadNotifications }) }}</h2>
+                    <button
+                        v-if="unreadNotifications > 0"
+                        type="button"
+                        class="text-xs font-semibold underline-offset-2 hover:underline cursor-pointer"
+                        :class="accentTextClass"
+                        @click="markAllNotificationsRead"
+                    >
+                        {{ t('account.notifications_mark_all_read') }}
+                    </button>
+                </div>
+
+                <div
+                    v-for="notification in notifications"
+                    :key="notification.id"
+                    :class="[panelClass, 'p-5', notification.read ? 'opacity-70' : '']"
+                >
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div>
+                            <h3 class="text-sm font-bold" :class="inkClass">{{ notification.title }}</h3>
+                            <p class="text-sm mt-1" :class="mutedClass">{{ notification.body }}</p>
+                            <p class="text-xs mt-2" :class="mutedClass">{{ notification.created_at }}</p>
+                        </div>
+                        <button
+                            v-if="!notification.read"
+                            type="button"
+                            class="text-xs font-semibold text-emerald-700 hover:underline cursor-pointer shrink-0"
+                            @click="markNotificationRead(notification)"
+                        >
+                            {{ t('account.notification_mark_read') }}
+                        </button>
+                    </div>
+                </div>
+
+                <div v-if="notifications.length === 0" :class="[panelClass, 'p-12 text-center']">
+                    <Bell class="w-16 h-16 opacity-30 mx-auto mb-4" />
+                    <h3 class="text-xl font-bold" :class="inkClass">{{ t('account.notifications_empty_title') }}</h3>
+                    <p class="text-sm mt-1" :class="mutedClass">{{ t('account.notifications_empty_body') }}</p>
                 </div>
             </div>
 
@@ -318,6 +564,93 @@ const paymentLabel = (method) => {
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <div
+                v-if="returnOrder"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45"
+                @click.self="closeReturnModal"
+            >
+                <div :class="[panelClass, 'w-full max-w-lg p-6 sm:p-8 max-h-[90vh] overflow-y-auto']">
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold" :class="inkClass">{{ t('account.return_modal_title') }}</h3>
+                            <p class="text-sm mt-1" :class="mutedClass">
+                                {{ t('account.return_modal_help', { days: return_window_days }) }}
+                            </p>
+                        </div>
+                        <button type="button" class="p-1 cursor-pointer" :class="mutedClass" @click="closeReturnModal">
+                            <X class="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <p class="text-sm font-semibold mb-4" :class="inkClass">
+                        {{ t('account.order') }} #{{ returnOrder.order_number }}
+                    </p>
+
+                    <form @submit.prevent="submitReturn" class="space-y-5">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-2" :class="mutedClass">
+                                {{ t('account.return_select_items') }}
+                            </label>
+                            <div class="space-y-2">
+                                <label
+                                    v-for="item in returnForm.items"
+                                    :key="item.order_item_id"
+                                    :class="[softPanelClass, 'flex items-center gap-3 p-3 cursor-pointer']"
+                                >
+                                    <input v-model="item.selected" type="checkbox" class="rounded border-gray-300" />
+                                    <div class="flex-1 min-w-0">
+                                        <span class="text-sm font-medium block" :class="inkClass">{{ item.name }}</span>
+                                        <span class="text-xs" :class="mutedClass">{{ t('account.return_remaining_qty', { count: item.max }) }}</span>
+                                    </div>
+                                    <input
+                                        v-model.number="item.quantity"
+                                        type="number"
+                                        min="1"
+                                        :max="item.max"
+                                        :disabled="!item.selected"
+                                        class="w-16 px-2 py-1 text-sm border border-black/10 rounded"
+                                    />
+                                </label>
+                            </div>
+                            <p v-if="returnForm.errors.items" class="text-xs text-red-500 mt-1 font-medium">{{ returnForm.errors.items }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1.5" :class="mutedClass">
+                                {{ t('account.return_reason') }} *
+                            </label>
+                            <textarea
+                                v-model="returnForm.reason"
+                                rows="3"
+                                required
+                                :placeholder="t('account.return_reason_placeholder')"
+                                :class="fieldClass"
+                            />
+                            <p v-if="returnForm.errors.reason" class="text-xs text-red-500 mt-1 font-medium">{{ returnForm.errors.reason }}</p>
+                            <p v-if="returnForm.errors.order" class="text-xs text-red-500 mt-1 font-medium">{{ returnForm.errors.order }}</p>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                class="px-4 py-2 text-sm font-semibold cursor-pointer"
+                                :class="mutedClass"
+                                @click="closeReturnModal"
+                            >
+                                {{ t('account.return_cancel') }}
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="returnForm.processing || selectedReturnItems.length === 0"
+                                :class="[primaryButtonClass, 'px-5 py-2.5 text-sm cursor-pointer']"
+                            >
+                                {{ returnForm.processing ? t('account.return_submitting') : t('account.return_submit') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
 

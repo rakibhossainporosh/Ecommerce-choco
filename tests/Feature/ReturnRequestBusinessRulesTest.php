@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 uses(LazilyRefreshDatabase::class);
 
 test('refund amount cannot be negative', function () {
-    $order = Order::factory()->create(['grand_total' => 100]);
+    $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
 
     expect(fn () => ReturnRequest::factory()->create([
         'order_id' => $order->id,
@@ -19,7 +19,7 @@ test('refund amount cannot be negative', function () {
 });
 
 test('refund amount cannot exceed order grand total', function () {
-    $order = Order::factory()->create(['grand_total' => 100]);
+    $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
 
     expect(fn () => ReturnRequest::factory()->create([
         'order_id' => $order->id,
@@ -28,7 +28,7 @@ test('refund amount cannot exceed order grand total', function () {
 });
 
 test('cumulative refund amount across active return requests cannot exceed order grand total', function () {
-    $order = Order::factory()->create(['grand_total' => 100]);
+    $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
 
     ReturnRequest::factory()->create([
         'order_id' => $order->id,
@@ -44,7 +44,7 @@ test('cumulative refund amount across active return requests cannot exceed order
 });
 
 test('rejected return request does not consume cumulative refund capacity', function () {
-    $order = Order::factory()->create(['grand_total' => 100]);
+    $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
 
     ReturnRequest::factory()->create([
         'order_id' => $order->id,
@@ -61,6 +61,18 @@ test('rejected return request does not consume cumulative refund capacity', func
     expect($second->refund_amount)->toEqual(60);
 });
 
+test('cannot create return request for a non-delivered order', function () {
+    $order = Order::factory()->create([
+        'status' => OrderStatus::Processing,
+        'grand_total' => 200,
+    ]);
+
+    expect(fn () => ReturnRequest::factory()->create([
+        'order_id' => $order->id,
+        'refund_amount' => 100,
+    ]))->toThrow(DomainException::class, 'Return requests are only allowed for delivered orders.');
+});
+
 test('cannot create return request for a cancelled order', function () {
     $order = Order::factory()->create([
         'status' => OrderStatus::Cancelled,
@@ -74,7 +86,7 @@ test('cannot create return request for a cancelled order', function () {
 });
 
 test('completed return request cannot change status or refund amount', function () {
-    $order = Order::factory()->create(['grand_total' => 200]);
+    $order = Order::factory()->create(['grand_total' => 200, 'status' => OrderStatus::Delivered]);
     $returnRequest = ReturnRequest::factory()->create([
         'order_id' => $order->id,
         'status' => ReturnRequestStatus::Completed,
@@ -84,7 +96,7 @@ test('completed return request cannot change status or refund amount', function 
     expect(function () use ($returnRequest) {
         $returnRequest->status = ReturnRequestStatus::Pending;
         $returnRequest->save();
-    })->toThrow(DomainException::class, 'Completed return requests cannot change status.');
+    })->toThrow(DomainException::class, 'Terminal return requests cannot change status.');
 
     $returnRequest->refresh();
 
@@ -95,7 +107,7 @@ test('completed return request cannot change status or refund amount', function 
 });
 
 test('rejected return request cannot change status', function () {
-    $order = Order::factory()->create(['grand_total' => 200]);
+    $order = Order::factory()->create(['grand_total' => 200, 'status' => OrderStatus::Delivered]);
     $returnRequest = ReturnRequest::factory()->create([
         'order_id' => $order->id,
         'status' => ReturnRequestStatus::Rejected,
@@ -105,11 +117,11 @@ test('rejected return request cannot change status', function () {
     expect(function () use ($returnRequest) {
         $returnRequest->status = ReturnRequestStatus::Approved;
         $returnRequest->save();
-    })->toThrow(DomainException::class, 'Rejected return requests cannot change status.');
+    })->toThrow(DomainException::class, 'Terminal return requests cannot change status.');
 });
 
 test('reason is trimmed', function () {
-    $order = Order::factory()->create(['grand_total' => 100]);
+    $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
     $returnRequest = ReturnRequest::factory()->create([
         'order_id' => $order->id,
         'reason' => '   Item is broken.    ',

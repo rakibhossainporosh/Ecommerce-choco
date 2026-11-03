@@ -379,7 +379,7 @@ class SslCommerzGateway extends AbstractGateway
                     'bank_tran_id' => $bankTranId,
                     'store_id' => PaymentGatewaySettings::text($this->key(), 'store_id'),
                     'store_passwd' => PaymentGatewaySettings::secret($this->key(), 'store_password'),
-                    'refund_amount' => number_format((float) $payment->amount, 2, '.', ''),
+                    'refund_amount' => number_format((float) ($payment->metadata['refund_amount_override'] ?? $payment->amount), 2, '.', ''),
                     'refund_remarks' => mb_substr($reason !== '' ? $reason : 'Order refund', 0, 255),
                     'v' => 1,
                     'format' => 'json',
