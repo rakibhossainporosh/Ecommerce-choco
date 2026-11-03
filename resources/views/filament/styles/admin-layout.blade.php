@@ -2229,6 +2229,179 @@
         }
     }
 
+    /* Topbar clear cache */
+    .fi-topbar-end .admin-clear-cache-wrap {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .admin-clear-cache {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        height: 2.25rem;
+        padding: 0 0.75rem;
+        border: 1px solid #e7e5e4;
+        border-radius: 999px;
+        background: #fff;
+        color: #1e293b;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .admin-clear-cache:hover {
+        background: #fff1f2;
+        border-color: #fda4af;
+        color: #be123c;
+    }
+
+    .admin-clear-cache:focus,
+    .admin-clear-cache:focus-visible {
+        outline: none;
+        border-color: #e86a28;
+        box-shadow: 0 0 0 3px rgba(232, 106, 40, 0.18);
+    }
+
+    .admin-clear-cache:disabled {
+        opacity: 0.65;
+        cursor: wait;
+    }
+
+    .admin-clear-cache svg {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+    }
+
+    .admin-clear-cache-spin {
+        animation: admin-clear-cache-spin 0.8s linear infinite;
+    }
+
+    @keyframes admin-clear-cache-spin {
+        to {
+            transform: rotate(-360deg);
+        }
+    }
+
+    .dark .admin-clear-cache {
+        background: #0f172a;
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
+    }
+
+    .dark .admin-clear-cache:hover {
+        background: rgb(76 5 25 / 0.35);
+        border-color: rgba(251, 113, 133, 0.45);
+        color: #fda4af;
+    }
+
+    @media (max-width: 640px) {
+        .admin-clear-cache {
+            width: 2.25rem;
+            padding: 0;
+            justify-content: center;
+        }
+
+        .admin-clear-cache-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    }
+
+    .admin-clear-cache-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgb(15 23 42 / 0.45);
+    }
+
+    .admin-clear-cache-modal {
+        width: min(100%, 26rem);
+        padding: 1.15rem 1.2rem;
+        border-radius: 0.85rem;
+        border: 1px solid #e7e5e4;
+        background: #fff;
+        box-shadow: 0 18px 40px rgb(15 23 42 / 0.18);
+    }
+
+    .dark .admin-clear-cache-modal {
+        background: #0f172a;
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .admin-clear-cache-modal-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .dark .admin-clear-cache-modal-title {
+        color: #f9fafb;
+    }
+
+    .admin-clear-cache-modal-text {
+        margin: 0.55rem 0 0;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: #6b7280;
+    }
+
+    .dark .admin-clear-cache-modal-text {
+        color: #9ca3af;
+    }
+
+    .admin-clear-cache-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.55rem;
+        margin-top: 1.1rem;
+    }
+
+    .admin-clear-cache-cancel,
+    .admin-clear-cache-confirm {
+        height: 2.25rem;
+        padding: 0 0.85rem;
+        border-radius: 0.55rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .admin-clear-cache-cancel {
+        border: 1px solid #e7e5e4;
+        background: #fff;
+        color: #1e293b;
+    }
+
+    .admin-clear-cache-confirm {
+        border: 1px solid #e11d48;
+        background: #e11d48;
+        color: #fff;
+    }
+
+    .dark .admin-clear-cache-cancel {
+        background: rgb(30 41 59);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
+    }
+
     /* Themes settings — live status + storefront link */
     .theme-settings-toolbar {
         display: flex;

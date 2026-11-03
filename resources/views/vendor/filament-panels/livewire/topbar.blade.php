@@ -279,6 +279,8 @@
                     ])
                 @endif
 
+                @livewire(\App\Livewire\ClearCachesButton::class)
+
                 @include('filament.components.view-storefront-link')
 
                 @include('filament.components.locale-switcher')
