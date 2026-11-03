@@ -1030,11 +1030,13 @@
        ========================================================================== */
     .fi-ta-actions-header-cell {
         text-align: right !important;
-        padding-right: 1.5rem !important;
-        padding-left: 1rem !important;
         padding-top: 0.85rem !important;
         padding-bottom: 0.85rem !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        padding-inline: 0.75rem !important;
         white-space: nowrap !important;
+        width: 1% !important;
     }
 
     .fi-ta-actions-header-cell::after {
@@ -1045,6 +1047,8 @@
         letter-spacing: -0.01em !important;
         color: #0f172a !important;
         text-transform: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     .dark .fi-ta-actions-header-cell::after {
         color: #f8fafc !important;
@@ -1078,7 +1082,7 @@
         white-space: nowrap !important;
     }
 
-    /* 2. Primary Identifier Column (Order #, Name, Log name, etc.) */
+    /* 2. Primary Identifier Column (Order #, Name, RMA #, etc.) — stay left, never shift */
     .fi-ta-table th.fi-ta-header-cell:not(.fi-ta-selection-cell):not(.fi-ta-actions-header-cell):first-of-type,
     .fi-ta-table td.fi-ta-cell:not(.fi-ta-selection-cell):not(:last-child):first-of-type,
     .fi-ta-table tr:has(.fi-ta-selection-cell) th.fi-ta-header-cell:nth-child(2),
@@ -1446,6 +1450,15 @@
         background-color: transparent !important;
     }
 
+    /* Last action label ends flush with the "s" in the Actions header (no trailing pad) */
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) .fi-ta-actions > .fi-link:last-child,
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) .fi-ta-actions > :last-child {
+        padding-right: 0 !important;
+        padding-inline-end: 0 !important;
+        margin-right: 0 !important;
+        margin-inline-end: 0 !important;
+    }
+
     .fi-ta-actions .fi-link:hover {
         background-color: rgba(241, 245, 249, 1) !important; /* Soft subtle pill background on hover */
         transform: translateY(-1px) !important;
@@ -1476,18 +1489,45 @@
         background-color: rgba(59, 130, 246, 0.15) !important;
     }
 
-    /* 4. Last Column (Actions) keeps its precise right-aligned position */
+    /*
+     * 4. Actions buttons: right edge of last button = right edge of the "s" in "Actions".
+     * Same cell padding as the Actions header; inline-flex + text-align:right packs flush.
+     */
     .fi-ta-table th:last-child,
-    .fi-ta-table td:last-child {
+    .fi-ta-table td:last-child,
+    .fi-ta-table th.fi-ta-actions-header-cell,
+    .fi-ta-table td.fi-ta-cell:has(> .fi-ta-actions),
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) {
         text-align: right !important;
-        padding-right: 1.5rem !important;
-        padding-left: 1rem !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        padding-inline: 0.75rem !important;
         white-space: nowrap !important;
         width: 1% !important;
+        vertical-align: middle !important;
     }
-    .fi-ta-table td:last-child .fi-ta-actions {
+
+    .fi-ta-table td:last-child .fi-ta-actions,
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) .fi-ta-actions,
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) .fi-ta-actions.fi-align-start,
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) .fi-ta-actions.fi-align-center,
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) .fi-ta-actions.fi-align-between {
+        display: inline-flex !important;
+        float: none !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
         justify-content: flex-end !important;
-        margin-left: auto !important;
+        gap: 0.5rem !important;
+        width: auto !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        vertical-align: middle !important;
+    }
+
+    .fi-ta-table td.fi-ta-cell:has(.fi-ta-actions) .fi-ta-actions > :last-child {
+        margin-right: 0 !important;
+        margin-inline-end: 0 !important;
     }
 
 

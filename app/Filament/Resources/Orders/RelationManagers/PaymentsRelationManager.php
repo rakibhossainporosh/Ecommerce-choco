@@ -58,13 +58,15 @@ class PaymentsRelationManager extends RelationManager
                     ->label('Amount')
                     ->formatStateUsing($currencyFormat)
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->alignCenter(),
 
                 TextColumn::make('payment_method')
                     ->label('Method')
                     ->badge()
                     ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state))
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('status')
                     ->label('Status')
@@ -76,22 +78,26 @@ class PaymentsRelationManager extends RelationManager
                         PaymentTransactionStatus::Refunded => 'gray',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('transaction_id')
                     ->label('TrxID')
                     ->copyable()
-                    ->placeholder(__('—')),
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
 
                 TextColumn::make('account_number')
                     ->label('Account / Phone')
-                    ->placeholder(__('—')),
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
 
                 TextColumn::make('paid_at')
                     ->label('Paid At')
                     ->dateTime('M j, Y H:i')
                     ->placeholder(__('Pending'))
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('recordedBy.name')
                     ->label('Recorded By')

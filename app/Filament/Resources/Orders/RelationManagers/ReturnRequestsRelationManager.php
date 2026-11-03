@@ -62,39 +62,46 @@ class ReturnRequestsRelationManager extends RelationManager
                     ->label('RMA #')
                     ->searchable()
                     ->weight('bold')
-                    ->copyable(),
+                    ->copyable()
+                    ->placeholder(__('—')),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('refund_amount')
                     ->label('Refund Amount')
                     ->formatStateUsing($currencyFormat)
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->alignCenter(),
 
                 TextColumn::make('items_count')
                     ->label('Items')
                     ->counts('items')
-                    ->badge(),
+                    ->badge()
+                    ->alignCenter(),
 
                 TextColumn::make('reason')
                     ->label('Reason')
                     ->limit(40)
-                    ->tooltip(fn (ReturnRequest $record): ?string => $record->reason),
+                    ->tooltip(fn (ReturnRequest $record): ?string => $record->reason)
+                    ->alignCenter(),
 
                 TextColumn::make('admin_note')
                     ->label('Admin Note')
                     ->limit(35)
                     ->placeholder(__('—'))
-                    ->tooltip(fn (ReturnRequest $record): ?string => $record->admin_note),
+                    ->tooltip(fn (ReturnRequest $record): ?string => $record->admin_note)
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Submitted At')
                     ->dateTime('M j, Y H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
             ])
             ->defaultSort('created_at', 'desc')
             ->headerActions([
