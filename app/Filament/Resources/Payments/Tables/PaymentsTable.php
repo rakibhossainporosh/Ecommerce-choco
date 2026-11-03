@@ -40,25 +40,29 @@ class PaymentsTable
                     ->searchable()
                     ->sortable()
                     ->weight('medium')
-                    ->copyable(),
+                    ->copyable()
+                    ->alignCenter(),
 
                 TextColumn::make('customer.name')
                     ->label('Customer')
                     ->searchable()
                     ->sortable()
-                    ->placeholder(__('Guest / Walk-in')),
+                    ->placeholder(__('Guest / Walk-in'))
+                    ->alignCenter(),
 
                 TextColumn::make('amount')
                     ->label('Amount')
                     ->formatStateUsing($currencyFormat)
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->alignCenter(),
 
                 TextColumn::make('payment_method')
                     ->label('Method')
                     ->badge()
                     ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state))
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('status')
                     ->label('Status')
@@ -70,26 +74,30 @@ class PaymentsTable
                         PaymentTransactionStatus::Refunded => 'gray',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('transaction_id')
                     ->label('TrxID')
                     ->searchable()
                     ->copyable()
                     ->placeholder(__('—'))
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->alignCenter(),
 
                 TextColumn::make('paid_at')
                     ->label('Paid At')
                     ->dateTime('M j, Y H:i')
                     ->sortable()
-                    ->placeholder(__('Pending')),
+                    ->placeholder(__('Pending'))
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Recorded At')
                     ->dateTime('M j, Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
