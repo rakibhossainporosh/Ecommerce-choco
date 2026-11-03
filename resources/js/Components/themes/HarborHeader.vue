@@ -57,16 +57,24 @@ const {
         <div class="border-b-4 border-[#1d4ed8]">
             <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center gap-3 sm:gap-5 py-3">
-                    <a href="/" class="shrink-0 flex items-center gap-2.5">
-                        <span class="w-10 h-10 bg-[#1d4ed8] text-white flex items-center justify-center rounded-sm shadow-sm">
-                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </span>
-                        <span class="hidden sm:flex flex-col leading-none">
-                            <span class="text-lg font-black tracking-tight text-[#0f172a]">{{ page.props.site_settings?.site_name || 'Nobo Shop' }}</span>
-                            <span class="text-[10px] uppercase tracking-[0.16em] text-[#64748b] mt-1">{{ page.props.site_settings?.site_tagline || t('header.tagline_fallback') }}</span>
-                        </span>
+                    <a href="/" class="shrink-0 flex items-center gap-2.5 min-w-0">
+                        <img
+                            v-if="page.props.site_settings?.site_logo"
+                            :src="page.props.site_settings.site_logo"
+                            :alt="page.props.site_settings?.site_name || 'Logo'"
+                            class="h-10 w-auto max-w-[150px] object-contain"
+                        />
+                        <template v-else>
+                            <span class="w-10 h-10 bg-[#1d4ed8] text-white flex items-center justify-center rounded-sm shadow-sm shrink-0">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            <span class="hidden sm:flex flex-col leading-none min-w-0">
+                                <span class="text-lg font-black tracking-tight text-[#0f172a] truncate">{{ page.props.site_settings?.site_name || 'Nobo Shop' }}</span>
+                                <span class="text-[10px] uppercase tracking-[0.16em] text-[#64748b] mt-1 truncate">{{ page.props.site_settings?.site_tagline || t('header.tagline_fallback') }}</span>
+                            </span>
+                        </template>
                     </a>
 
                     <div ref="desktopSearchContainer" class="flex-1 relative min-w-0">

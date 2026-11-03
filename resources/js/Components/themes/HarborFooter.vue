@@ -23,9 +23,17 @@ const getGmailComposeUrl = (email) => `https://mail.google.com/mail/?view=cm&fs=
     <footer class="harbor-footer mt-auto bg-[#0f172a] text-[#e2e8f0]">
         <div class="border-b border-white/10">
             <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div>
+                <div class="min-w-0">
                     <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#93c5fd]">{{ settings.site_tagline || t('header.tagline_fallback') }}</p>
-                    <h3 class="mt-2 text-xl font-black text-white">{{ settings.site_name || 'Nobo Shop' }}</h3>
+                    <a href="/" class="mt-2 inline-flex items-center gap-3">
+                        <img
+                            v-if="settings.site_logo"
+                            :src="settings.site_logo"
+                            :alt="settings.site_name || 'Logo'"
+                            class="h-10 w-auto max-w-[150px] object-contain"
+                        />
+                        <h3 v-else class="text-xl font-black text-white">{{ settings.site_name || 'Nobo Shop' }}</h3>
+                    </a>
                 </div>
                 <p class="max-w-xl text-sm text-[#cbd5e1] leading-relaxed whitespace-pre-line">
                     {{ settings.footer_about || (settings.site_tagline ? settings.site_tagline + ' — ' + t('footer.about_fallback') : t('footer.about_fallback')) }}

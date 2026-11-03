@@ -24,9 +24,21 @@ const getGmailComposeUrl = (email) => `https://mail.google.com/mail/?view=cm&fs=
         <div class="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 <div class="lg:col-span-5">
-                    <p class="text-2xl font-semibold text-white tracking-tight" style="font-family: var(--store-display)">
-                        {{ settings.site_name || 'Nobo Shop' }}
-                    </p>
+                    <a href="/" class="inline-flex items-center gap-3">
+                        <img
+                            v-if="settings.site_logo"
+                            :src="settings.site_logo"
+                            :alt="settings.site_name || 'Logo'"
+                            class="h-10 w-auto max-w-[150px] object-contain"
+                        />
+                        <p
+                            v-else
+                            class="text-2xl font-semibold text-white tracking-tight"
+                            style="font-family: var(--store-display)"
+                        >
+                            {{ settings.site_name || 'Nobo Shop' }}
+                        </p>
+                    </a>
                     <p class="mt-5 text-sm leading-relaxed text-[#9fb5ab] whitespace-pre-line max-w-md">
                         {{ settings.footer_about || (settings.site_tagline ? settings.site_tagline + ' — ' + t('footer.about_fallback') : t('footer.about_fallback')) }}
                     </p>

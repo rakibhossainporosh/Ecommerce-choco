@@ -30,8 +30,18 @@ const navCategories = computed(() => (categories || []).filter((cat) => cat.slug
 
         <div class="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-4 h-14 sm:h-[3.75rem]">
-                <a href="/" class="shrink-0">
-                    <span class="text-lg sm:text-xl font-semibold tracking-tight" style="font-family: var(--store-display)">
+                <a href="/" class="shrink-0 flex items-center gap-2.5 min-w-0">
+                    <img
+                        v-if="page.props.site_settings?.site_logo"
+                        :src="page.props.site_settings.site_logo"
+                        :alt="page.props.site_settings?.site_name || 'Logo'"
+                        class="h-9 sm:h-10 w-auto max-w-[140px] object-contain"
+                    />
+                    <span
+                        v-else
+                        class="text-lg sm:text-xl font-semibold tracking-tight truncate"
+                        style="font-family: var(--store-display)"
+                    >
                         {{ page.props.site_settings?.site_name || 'Nobo Shop' }}
                     </span>
                 </a>

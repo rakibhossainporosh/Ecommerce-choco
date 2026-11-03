@@ -70,3 +70,33 @@ test('admin saves the shop theme', function () {
 
     expect(StorefrontTheme::key())->toBe('harbor');
 });
+
+test('site logo from settings is shared on every theme', function () {
+    Setting::query()->create([
+        'key' => 'site_logo',
+        'label' => 'site logo',
+        'value' => 'brand/logo.png',
+        'type' => SettingType::String,
+        'group' => 'general',
+    ]);
+
+    foreach (['warm', 'grove', 'harbor'] as $theme) {
+        Setting::query()->updateOrCreate(
+            ['key' => 'storefront_theme'],
+            [
+                'label' => 'storefront theme',
+                'value' => $theme,
+                'type' => SettingType::String,
+                'group' => 'theme',
+            ],
+        );
+        Cache::flush();
+
+        $this->get('/')
+            ->assertSuccessful()
+            ->assertSee('data-store-theme="'.$theme.'"', false)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('site_settings.theme', $theme)
+                ->where('site_settings.site_logo', asset('storage/brand/logo.png')));
+    }
+});
