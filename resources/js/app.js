@@ -2,6 +2,28 @@ import { createApp, h } from 'vue';
 import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
+const fallbackStoreName = () => {
+    const fromMeta = document.querySelector('meta[name="store-name"]')?.getAttribute('content');
+
+    if (typeof fromMeta === 'string' && fromMeta.trim() !== '') {
+        return fromMeta.trim();
+    }
+
+    return 'Nobo Shop';
+};
+
+let storeName = fallbackStoreName();
+
+const resolveStoreName = (page) => {
+    const fromProps = page?.props?.site_settings?.site_name;
+
+    if (typeof fromProps === 'string' && fromProps.trim() !== '') {
+        return fromProps.trim();
+    }
+
+    return storeName || fallbackStoreName();
+};
+
 const applyStoreTheme = (page) => {
     const theme = page?.props?.site_settings?.theme;
     if (typeof theme === 'string' && theme !== '') {
@@ -10,11 +32,16 @@ const applyStoreTheme = (page) => {
 };
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - Nobo Shop` : 'Nobo Shop'),
+    title: (title) => (title ? `${title} - ${storeName}` : storeName),
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
+        storeName = resolveStoreName(props.initialPage);
         applyStoreTheme(props.initialPage);
-        router.on('success', (event) => applyStoreTheme(event.detail.page));
+
+        router.on('success', (event) => {
+            storeName = resolveStoreName(event.detail.page);
+            applyStoreTheme(event.detail.page);
+        });
 
         createApp({ render: () => h(App, props) })
             .use(plugin)

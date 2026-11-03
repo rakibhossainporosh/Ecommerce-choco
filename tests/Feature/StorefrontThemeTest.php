@@ -73,6 +73,21 @@ test('admin saves the shop theme', function () {
     expect(StorefrontTheme::key())->toBe('harbor');
 });
 
+test('browser tab title uses the store brand name from settings', function () {
+    Setting::query()->create([
+        'key' => 'site_name',
+        'label' => 'site name',
+        'value' => 'Demo Boutique',
+        'type' => SettingType::String,
+        'group' => 'general',
+    ]);
+
+    $this->get('/')
+        ->assertSuccessful()
+        ->assertSee('<title inertia>Demo Boutique</title>', false)
+        ->assertSee('name="store-name" content="Demo Boutique"', false);
+});
+
 test('theme picker shows the store brand name from settings', function () {
     Setting::query()->create([
         'key' => 'site_name',

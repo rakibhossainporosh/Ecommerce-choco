@@ -4,12 +4,17 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Nobo Shop') }}</title>
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-
         @php
             $storeTheme = \App\Support\StorefrontTheme::key();
+            $storeName = (string) \App\Models\Setting::get('site_name', config('app.name', 'Nobo Shop'));
+            if ($storeName === '') {
+                $storeName = (string) config('app.name', 'Nobo Shop');
+            }
         @endphp
+
+        <title inertia>{{ $storeName }}</title>
+        <meta name="store-name" content="{{ $storeName }}">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         @if ($storeTheme === 'grove')
