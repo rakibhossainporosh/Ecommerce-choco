@@ -13,6 +13,13 @@ class CreateSetting extends CreateRecord
 
     protected static string $resource = SettingResource::class;
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $extraBodyAttributes = [
+        'class' => 'fi-unified-record-form-page',
+    ];
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $type = $data['type'] ?? SettingType::String;

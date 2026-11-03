@@ -13,6 +13,9 @@
     ];
     $currentStep = $statusOrder[$order?->status?->value ?? 'pending'] ?? 1;
     $isCancelled = $order?->isCancelled() ?? false;
+    $isReturned = $order?->status === \App\Enums\OrderStatus::Returned;
+    $isRefunded = $order?->status === \App\Enums\OrderStatus::Refunded;
+    $showsLifecycleStepper = ! $isCancelled && ! $isReturned && ! $isRefunded;
 @endphp
 
 @if($order)
@@ -195,6 +198,31 @@
     .cov-step-line-fill {
         height: 100%;
         background-color: #10b981;
+    }
+
+    @media (max-width: 640px) {
+        .cov-stepper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .cov-step-circle {
+            width: 1.625rem;
+            height: 1.625rem;
+            font-size: 0.6875rem;
+        }
+
+        .cov-step-label {
+            font-size: 0.5625rem;
+            line-height: 1.2;
+            max-width: 3.5rem;
+        }
+
+        .cov-step-line {
+            top: 1.75rem;
+        }
     }
 
     /* Products Table */
@@ -405,7 +433,7 @@
                 </div>
             </div>
 
-            <!-- Stepper Progress Bar -->
+            <!-- Stepper Progress Bar / Terminal Status Banner -->
             @if($isCancelled)
                 <div style="margin-top: 0.875rem; padding: 0.75rem 1rem; border-radius: 0.5rem; background: var(--cov-red-bg); border: 1px solid var(--cov-red-border); color: var(--cov-red); font-size: 0.75rem;">
                     <strong>{{ __('Order Cancelled') }}</strong>
@@ -416,7 +444,17 @@
                         <span style="margin-left: 0.5rem; opacity: 0.8;">({{ $order->cancelled_at->translatedFormat('d M Y, h:i A') }})</span>
                     @endif
                 </div>
-            @else
+            @elseif($isReturned)
+                <div style="margin-top: 0.875rem; padding: 0.75rem 1rem; border-radius: 0.5rem; background: var(--cov-bg-subtle); border: 1px solid var(--cov-border); color: var(--cov-text-subtle); font-size: 0.75rem;">
+                    <strong>{{ __('Order Returned') }}</strong>
+                    <span style="margin-left: 0.5rem; opacity: 0.85;">{{ __('This order was returned after delivery.') }}</span>
+                </div>
+            @elseif($isRefunded)
+                <div style="margin-top: 0.875rem; padding: 0.75rem 1rem; border-radius: 0.5rem; background: var(--cov-bg-subtle); border: 1px solid var(--cov-border); color: var(--cov-text-subtle); font-size: 0.75rem;">
+                    <strong>{{ __('Order Refunded') }}</strong>
+                    <span style="margin-left: 0.5rem; opacity: 0.85;">{{ __('Payment for this order has been refunded.') }}</span>
+                </div>
+            @elseif($showsLifecycleStepper)
                 <div style="padding-top: 0.75rem;">
                     <div style="font-size: 0.6875rem; font-weight: 700; color: var(--cov-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
                         {{ __('Order Lifecycle') }}

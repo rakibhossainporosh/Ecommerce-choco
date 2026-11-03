@@ -15,6 +15,13 @@ class EditSetting extends EditRecord
 
     protected static string $resource = SettingResource::class;
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $extraBodyAttributes = [
+        'class' => 'fi-unified-record-form-page',
+    ];
+
     protected function getHeaderActions(): array
     {
         return [

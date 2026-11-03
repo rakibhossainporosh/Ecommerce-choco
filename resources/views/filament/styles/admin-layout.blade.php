@@ -1999,11 +1999,8 @@
     }
 
     /*
-     * Unified single-section resources (Units): fields + Cancel/Save in one card.
-     */
-    /*
-     * Unified single-section resources (Units): one seamless card — no line
-     * between fields and Cancel/Save. Compact field width (3-up).
+     * Unified Create/Edit resources (Units, Reviews, Coupons, Settings):
+     * full-width form, actions flush under the last section (no separate footer card).
      */
     body.fi-unified-record-form-page .fi-sc-form {
         gap: 0 !important;
@@ -2011,7 +2008,18 @@
         width: 100% !important;
     }
 
-    /* Keep Active status (and short fields) top-aligned with sibling inputs. */
+    body.fi-unified-record-form-page .fi-sc-form > .fi-sc,
+    body.fi-unified-record-form-page .fi-unified-record-form,
+    body.fi-unified-record-form-page .fi-sc-form .fi-section {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Space stacked sections inside the schema grid. */
+    body.fi-unified-record-form-page .fi-unified-record-form.fi-sc-has-gap {
+        row-gap: 1.5rem !important;
+    }
+
     body.fi-unified-record-form-page .fi-section-content .fi-grid {
         align-items: start !important;
     }
@@ -2020,16 +2028,19 @@
     body.fi-unified-record-form-page .fi-sc-form .fi-section {
         box-shadow: none !important;
         border: 1px solid rgba(17, 24, 39, 0.1) !important;
-        border-bottom: none !important;
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-        border-top-left-radius: 0.75rem !important;
-        border-top-right-radius: 0.75rem !important;
+        border-radius: 0.75rem !important;
     }
 
     .dark body.fi-unified-record-form-page .fi-unified-record-section,
     .dark body.fi-unified-record-form-page .fi-sc-form .fi-section {
         border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Only the last section merges into the actions footer. */
+    body.fi-unified-record-form-page .fi-unified-record-form > .fi-grid-col:last-child .fi-section {
+        border-bottom: none !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
     }
 
     body.fi-unified-record-form-page .fi-sc-form > .fi-sc:has(.fi-sc-actions) {
@@ -3085,5 +3096,31 @@
 
     .dark .theme-preview-blurb {
         color: #9ca3af;
+    }
+
+    /* Order view: keep lifecycle header actions usable on narrow screens */
+    .fi-resource-view-record-page .fi-header-actions,
+    .fi-resource-view-record-page .fi-page-header-actions,
+    .fi-resource-view-record-page .fi-ac.fi-align-end {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+        row-gap: 0.5rem !important;
+    }
+
+    @media (max-width: 640px) {
+        .fi-resource-view-record-page .fi-header-actions,
+        .fi-resource-view-record-page .fi-page-header-actions,
+        .fi-resource-view-record-page .fi-ac.fi-align-end {
+            width: 100%;
+            justify-content: flex-start !important;
+        }
+
+        .fi-resource-view-record-page .fi-header-actions .fi-btn,
+        .fi-resource-view-record-page .fi-page-header-actions .fi-btn,
+        .fi-resource-view-record-page .fi-ac.fi-align-end .fi-btn {
+            flex: 1 1 calc(50% - 0.5rem);
+            min-width: calc(50% - 0.5rem);
+            justify-content: center;
+        }
     }
 </style>

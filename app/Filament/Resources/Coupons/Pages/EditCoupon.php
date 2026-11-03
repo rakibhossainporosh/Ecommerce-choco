@@ -14,6 +14,13 @@ class EditCoupon extends EditRecord
 
     protected static string $resource = CouponResource::class;
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $extraBodyAttributes = [
+        'class' => 'fi-unified-record-form-page',
+    ];
+
     protected function getHeaderActions(): array
     {
         return [

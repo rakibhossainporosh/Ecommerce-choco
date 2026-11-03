@@ -103,7 +103,8 @@ class OrdersTable
                     ->label('Payment Method')
                     ->alignCenter()
                     ->formatStateUsing(fn (mixed $state): string => PaymentMethodPresenter::label($state))
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('grand_total')
                     ->label('Grand Total')
@@ -121,7 +122,7 @@ class OrdersTable
                     ->alignCenter()
                     ->dateTime('d M Y, h:i A')
                     ->sortable()
-                    ->placeholder(__('—')),
+                    ->getStateUsing(fn (Order $record) => $record->placed_at ?? $record->created_at),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
@@ -130,6 +131,10 @@ class OrdersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
+            ->striped()
+            ->emptyStateHeading(__('No orders yet'))
+            ->emptyStateDescription(__('Orders from your storefront will appear here for fulfillment.'))
+            ->emptyStateIcon(Heroicon::OutlinedShoppingBag)
             ->filters([
                 SelectFilter::make('status')
                     ->label('Status')
