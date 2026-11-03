@@ -8,7 +8,7 @@ use App\Models\Setting;
 use App\Support\StorefrontTheme;
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Hidden;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -41,6 +41,8 @@ class ThemeSettings extends Page
      */
     public ?array $data = [];
 
+    public string $liveTheme = 'warm';
+
     public static function canAccess(): bool
     {
         return (bool) (auth()->user()?->can('settings.view') || auth()->user()?->can('settings.update'));
@@ -53,43 +55,69 @@ class ThemeSettings extends Page
 
     public function mount(): void
     {
+        $this->liveTheme = StorefrontTheme::key();
+
         $this->form->fill([
-            'storefront_theme' => StorefrontTheme::key(),
+            'storefront_theme' => $this->liveTheme,
         ]);
     }
 
     public function form(Schema $schema): Schema
     {
+        $canUpdate = $this->canUpdateThemes();
+
         return $schema
             ->statePath('data')
             ->components([
                 Section::make('Shop theme')
                     ->compact()
-                    ->description('Warm keeps today’s shop. Grove and Harbor swap the whole storefront design — header, hero, catalog, product page, cart drawer, and footer. Order logic and admin stay the same.')
+                    ->description($canUpdate
+                        ? 'Pick a preview, then save to publish it to the live storefront. Checkout, orders, and admin stay the same.'
+                        : 'You can preview themes here. Ask an admin to publish a change.')
                     ->schema([
-                        Radio::make('storefront_theme')
-                            ->label('Theme')
-                            ->options(StorefrontTheme::catalog())
-                            ->descriptions([
-                                'warm' => 'Soft cream boutique. Current default layout.',
-                                'grove' => 'Editorial boutique — centered brand, overlay hero, soft product page, green.',
-                                'harbor' => 'Marketplace — utility bar, dense catalog, sharp product page, navy.',
-                            ])
-                            ->required(),
+                        Hidden::make('storefront_theme')
+                            ->required()
+                            ->rule('in:'.implode(',', array_keys(StorefrontTheme::catalog())))
+                            ->disabled(fn (): bool => ! $this->canUpdateThemes()),
                     ]),
                 Actions::make([
                     Action::make('save')
                         ->label('Save theme')
                         ->icon(Heroicon::OutlinedCheck)
                         ->color('primary')
+                        ->visible(fn (): bool => $this->canUpdateThemes())
+                        ->disabled(fn (): bool => ! $this->hasUnsavedThemeChanges())
                         ->action('save'),
                 ])->alignment(Alignment::End),
             ]);
     }
 
+    public function canUpdateThemes(): bool
+    {
+        return (bool) auth()->user()?->can('settings.update');
+    }
+
+    public function hasUnsavedThemeChanges(): bool
+    {
+        $selected = is_string($this->data['storefront_theme'] ?? null)
+            ? $this->data['storefront_theme']
+            : $this->liveTheme;
+
+        return $selected !== $this->liveTheme;
+    }
+
+    public function selectedThemeKey(): string
+    {
+        $selected = $this->data['storefront_theme'] ?? $this->liveTheme;
+
+        return is_string($selected) && isset(StorefrontTheme::catalog()[$selected])
+            ? $selected
+            : $this->liveTheme;
+    }
+
     public function save(): void
     {
-        if (! auth()->user()?->can('settings.update')) {
+        if (! $this->canUpdateThemes()) {
             Notification::make()
                 ->title(__('You do not have permission to update settings.'))
                 ->danger()
@@ -116,6 +144,11 @@ class ThemeSettings extends Page
         ]);
         $setting->save();
         Cache::forget('setting.storefront_theme');
+
+        $this->liveTheme = $key;
+        $this->form->fill([
+            'storefront_theme' => $key,
+        ]);
 
         Notification::make()
             ->title('Theme saved.')

@@ -62,13 +62,52 @@ test('admin saves the shop theme', function () {
     $this->actingAs($admin);
 
     Livewire::test(ThemeSettings::class)
-        ->fillForm([
-            'storefront_theme' => 'harbor',
-        ])
+        ->assertSee('Live storefront theme:', false)
+        ->assertSee('Live', false)
+        ->set('data.storefront_theme', 'harbor')
+        ->assertSee('Unsaved selection: Harbor', false)
         ->call('save')
-        ->assertHasNoFormErrors();
+        ->assertHasNoFormErrors()
+        ->assertDontSee('Unsaved selection:', false);
 
     expect(StorefrontTheme::key())->toBe('harbor');
+});
+
+test('theme picker shows the store brand name from settings', function () {
+    Setting::query()->create([
+        'key' => 'site_name',
+        'label' => 'site name',
+        'value' => 'Anik Choco Co',
+        'type' => SettingType::String,
+        'group' => 'general',
+    ]);
+
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->create();
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
+    Livewire::test(ThemeSettings::class)
+        ->assertSee('Anik Choco Co', false)
+        ->assertSee('Welcome to Anik Choco Co', false)
+        ->assertSee('View storefront', false);
+});
+
+test('view-only staff cannot publish a theme change', function () {
+    $this->seed(RolePermissionSeeder::class);
+
+    $viewer = User::factory()->create();
+    $viewer->givePermissionTo('settings.view');
+    $this->actingAs($viewer);
+
+    Livewire::test(ThemeSettings::class)
+        ->assertSee('View only', false)
+        ->assertDontSee('Save theme', false)
+        ->set('data.storefront_theme', 'harbor')
+        ->call('save')
+        ->assertNotified();
+
+    expect(StorefrontTheme::key())->toBe('warm');
 });
 
 test('site logo from settings is shared on every theme', function () {
