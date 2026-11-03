@@ -10,6 +10,7 @@ use App\Filament\Resources\Payments\Schemas\PaymentForm;
 use App\Filament\Resources\Payments\Schemas\PaymentInfolist;
 use App\Filament\Resources\Payments\Tables\PaymentsTable;
 use App\Models\Payment;
+use App\Support\AdminNavigationBadge;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -38,9 +39,10 @@ class PaymentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = static::getModel()::where('status', PaymentTransactionStatus::Pending)->count();
-
-        return $count > 0 ? (string) $count : null;
+        return AdminNavigationBadge::count(
+            'payments.pending',
+            static fn (): int => static::getModel()::where('status', PaymentTransactionStatus::Pending)->count(),
+        );
     }
 
     public static function getNavigationBadgeColor(): string|array|null

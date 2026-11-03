@@ -31,4 +31,27 @@ class OrderInvoiceController extends Controller
             'order' => $order,
         ]);
     }
+
+    /**
+     * Display a warehouse packing slip (quantities / SKUs, no prices).
+     */
+    public function packingSlip(Request $request, Order $order): View
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->can_access_admin_panel || ! $user->can('view', $order)) {
+            abort(403, 'Unauthorized access to packing slip.');
+        }
+
+        $order->loadMissing([
+            'items',
+            'shipments.shippingMethod',
+            'latestShipment',
+            'customer',
+        ]);
+
+        return view('admin.orders.packing-slip', [
+            'order' => $order,
+        ]);
+    }
 }

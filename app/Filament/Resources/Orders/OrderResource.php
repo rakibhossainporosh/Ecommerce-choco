@@ -12,6 +12,7 @@ use App\Filament\Resources\Orders\RelationManagers\ShipmentsRelationManager;
 use App\Filament\Resources\Orders\Schemas\OrderInfolist;
 use App\Filament\Resources\Orders\Tables\OrdersTable;
 use App\Models\Order;
+use App\Support\AdminNavigationBadge;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -47,9 +48,10 @@ class OrderResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = static::getModel()::where('status', OrderStatus::Pending)->count();
-
-        return $count > 0 ? (string) $count : null;
+        return AdminNavigationBadge::count(
+            'orders.pending',
+            static fn (): int => static::getModel()::where('status', OrderStatus::Pending)->count(),
+        );
     }
 
     public static function getNavigationBadgeColor(): string|array|null
@@ -87,7 +89,7 @@ class OrderResource extends Resource
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['items', 'statusHistories.changedBy', 'payments', 'shipments', 'latestShipment', 'returnRequests']);
+            ->with(['items', 'statusHistories.changedBy', 'latestShipment', 'activities.causer']);
     }
 
     /**

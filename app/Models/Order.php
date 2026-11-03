@@ -40,6 +40,9 @@ use Spatie\Activitylog\Support\LogOptions;
     'customer_phone',
     'customer_email',
     'customer_note',
+    'admin_note',
+    'gift_message',
+    'tags',
     'status',
     'payment_status',
     'payment_method',
@@ -113,10 +116,47 @@ class Order extends Model
             'shipping_amount' => 'decimal:2',
             'grand_total' => 'decimal:2',
             'billing_same_as_shipping' => 'boolean',
+            'tags' => 'array',
             'placed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'cancelled_by' => 'integer',
         ];
+    }
+
+    /**
+     * Map current order status to the customer email notification step key.
+     */
+    public function mailStepKey(): string
+    {
+        return match ($this->status) {
+            OrderStatus::Pending => 'placed',
+            OrderStatus::Confirmed => 'confirmed',
+            OrderStatus::Processing => 'processing',
+            OrderStatus::Shipped => 'shipped',
+            OrderStatus::Delivered => 'delivered',
+            OrderStatus::Cancelled => 'cancelled',
+            OrderStatus::Returned => 'returned',
+            OrderStatus::Refunded => 'refunded',
+        };
+    }
+
+    /**
+     * Normalized ops tags for admin UI badges.
+     *
+     * @return list<string>
+     */
+    public function tagList(): array
+    {
+        $tags = $this->tags ?? [];
+
+        if (! is_array($tags)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (mixed $tag): string => trim((string) $tag),
+            $tags,
+        )));
     }
 
     /**

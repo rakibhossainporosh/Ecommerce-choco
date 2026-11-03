@@ -70,3 +70,7 @@ Route::post('/admin/site-locale', [SiteLocaleController::class, 'update'])
 Route::get('/admin/orders/{order}/invoice', [OrderInvoiceController::class, 'show'])
     ->middleware(['auth'])
     ->name('admin.orders.invoice');
+
+Route::get('/admin/orders/{order}/packing-slip', [OrderInvoiceController::class, 'packingSlip'])
+    ->middleware(['auth'])
+    ->name('admin.orders.packing-slip');

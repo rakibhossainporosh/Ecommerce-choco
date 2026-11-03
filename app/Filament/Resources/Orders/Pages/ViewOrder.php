@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Pages;
 
 use App\Filament\Resources\Orders\Actions\OrderActions;
+use App\Filament\Resources\Orders\Actions\OrderOpsActions;
 use App\Filament\Resources\Orders\OrderResource;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
@@ -41,6 +42,10 @@ class ViewOrder extends ViewRecord
                 ->icon(Heroicon::OutlinedPrinter)
                 ->color('gray')
                 ->url(fn (): string => route('admin.orders.invoice', $this->record), shouldOpenInNewTab: true),
+            OrderOpsActions::makePrintPackingSlipAction(),
+            OrderOpsActions::makeEditOpsNotesAction(),
+            OrderOpsActions::makeEditShippingAddressAction(),
+            OrderOpsActions::makeResendStatusEmailAction(),
             OrderActions::makeConfirmAction(),
             OrderActions::makeProcessAction(),
             OrderActions::makeShipAction(),

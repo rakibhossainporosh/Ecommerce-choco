@@ -9,6 +9,7 @@ use App\Filament\Resources\AbandonedCarts\Pages\ViewAbandonedCart;
 use App\Filament\Resources\AbandonedCarts\Schemas\AbandonedCartInfolist;
 use App\Filament\Resources\AbandonedCarts\Tables\AbandonedCartsTable;
 use App\Models\AbandonedCart;
+use App\Support\AdminNavigationBadge;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -56,9 +57,10 @@ class AbandonedCartResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = AbandonedCart::query()->where('status', AbandonedCartStatus::Open)->count();
-
-        return $count > 0 ? (string) $count : null;
+        return AdminNavigationBadge::count(
+            'abandoned_carts.open',
+            static fn (): int => AbandonedCart::query()->where('status', AbandonedCartStatus::Open)->count(),
+        );
     }
 
     public static function getNavigationBadgeColor(): ?string

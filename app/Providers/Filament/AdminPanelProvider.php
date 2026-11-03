@@ -34,7 +34,6 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -46,6 +45,10 @@ class AdminPanelProvider extends PanelProvider
 
         Table::configureUsing(function (Table $table): void {
             $table
+                // Defer heavy table queries in the real admin UI; keep eager in tests/assertions.
+                ->deferLoading(fn (): bool => ! app()->runningUnitTests())
+                ->defaultPaginationPageOption(10)
+                ->paginationPageOptions([10, 25, 50])
                 ->emptyStateIcon(Heroicon::OutlinedInbox)
                 ->emptyStateHeading(fn (Table $table): string => __('No :label found', ['label' => $table->getPluralModelLabel()]))
                 ->emptyStateDescription(fn (Table $table): string => __('There are currently no :label recorded in the system. New entries will show up here.', ['label' => $table->getPluralModelLabel()]));
@@ -137,21 +140,22 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
+            ->spa(hasPrefetching: true)
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('14.5rem')
             ->collapsedSidebarWidth('4.5rem')
             ->maxContentWidth(Width::Full)
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@include('filament.styles.admin-layout')"),
+                fn (): string => view('filament.styles.admin-layout')->render(),
             )
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_START,
-                fn (): string => Blade::render("@include('filament.components.sidebar-header')"),
+                fn (): string => view('filament.components.sidebar-header')->render(),
             )
             ->renderHook(
                 PanelsRenderHook::TOPBAR_START,
-                fn (): string => Blade::render("@include('filament.components.topbar-heading')"),
+                fn (): string => view('filament.components.topbar-heading')->render(),
             )
             ->navigationGroups([
                 NavigationGroup::make(fn (): string => UiText::line('Sales')),
@@ -161,7 +165,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make(fn (): string => UiText::line('System')),
             ])
             ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
+            ->databaseNotificationsPolling('60s')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

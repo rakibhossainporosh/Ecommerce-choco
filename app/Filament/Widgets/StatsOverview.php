@@ -8,6 +8,8 @@ use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class StatsOverview extends BaseWidget
 {
@@ -15,64 +17,88 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        // 1. Revenue
-        $totalRevenue = (float) Order::where('status', '!=', 'cancelled')->sum('grand_total');
-        $todayRevenue = (float) Order::where('status', '!=', 'cancelled')
-            ->whereDate('created_at', Carbon::today())
-            ->sum('grand_total');
+        $stats = Cache::remember('admin.dashboard.stats_overview', now()->addSeconds(60), function (): array {
+            $today = Carbon::today();
+            $weekStart = $today->copy()->subDays(6)->startOfDay();
+            $monthStart = Carbon::now()->startOfMonth();
 
-        // Last 7 days revenue sparkline
-        $revenueTrend = collect(range(6, 0))->map(function ($daysAgo) {
-            $date = Carbon::today()->subDays($daysAgo);
+            $orderTotals = Order::query()
+                ->selectRaw("
+                    COUNT(*) as total_orders,
+                    SUM(CASE WHEN status != 'cancelled' THEN grand_total ELSE 0 END) as total_revenue,
+                    SUM(CASE WHEN status != 'cancelled' AND DATE(created_at) = ? THEN grand_total ELSE 0 END) as today_revenue,
+                    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_orders
+                ", [$today->toDateString()])
+                ->first();
 
-            return (float) Order::where('status', '!=', 'cancelled')
-                ->whereDate('created_at', $date)
-                ->sum('grand_total');
-        })->toArray();
+            $ordersByDay = Order::query()
+                ->selectRaw('DATE(created_at) as day, COUNT(*) as total, SUM(CASE WHEN status != \'cancelled\' THEN grand_total ELSE 0 END) as revenue')
+                ->where('created_at', '>=', $weekStart)
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->get()
+                ->keyBy(fn ($row): string => Carbon::parse($row->day)->toDateString());
 
-        // 2. Orders & Pending Orders
-        $totalOrders = Order::count();
-        $pendingOrders = Order::where('status', 'pending')->count();
+            $customersByDay = Customer::query()
+                ->selectRaw('DATE(created_at) as day, COUNT(*) as total')
+                ->where('created_at', '>=', $weekStart)
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->get()
+                ->keyBy(fn ($row): string => Carbon::parse($row->day)->toDateString());
 
-        // Last 7 days orders sparkline
-        $ordersTrend = collect(range(6, 0))->map(function ($daysAgo) {
-            $date = Carbon::today()->subDays($daysAgo);
+            $revenueTrend = [];
+            $ordersTrend = [];
+            $customersTrend = [];
 
-            return Order::whereDate('created_at', $date)->count();
-        })->toArray();
+            foreach (range(6, 0) as $daysAgo) {
+                $day = $today->copy()->subDays($daysAgo)->toDateString();
+                $revenueTrend[] = (float) ($ordersByDay[$day]->revenue ?? 0);
+                $ordersTrend[] = (int) ($ordersByDay[$day]->total ?? 0);
+                $customersTrend[] = (int) ($customersByDay[$day]->total ?? 0);
+            }
 
-        // 3. Customers (from Customer model)
-        $totalCustomers = Customer::count();
-        $newCustomersThisMonth = Customer::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
+            $stock = Inventory::query()
+                ->selectRaw('
+                    SUM(CASE WHEN quantity <= low_stock_threshold THEN 1 ELSE 0 END) as low_stock,
+                    SUM(CASE WHEN quantity <= 0 THEN 1 ELSE 0 END) as out_of_stock
+                ')
+                ->first();
 
-        // Last 7 days customers sparkline
-        $customersTrend = collect(range(6, 0))->map(function ($daysAgo) {
-            $date = Carbon::today()->subDays($daysAgo);
+            return [
+                'total_revenue' => (float) ($orderTotals->total_revenue ?? 0),
+                'today_revenue' => (float) ($orderTotals->today_revenue ?? 0),
+                'total_orders' => (int) ($orderTotals->total_orders ?? 0),
+                'pending_orders' => (int) ($orderTotals->pending_orders ?? 0),
+                'total_customers' => Customer::count(),
+                'new_customers_month' => Customer::query()->where('created_at', '>=', $monthStart)->count(),
+                'low_stock' => (int) ($stock->low_stock ?? 0),
+                'out_of_stock' => (int) ($stock->out_of_stock ?? 0),
+                'revenue_trend' => $revenueTrend,
+                'orders_trend' => $ordersTrend,
+                'customers_trend' => $customersTrend,
+            ];
+        });
 
-            return Customer::whereDate('created_at', $date)->count();
-        })->toArray();
-
-        // 4. Low stock inventory
-        $lowStockCount = Inventory::whereColumn('quantity', '<=', 'low_stock_threshold')->count();
-        $outOfStockCount = Inventory::where('quantity', '<=', 0)->count();
+        $pendingOrders = $stats['pending_orders'];
+        $lowStockCount = $stats['low_stock'];
+        $outOfStockCount = $stats['out_of_stock'];
 
         return [
-            Stat::make(__('Total Revenue'), '৳ '.number_format($totalRevenue, 2))
-                ->description(__('Today: ৳ :amount', ['amount' => number_format($todayRevenue, 2)]))
+            Stat::make(__('Total Revenue'), '৳ '.number_format($stats['total_revenue'], 2))
+                ->description(__('Today: ৳ :amount', ['amount' => number_format($stats['today_revenue'], 2)]))
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
-                ->chart($revenueTrend)
+                ->chart($stats['revenue_trend'])
                 ->color('success'),
 
-            Stat::make(__('Total Orders'), number_format($totalOrders))
+            Stat::make(__('Total Orders'), number_format($stats['total_orders']))
                 ->description($pendingOrders > 0 ? __(':count pending review', ['count' => $pendingOrders]) : __('All orders processed'))
                 ->descriptionIcon($pendingOrders > 0 ? 'heroicon-m-clock' : 'heroicon-m-check-circle')
-                ->chart($ordersTrend)
+                ->chart($stats['orders_trend'])
                 ->color($pendingOrders > 0 ? 'warning' : 'primary'),
 
-            Stat::make(__('Total Customers'), number_format($totalCustomers))
-                ->description(__(':count new this month', ['count' => $newCustomersThisMonth]))
+            Stat::make(__('Total Customers'), number_format($stats['total_customers']))
+                ->description(__(':count new this month', ['count' => $stats['new_customers_month']]))
                 ->descriptionIcon('heroicon-m-user-group')
-                ->chart($customersTrend)
+                ->chart($stats['customers_trend'])
                 ->color('info'),
 
             Stat::make(__('Stock Alert'), __(':count items', ['count' => number_format($lowStockCount)]))

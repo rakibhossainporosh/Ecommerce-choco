@@ -10,6 +10,7 @@ use App\Filament\Resources\ReturnRequests\Schemas\ReturnRequestForm;
 use App\Filament\Resources\ReturnRequests\Schemas\ReturnRequestInfolist;
 use App\Filament\Resources\ReturnRequests\Tables\ReturnRequestsTable;
 use App\Models\ReturnRequest;
+use App\Support\AdminNavigationBadge;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -40,9 +41,10 @@ class ReturnRequestResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = static::getModel()::where('status', ReturnRequestStatus::Pending)->count();
-
-        return $count > 0 ? (string) $count : null;
+        return AdminNavigationBadge::count(
+            'returns.pending',
+            static fn (): int => static::getModel()::where('status', ReturnRequestStatus::Pending)->count(),
+        );
     }
 
     public static function getNavigationBadgeColor(): string|array|null

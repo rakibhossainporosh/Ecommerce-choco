@@ -889,6 +889,44 @@
                 </div>
             </div>
 
+            <!-- CARD: Ops notes & tags -->
+            <div class="cov-card">
+                <div class="cov-card-header">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1rem;">🏷️</span>
+                        <strong style="font-size: 0.9375rem; color: var(--cov-text-title);">{{ __('Ops notes & tags') }}</strong>
+                    </div>
+                </div>
+                <div class="cov-card-body" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+                    @php($orderTags = $order->tagList())
+                    @if($orderTags !== [])
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                            @foreach($orderTags as $tag)
+                                <span class="cov-badge" style="background: var(--cov-amber-bg); color: var(--cov-amber); border: 1px solid var(--cov-amber-border);">
+                                    {{ $tag }}
+                                </span>
+                            @endforeach
+                        </div>
+                    @else
+                        <div style="color: var(--cov-text-muted); font-style: italic;">{{ __('No tags yet — use Ops notes in the header.') }}</div>
+                    @endif
+
+                    @if(filled($order->admin_note))
+                        <div style="padding: 0.625rem 0.75rem; border-radius: 0.5rem; background: var(--cov-sku-bg); border: 1px solid var(--cov-border);">
+                            <div style="font-weight: 700; color: var(--cov-text-title); margin-bottom: 0.25rem;">{{ __('Admin note') }}</div>
+                            <div style="color: var(--cov-text-subtle); line-height: 1.45; white-space: pre-wrap;">{{ $order->admin_note }}</div>
+                        </div>
+                    @endif
+
+                    @if(filled($order->gift_message))
+                        <div style="padding: 0.625rem 0.75rem; border-radius: 0.5rem; background: var(--cov-amber-bg); border: 1px solid var(--cov-amber-border);">
+                            <div style="font-weight: 700; color: var(--cov-amber); margin-bottom: 0.25rem;">{{ __('Gift message') }}</div>
+                            <div style="color: var(--cov-text-subtle); line-height: 1.45; font-style: italic;">"{{ $order->gift_message }}"</div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- CARD: Shipping Address -->
             <div class="cov-card">
                 <div class="cov-card-header">

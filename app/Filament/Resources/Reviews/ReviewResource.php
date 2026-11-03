@@ -11,6 +11,7 @@ use App\Filament\Resources\Reviews\Schemas\ReviewForm;
 use App\Filament\Resources\Reviews\Schemas\ReviewInfolist;
 use App\Filament\Resources\Reviews\Tables\ReviewsTable;
 use App\Models\Review;
+use App\Support\AdminNavigationBadge;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -39,9 +40,10 @@ class ReviewResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = static::getModel()::where('is_approved', false)->count();
-
-        return $count > 0 ? (string) $count : null;
+        return AdminNavigationBadge::count(
+            'reviews.pending',
+            static fn (): int => static::getModel()::where('is_approved', false)->count(),
+        );
     }
 
     public static function getNavigationBadgeColor(): ?string
