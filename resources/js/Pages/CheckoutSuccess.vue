@@ -6,6 +6,7 @@ import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import { useCart } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
+import { useStorefrontPageShell } from '../Composables/useStorefrontPageShell';
 
 const props = defineProps({
     order_number: {
@@ -20,6 +21,7 @@ const props = defineProps({
 
 const { t } = useI18n();
 const { clearCart } = useCart();
+const { pageClass, panelClass, primaryButtonClass, accentTextClass, inkClass, mutedClass } = useStorefrontPageShell();
 
 const noticeClass = computed(() => {
     if (props.payment?.mode === 'manual' || (props.payment?.mode === 'redirect' && !props.payment?.paid)) {
@@ -39,24 +41,24 @@ onMounted(() => {
 <template>
     <Head :title="t('meta.success')" />
 
-    <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
+    <div :class="pageClass">
         <Header />
 
         <main class="flex-1 flex items-center justify-center p-4 sm:p-8">
-            <div class="max-w-xl w-full bg-white rounded-3xl border border-[#EAE3D6] shadow-sm p-8 md:p-12 text-center">
+            <div :class="[panelClass, 'max-w-xl w-full p-8 md:p-12 text-center']">
                 
-                <div class="inline-flex items-center justify-center w-24 h-24 bg-[#ECFDF5] rounded-full mb-8 shadow-inner">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-[#ECFDF5] mb-8 shadow-inner">
                     <CheckCircle class="w-12 h-12 text-[#10B981]" />
                 </div>
 
-                <h1 class="text-3xl md:text-4xl font-bold text-[#1E293B] mb-4">{{ t('success.title') }}</h1>
-                <p class="text-lg text-[#64748B] mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4" :class="inkClass" style="font-family: var(--store-display, inherit)">{{ t('success.title') }}</h1>
+                <p class="text-lg mb-8" :class="mutedClass">
                     {{ t('success.body') }}
                 </p>
 
-                <div v-if="order_number" class="bg-[#FAF7F2] border border-[#EAE3D6] rounded-2xl p-6 mb-8 inline-block min-w-[250px]">
-                    <span class="block text-sm font-semibold text-[#64748B] mb-1">{{ t('success.order_number') }}</span>
-                    <span class="block text-2xl font-bold text-[#E86A28]">{{ order_number }}</span>
+                <div v-if="order_number" :class="[panelClass, 'p-6 mb-8 inline-block min-w-[250px]']">
+                    <span class="block text-sm font-semibold mb-1" :class="mutedClass">{{ t('success.order_number') }}</span>
+                    <span class="block text-2xl font-bold" :class="accentTextClass">{{ order_number }}</span>
                 </div>
 
                 <div class="rounded-xl p-5 mb-10 text-sm md:text-base font-medium text-left" :class="noticeClass">
@@ -75,7 +77,9 @@ onMounted(() => {
                     <Link 
                         v-if="order_number"
                         :href="'/track-order?order_number=' + order_number"
-                        class="w-full sm:w-auto px-8 py-3.5 bg-white border-2 border-[#E86A28] text-[#E86A28] hover:bg-[#FAF7F2] font-bold text-base rounded-full shadow-sm transition-all flex items-center justify-center gap-2"
+                        class="w-full sm:w-auto px-8 py-3.5 bg-white border-2 font-bold text-base transition-all flex items-center justify-center gap-2"
+                        :class="accentTextClass"
+                        style="border-color: currentColor"
                     >
                         <Truck class="w-4 h-4" />
                         <span>{{ t('success.track') }}</span>
@@ -83,7 +87,7 @@ onMounted(() => {
 
                     <Link 
                         href="/" 
-                        class="w-full sm:w-auto px-8 py-3.5 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-base rounded-full shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                        :class="[primaryButtonClass, 'w-full sm:w-auto px-8 py-3.5 text-sm']"
                     >
                         <span>{{ t('success.continue') }}</span>
                         <ArrowRight class="w-4 h-4" />

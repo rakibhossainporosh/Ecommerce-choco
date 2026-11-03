@@ -98,7 +98,7 @@ const getCurrentStepIndex = () => {
 <template>
     <Head :title="t('meta.track')" />
 
-    <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
+    <div class="store-page min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
         <Header />
 
         <main class="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full flex flex-col">

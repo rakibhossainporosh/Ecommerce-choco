@@ -1,5 +1,6 @@
 <script setup>
 import OccasionMotif from './OccasionMotif.vue';
+import { useStoreTheme } from '../Composables/useStoreTheme';
 
 defineProps({
     kind: {
@@ -7,10 +8,12 @@ defineProps({
         required: true,
     },
 });
+
+const { theme } = useStoreTheme();
 </script>
 
 <template>
-    <div class="ribbon">
+    <div class="ribbon" :data-theme-skin="theme">
         <span class="side side-start" aria-hidden="true">
             <span class="mark"><OccasionMotif :kind="kind" /></span>
             <span class="mark"><OccasionMotif :kind="kind" variant="b" /></span>
@@ -43,6 +46,23 @@ defineProps({
         rgb(255 255 255 / 12%) 19px
     );
     color: var(--ink);
+}
+
+.ribbon[data-theme-skin='grove'] {
+    border-radius: 0;
+    min-height: 2.75rem;
+    background-image: none;
+    box-shadow: none;
+}
+
+.ribbon[data-theme-skin='harbor'] {
+    border-radius: 0.15rem;
+    min-height: 2.4rem;
+    background-image: none;
+    border: 1px solid rgb(255 255 255 / 18%);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
 }
 
 .side {

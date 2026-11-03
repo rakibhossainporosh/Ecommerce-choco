@@ -3,19 +3,23 @@
 html[data-store-theme='grove'] {
     --store-brand: #0e6b58;
     --store-brand-hover: #0b5748;
-    --store-brand-deep: #084638;
+    --store-brand-deep: #1a2e28;
     --store-brand-soft: #d7efe7;
-    --store-page: #f3f7f5;
-    --store-wash: #e7f1ec;
-    --store-border: #d3e4dc;
-    --store-border-strong: #b7d0c6;
-    --store-ink: #14241e;
+    --store-page: #f3efe8;
+    --store-wash: #e8e2d8;
+    --store-border: #d4ccc0;
+    --store-border-strong: #b7a994;
+    --store-ink: #1a2e28;
     --store-ink-soft: #24382f;
-    --store-muted: #3f5c52;
-    --store-faint: #6d887e;
+    --store-muted: #5c6f67;
+    --store-faint: #8a9a92;
     --store-on-primary: #f3faf6;
+    --store-font: 'Manrope', 'Hind Siliguri', system-ui, sans-serif;
+    /* Hind Siliguri must follow Fraunces so Bengali matra is not clipped by a Latin-only face */
+    --store-display: 'Fraunces', 'Hind Siliguri', 'Manrope', serif;
     background: var(--store-page);
     color: var(--store-ink);
+    font-family: var(--store-font);
 }
 
 html[data-store-theme='harbor'] {
@@ -32,8 +36,24 @@ html[data-store-theme='harbor'] {
     --store-muted: #3e516b;
     --store-faint: #6d83a0;
     --store-on-primary: #f8fafc;
+    --store-font: 'IBM Plex Sans', 'Hind Siliguri', system-ui, sans-serif;
+    --store-display: 'IBM Plex Sans', 'Hind Siliguri', system-ui, sans-serif;
     background: var(--store-page);
     color: var(--store-ink);
+    font-family: var(--store-font);
+}
+
+html[data-store-theme='grove'] body,
+html[data-store-theme='harbor'] body {
+    font-family: var(--store-font);
+}
+
+html[data-store-theme='grove'] h1,
+html[data-store-theme='grove'] h2,
+html[data-store-theme='grove'] h3 {
+    font-family: var(--store-display);
+    line-height: 1.35;
+    overflow: visible;
 }
 
 html[data-store-theme='grove'] .bg-\[\#E86A28\],
@@ -275,10 +295,16 @@ html[data-store-theme='harbor'] body {
     color: var(--store-ink);
 }
 
-html[data-store-theme='grove'] header,
-html[data-store-theme='harbor'] header {
-    background-color: var(--store-wash);
-    border-bottom-color: var(--store-border);
+/* Dedicated Grove/Harbor headers own their chrome — do not force wash over them. */
+
+html[data-store-theme='grove'] header.grove-header {
+    background-color: #1a2e28 !important;
+    border-bottom: 0;
+    color: #f3faf6;
+}
+
+html[data-store-theme='harbor'] header.harbor-header {
+    background-color: #ffffff !important;
 }
 
 html[data-store-theme='grove'] header .bg-\[\#F6F1E9\],
@@ -361,13 +387,437 @@ html[data-store-theme='harbor'] .bg-\[\#FAF7F2\].hover\:bg-\[\#E86A28\]:hover {
     color: white;
 }
 
-html[data-store-theme='grove'] footer,
-html[data-store-theme='harbor'] footer {
-    background-color: var(--store-wash);
-    border-top-color: var(--store-border);
+/* Theme footers own their backgrounds — do not force wash over Harbor's dark chrome. */
+
+html[data-store-theme='harbor'] footer.harbor-footer {
+    background-color: #0f172a !important;
+    color: #e2e8f0;
+    border-top: 0;
 }
 
-html[data-store-theme='grove'] footer .text-\[\#1E293B\],
-html[data-store-theme='harbor'] footer .text-\[\#1E293B\] {
-    color: var(--store-brand-deep);
+html[data-store-theme='harbor'] footer.harbor-footer a:hover {
+    color: #ffffff;
+}
+
+html[data-store-theme='grove'] footer.grove-footer {
+    background-color: #14241e !important;
+    color: #d7efe7;
+    border-top: 0;
+}
+
+/*
+ * Full design skins. Warm has no rules here, so the current shop stays identical.
+ * Grove = editorial boutique. Harbor = sharp marketplace. Functionality is unchanged.
+ */
+
+html[data-store-theme='grove'] {
+    --store-radius: 0;
+    --store-radius-sm: 0;
+    --store-radius-control: 0;
+    --store-shadow: 0 10px 28px rgb(26 46 40 / 8%);
+    --store-shadow-soft: 0 6px 18px rgb(26 46 40 / 5%);
+    letter-spacing: 0.01em;
+}
+
+html[data-store-theme='harbor'] {
+    --store-radius: 0.4rem;
+    --store-radius-sm: 0.3rem;
+    --store-radius-control: 0.3rem;
+    --store-shadow: 0 1px 0 rgb(15 23 42 / 6%);
+    --store-shadow-soft: none;
+    letter-spacing: 0;
+}
+
+/* Grove: airy boutique chrome */
+
+html[data-store-theme='grove'] .store-header {
+    background-color: var(--store-wash);
+    border-bottom: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+html[data-store-theme='grove'] .store-header-row {
+    height: 5.5rem;
+}
+
+html[data-store-theme='grove'] .store-logo-mark {
+    border-radius: 1.1rem;
+    box-shadow: var(--store-shadow-soft);
+}
+
+html[data-store-theme='grove'] .store-header input[type='text'],
+html[data-store-theme='grove'] .store-header input:not([type]) {
+    border-radius: var(--store-radius-control);
+    background-color: white;
+    border: 1px solid var(--store-border);
+    box-shadow: var(--store-shadow-soft);
+}
+
+html[data-store-theme='grove'] .store-hero.campaign-hero {
+    border-radius: 1.75rem;
+    border: 0;
+    box-shadow: var(--store-shadow);
+    grid-template-columns: 1fr;
+}
+
+html[data-store-theme='grove'] .store-hero .campaign-copy {
+    padding: 2.25rem 1.75rem 1.5rem;
+    gap: 1.15rem;
+}
+
+html[data-store-theme='grove'] .store-hero .campaign-copy h1 {
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    max-width: 14ch;
+}
+
+html[data-store-theme='grove'] .store-hero .shop-now {
+    border-radius: 999px;
+    padding: 0.95rem 1.6rem;
+    box-shadow: var(--store-shadow-soft);
+}
+
+html[data-store-theme='grove'] .store-hero .campaign-art {
+    min-height: 14rem;
+    border-radius: 0 0 1.75rem 1.75rem;
+}
+
+@media (min-width: 1024px) {
+    html[data-store-theme='grove'] .store-hero.campaign-hero {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    }
+
+    html[data-store-theme='grove'] .store-hero .campaign-art {
+        border-radius: 0 1.75rem 1.75rem 0;
+        min-height: 100%;
+    }
+
+    html[data-store-theme='grove'] .store-hero .campaign-copy {
+        padding: 3rem 2.75rem;
+    }
+}
+
+html[data-store-theme='grove'] .store-catalog-bar h2 {
+    letter-spacing: -0.03em;
+    font-weight: 750;
+}
+
+html[data-store-theme='grove'] .store-chip {
+    border-radius: 999px;
+    background-color: white;
+    border-width: 1px;
+    box-shadow: var(--store-shadow-soft);
+}
+
+html[data-store-theme='grove'] .store-chip-active {
+    background-color: var(--store-brand);
+    border-color: var(--store-brand);
+    color: white;
+    box-shadow: none;
+}
+
+html[data-store-theme='grove'] .store-product-card {
+    border: 0;
+    border-radius: var(--store-radius);
+    padding: 0;
+    overflow: hidden;
+    background: white;
+    box-shadow: var(--store-shadow-soft);
+}
+
+html[data-store-theme='grove'] .store-product-card:hover {
+    box-shadow: var(--store-shadow);
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+html[data-store-theme='grove'] .store-product-card > .relative {
+    border-radius: 0;
+    margin-bottom: 0;
+    aspect-ratio: 4 / 5;
+    background: var(--store-wash);
+}
+
+html[data-store-theme='grove'] .store-product-card > .flex-1 {
+    padding: 1rem 1rem 1.1rem;
+}
+
+html[data-store-theme='grove'] .store-product-card .border-t {
+    border-top: 0;
+    margin-top: 1rem;
+    padding-top: 0;
+    gap: 0.55rem;
+}
+
+html[data-store-theme='grove'] .store-product-card button.flex-1 {
+    border-radius: 0;
+    border: 0;
+    background: var(--store-brand-deep);
+    color: white;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+}
+
+html[data-store-theme='grove'] .store-product-card button.flex-1:hover {
+    background: var(--store-brand);
+    color: white;
+}
+
+html[data-store-theme='grove'] .store-product-card button:not(.flex-1) {
+    border-radius: 0;
+    border-color: var(--store-border);
+    background: white;
+}
+
+html[data-store-theme='grove'] .store-footer {
+    margin-top: 3rem;
+    padding-top: 3.5rem;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--store-wash) 70%, white), var(--store-wash));
+    border-top: 0;
+}
+
+html[data-store-theme='grove'] .ribbon {
+    border-radius: 0;
+    min-height: 2.85rem;
+}
+
+html[data-store-theme='grove'] .rounded-3xl,
+html[data-store-theme='grove'] .rounded-2xl,
+html[data-store-theme='grove'] .rounded-xl {
+    border-radius: 0;
+}
+
+html[data-store-theme='grove'] .rounded-full:not(.store-logo-mark) {
+    border-radius: 0;
+}
+
+html[data-store-theme='grove'] button.rounded-full,
+html[data-store-theme='grove'] a.rounded-full {
+    border-radius: 0;
+}
+
+html[data-store-theme='grove'] .fill-\[\#F59E0B\],
+html[data-store-theme='harbor'] .fill-\[\#F59E0B\] {
+    fill: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .text-\[\#F59E0B\],
+html[data-store-theme='harbor'] .text-\[\#F59E0B\] {
+    color: var(--store-brand);
+}
+
+html[data-store-theme='grove'] .occasion-bar {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+}
+
+/* Harbor: sharp marketplace chrome */
+
+html[data-store-theme='harbor'] .store-header {
+    background-color: white;
+    border-bottom: 3px solid var(--store-brand);
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+html[data-store-theme='harbor'] .store-header-row {
+    height: 4.25rem;
+}
+
+html[data-store-theme='harbor'] .store-logo-mark {
+    border-radius: 0.25rem;
+}
+
+html[data-store-theme='harbor'] .store-header input[type='text'],
+html[data-store-theme='harbor'] .store-header input:not([type]) {
+    border-radius: var(--store-radius-control);
+    background-color: var(--store-wash);
+    border: 1px solid var(--store-border-strong);
+    box-shadow: none;
+}
+
+html[data-store-theme='harbor'] .store-hero.campaign-hero {
+    border-radius: var(--store-radius);
+    border: 1px solid var(--store-border-strong);
+    box-shadow: none;
+    min-height: 24rem;
+}
+
+html[data-store-theme='harbor'] .store-hero .campaign-copy {
+    padding: 1.5rem 1.25rem;
+    gap: 0.85rem;
+    background: white;
+}
+
+html[data-store-theme='harbor'] .store-hero .campaign-copy p {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+}
+
+html[data-store-theme='harbor'] .store-hero .campaign-copy h1 {
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    text-transform: none;
+}
+
+html[data-store-theme='harbor'] .store-hero .shop-now {
+    border-radius: var(--store-radius-control);
+    padding: 0.75rem 1.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.8rem;
+}
+
+@media (min-width: 1024px) {
+    html[data-store-theme='harbor'] .store-hero.campaign-hero {
+        grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+        min-height: 26rem;
+    }
+
+    html[data-store-theme='harbor'] .store-hero .campaign-copy {
+        padding: 2rem 2rem;
+    }
+}
+
+html[data-store-theme='harbor'] .store-catalog-bar {
+    padding-top: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--store-border);
+    margin-bottom: 0.75rem;
+}
+
+html[data-store-theme='harbor'] .store-catalog-bar h2 {
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+html[data-store-theme='harbor'] .store-chip {
+    border-radius: var(--store-radius-control);
+    border-width: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.72rem;
+    padding: 0.45rem 0.8rem;
+}
+
+html[data-store-theme='harbor'] .store-chip-active {
+    background-color: var(--store-brand);
+    border-color: var(--store-brand);
+    color: white;
+    box-shadow: none;
+}
+
+html[data-store-theme='harbor'] .store-product-card {
+    border: 1px solid var(--store-border);
+    border-radius: var(--store-radius);
+    padding: 0.65rem;
+    box-shadow: none;
+    background: white;
+}
+
+html[data-store-theme='harbor'] .store-product-card:hover {
+    border-color: var(--store-brand);
+    box-shadow: none;
+    transform: none;
+}
+
+html[data-store-theme='harbor'] .store-product-card > .relative {
+    border-radius: var(--store-radius-sm);
+    background: var(--store-wash);
+    margin-bottom: 0.65rem;
+}
+
+html[data-store-theme='harbor'] .store-product-card h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: none;
+}
+
+html[data-store-theme='harbor'] .store-product-card .store-price {
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+}
+
+html[data-store-theme='harbor'] .store-product-card .border-t {
+    border-top-style: dashed;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+}
+
+html[data-store-theme='harbor'] .store-product-card button.flex-1 {
+    border-radius: var(--store-radius-control);
+    border: 0;
+    background: var(--store-brand);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.68rem;
+}
+
+html[data-store-theme='harbor'] .store-product-card button.flex-1:hover {
+    background: var(--store-brand-hover);
+    color: white;
+}
+
+html[data-store-theme='harbor'] .store-product-card button:not(.flex-1) {
+    border-radius: var(--store-radius-control);
+}
+
+html[data-store-theme='harbor'] .ribbon {
+    border-radius: var(--store-radius);
+    min-height: 2.6rem;
+}
+
+html[data-store-theme='harbor'] .occasion-bar {
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+}
+
+html[data-store-theme='harbor'] .rounded-3xl,
+html[data-store-theme='harbor'] .rounded-2xl,
+html[data-store-theme='harbor'] .rounded-xl {
+    border-radius: var(--store-radius);
+}
+
+html[data-store-theme='harbor'] .rounded-full:not(.store-logo-mark) {
+    border-radius: var(--store-radius-control);
+}
+
+html[data-store-theme='harbor'] button.rounded-full,
+html[data-store-theme='harbor'] a.rounded-full,
+html[data-store-theme='harbor'] .shop-now {
+    border-radius: var(--store-radius-control);
+}
+
+/* Shared utility pages (checkout/auth/static) follow active theme shells */
+html[data-store-theme='grove'] .store-page {
+    background: var(--store-page) !important;
+    color: var(--store-ink) !important;
+}
+
+html[data-store-theme='harbor'] .store-page {
+    background: var(--store-page) !important;
+    color: var(--store-ink) !important;
+}
+
+html[data-store-theme='grove'] .store-page .rounded-3xl,
+html[data-store-theme='grove'] .store-page .rounded-2xl,
+html[data-store-theme='grove'] .store-page .rounded-xl,
+html[data-store-theme='grove'] .store-page .rounded-full {
+    border-radius: 0;
+}
+
+html[data-store-theme='harbor'] .store-page .rounded-3xl,
+html[data-store-theme='harbor'] .store-page .rounded-2xl,
+html[data-store-theme='harbor'] .store-page .rounded-xl {
+    border-radius: var(--store-radius);
 }

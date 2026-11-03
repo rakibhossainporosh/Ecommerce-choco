@@ -65,15 +65,15 @@ class ThemeSettings extends Page
             ->components([
                 Section::make('Shop theme')
                     ->compact()
-                    ->description('Warm is the shop you have today. The other two repaint the whole storefront. The admin panel stays as it is.')
+                    ->description('Warm keeps today’s shop. Grove and Harbor swap the whole storefront design — header, hero, catalog, product page, cart drawer, and footer. Order logic and admin stay the same.')
                     ->schema([
                         Radio::make('storefront_theme')
                             ->label('Theme')
                             ->options(StorefrontTheme::catalog())
                             ->descriptions([
-                                'warm' => 'Cream paper and clay. This is the default.',
-                                'grove' => 'Sage paper and deep green.',
-                                'harbor' => 'Cool paper and navy.',
+                                'warm' => 'Soft cream boutique. Current default layout.',
+                                'grove' => 'Editorial boutique — centered brand, overlay hero, soft product page, green.',
+                                'harbor' => 'Marketplace — utility bar, dense catalog, sharp product page, navy.',
                             ])
                             ->required(),
                     ]),

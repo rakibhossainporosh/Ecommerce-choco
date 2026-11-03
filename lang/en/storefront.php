@@ -109,6 +109,7 @@ return [
         'brand' => 'Brand',
         'category' => 'Category',
         'related' => 'You may also like',
+        'recently_viewed' => 'Recently viewed',
         'select_option' => 'Choose :option',
         'decrease' => 'Decrease quantity',
         'increase' => 'Increase quantity',
@@ -172,6 +173,8 @@ return [
         'recovering' => 'Putting your items back in the cart...',
         'recover_empty' => 'This cart is no longer waiting.',
         'recover_home' => 'Back to the shop',
+        'added_title' => 'Added to cart',
+        'view' => 'View cart',
     ],
     'wishlist' => [
         'title' => 'Wishlist',

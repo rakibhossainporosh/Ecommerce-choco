@@ -2,15 +2,17 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import OccasionMotif from './OccasionMotif.vue';
+import { useStoreTheme } from '../Composables/useStoreTheme';
 
 const page = usePage();
+const { theme } = useStoreTheme();
 const occasion = computed(() => page.props.site_settings?.occasion || null);
 const showGeneral = computed(() => Boolean(occasion.value) && occasion.value.sections?.general !== false);
 const marks = ['a', 'b', 'a', 'b', 'a', 'b'];
 </script>
 
 <template>
-    <div v-if="showGeneral" class="occasion-bar" :data-occasion="occasion.key">
+    <div v-if="showGeneral" class="occasion-bar" :data-occasion="occasion.key" :data-theme-skin="theme">
         <div class="occasion-garland" aria-hidden="true">
             <span v-for="(mark, index) in marks" :key="`left-${index}`" class="occasion-mark">
                 <OccasionMotif :kind="occasion.key" :variant="mark" />
@@ -34,6 +36,21 @@ const marks = ['a', 'b', 'a', 'b', 'a', 'b'];
     min-height: 2.5rem;
     padding: 0.3rem 1.25rem;
     overflow: hidden;
+}
+
+.occasion-bar[data-theme-skin='grove'] {
+    min-height: 2rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+}
+
+.occasion-bar[data-theme-skin='harbor'] {
+    min-height: 1.85rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    border-bottom: 2px solid rgb(255 255 255 / 20%);
 }
 
 .occasion-bar p {

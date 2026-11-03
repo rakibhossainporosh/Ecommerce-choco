@@ -109,6 +109,7 @@ return [
         'brand' => 'ব্র্যান্ড',
         'category' => 'ক্যাটাগরি',
         'related' => 'আরও পছন্দ হতে পারে',
+        'recently_viewed' => 'সম্প্রতি দেখা',
         'select_option' => ':option বেছে নিন',
         'decrease' => 'পরিমাণ কমান',
         'increase' => 'পরিমাণ বাড়ান',
@@ -172,6 +173,8 @@ return [
         'recovering' => 'জিনিসগুলো আবার কার্টে বসানো হচ্ছে...',
         'recover_empty' => 'এই কার্ট আর অপেক্ষা করছে না।',
         'recover_home' => 'দোকানে ফিরে যান',
+        'added_title' => 'কার্টে যোগ হয়েছে',
+        'view' => 'কার্ট দেখুন',
     ],
     'wishlist' => [
         'title' => 'পছন্দের তালিকা',

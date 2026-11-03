@@ -47,8 +47,10 @@ test('product detail page returns product data with stock, brand and rating info
             ->has('rating')
             ->has('reviews_count')
             ->has('images')
+            ->has('fallback_image')
             ->etc()
         )
+        ->has('relatedProducts')
     );
 });
 

@@ -40,7 +40,7 @@ const getGmailComposeUrl = (email) => {
 <template>
     <Head :title="t('meta.contact')" />
     
-    <div class="min-h-screen flex flex-col bg-[#FAF7F2] font-sans selection:bg-[#E86A28] selection:text-white">
+    <div class="store-page min-h-screen flex flex-col bg-[#FAF7F2] font-sans selection:bg-[#E86A28] selection:text-white">
         <Header />
         
         <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 w-full">

@@ -4,9 +4,11 @@ import { LogIn, Phone, Lock, ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
 import { useI18n } from '../../Composables/useI18n';
+import { useStorefrontPageShell } from '../../Composables/useStorefrontPageShell';
 
 const page = usePage();
 const { t } = useI18n();
+const { pageClass, panelClass, primaryButtonClass, accentTextClass, inkClass, mutedClass, fieldClass } = useStorefrontPageShell();
 
 const form = useForm({
     login: '',
@@ -24,18 +26,18 @@ const submit = () => {
 <template>
     <Head :title="t('meta.login')" />
 
-    <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col justify-between">
+    <div :class="[pageClass, 'justify-between']">
         <Header />
 
         <main class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-md w-full">
-                <div class="bg-white rounded-3xl border border-[#EAE3D6] p-8 sm:p-10 shadow-sm">
+                <div :class="[panelClass, 'p-8 sm:p-10']">
                     <div class="text-center mb-8">
-                        <div class="w-14 h-14 bg-[#FAF7F2] text-[#E86A28] border border-[#EAE3D6] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xs">
+                        <div class="w-14 h-14 border flex items-center justify-center mx-auto mb-4" :class="[accentTextClass, panelClass]">
                             <LogIn class="w-7 h-7" />
                         </div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-[#1E293B]">{{ t('auth.login_title') }}</h1>
-                        <p class="text-sm text-[#64748B] mt-2">{{ t('auth.login_intro') }}</p>
+                        <h1 class="text-2xl sm:text-3xl font-bold" :class="inkClass" style="font-family: var(--store-display, inherit)">{{ t('auth.login_title') }}</h1>
+                        <p class="text-sm mt-2" :class="mutedClass">{{ t('auth.login_intro') }}</p>
                     </div>
 
                     <div v-if="page.props.flash?.success" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3">
@@ -55,7 +57,7 @@ const submit = () => {
                                     type="text"
                                     required
                                     :placeholder="t('auth.login_placeholder')"
-                                    class="w-full pl-10 pr-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-[#FAF7F2] focus:bg-white transition-all"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
                                 />
                             </div>
                             <p v-if="form.errors.login" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.login }}</p>
@@ -72,7 +74,7 @@ const submit = () => {
                                     type="password"
                                     required
                                     placeholder="••••••••"
-                                    class="w-full pl-10 pr-4 py-3 text-sm rounded-xl border border-[#EAE3D6] focus:border-[#E86A28] focus:ring-1 focus:ring-[#E86A28] outline-hidden bg-[#FAF7F2] focus:bg-white transition-all"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
                                 />
                             </div>
                             <p v-if="form.errors.password" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.password }}</p>
@@ -92,7 +94,7 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="w-full h-12 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                            :class="[primaryButtonClass, 'w-full h-12 text-sm cursor-pointer']"
                         >
                             <span>{{ form.processing ? t('auth.logging_in') : t('auth.submit_login') }}</span>
                             <ArrowRight class="w-4 h-4" />
@@ -101,7 +103,7 @@ const submit = () => {
 
                     <div class="mt-8 pt-6 border-t border-[#F0EAE1] text-center text-sm text-[#64748B]">
                         {{ t('auth.no_account') }}
-                        <Link href="/register" class="font-bold text-[#E86A28] hover:underline ml-1">
+                        <Link href="/register" class="font-bold hover:underline ml-1" :class="accentTextClass">
                             {{ t('auth.create_account') }}
                         </Link>
                     </div>

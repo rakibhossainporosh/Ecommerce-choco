@@ -4,8 +4,10 @@ import { UserPlus, User, Phone, Mail, Lock, ArrowRight } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
 import { useI18n } from '../../Composables/useI18n';
+import { useStorefrontPageShell } from '../../Composables/useStorefrontPageShell';
 
 const { t } = useI18n();
+const { pageClass, panelClass, primaryButtonClass, accentTextClass, inkClass, mutedClass, fieldClass } = useStorefrontPageShell();
 
 const form = useForm({
     name: '',
@@ -25,12 +27,12 @@ const submit = () => {
 <template>
     <Head :title="t('meta.register')" />
 
-    <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col justify-between">
+    <div :class="[pageClass, 'justify-between']">
         <Header />
 
         <main class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-md w-full">
-                <div class="bg-white rounded-3xl border border-[#EAE3D6] p-8 sm:p-10 shadow-sm">
+                <div :class="[panelClass, 'p-8 sm:p-10']">
                     <div class="text-center mb-8">
                         <div class="w-14 h-14 bg-[#FAF7F2] text-[#E86A28] border border-[#EAE3D6] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xs">
                             <UserPlus class="w-7 h-7" />
@@ -127,7 +129,7 @@ const submit = () => {
                             <button
                                 type="submit"
                                 :disabled="form.processing"
-                                class="w-full h-12 bg-[#E86A28] hover:bg-[#D35B1D] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                                :class="[primaryButtonClass, 'w-full h-12 text-sm cursor-pointer']"
                             >
                                 <span>{{ form.processing ? t('auth.creating_account') : t('auth.submit_register') }}</span>
                                 <ArrowRight class="w-4 h-4" />
@@ -137,7 +139,7 @@ const submit = () => {
 
                     <div class="mt-8 pt-6 border-t border-[#F0EAE1] text-center text-sm text-[#64748B]">
                         {{ t('auth.have_account') }}
-                        <Link href="/login" class="font-bold text-[#E86A28] hover:underline ml-1">
+                        <Link href="/login" class="font-bold hover:underline ml-1" :class="accentTextClass">
                             {{ t('auth.sign_in') }}
                         </Link>
                     </div>

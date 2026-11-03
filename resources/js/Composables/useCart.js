@@ -2,6 +2,29 @@ import { ref, computed } from 'vue';
 
 const isCartOpen = ref(false);
 const isWishlistOpen = ref(false);
+const toast = ref({
+    visible: false,
+    title: '',
+    body: '',
+});
+let toastTimer = null;
+
+const showToast = (title, body = '') => {
+    toast.value = { visible: true, title, body };
+    if (typeof window !== 'undefined') {
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => {
+            toast.value.visible = false;
+        }, 3200);
+    }
+};
+
+const dismissToast = () => {
+    toast.value.visible = false;
+    if (typeof window !== 'undefined') {
+        window.clearTimeout(toastTimer);
+    }
+};
 
 // Load from localStorage or start empty
 const savedCart = typeof window !== 'undefined' ? localStorage.getItem('nobo_cart') : null;
@@ -119,6 +142,7 @@ export function useCart() {
             });
         }
         saveCart();
+        showToast('', name);
         isCartOpen.value = true;
     };
 
@@ -184,6 +208,7 @@ export function useCart() {
         isWishlistOpen,
         cartItems,
         wishlistItems,
+        toast,
         addToCart,
         updateQuantity,
         removeFromCart,
@@ -193,6 +218,8 @@ export function useCart() {
         totalAmount,
         totalCount,
         wishlistCount,
+        showToast,
+        dismissToast,
         openCart: () => (isCartOpen.value = true),
         closeCart: () => (isCartOpen.value = false),
         openWishlist: () => (isWishlistOpen.value = true),

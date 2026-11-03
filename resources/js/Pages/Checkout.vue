@@ -7,6 +7,7 @@ import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import { useCart, setCartContact } from '../Composables/useCart';
 import { useI18n } from '../Composables/useI18n';
+import { useStorefrontPageShell } from '../Composables/useStorefrontPageShell';
 
 const props = defineProps({
     payment_methods: {
@@ -21,6 +22,7 @@ const props = defineProps({
 
 const page = usePage();
 const { t } = useI18n();
+const { pageClass, panelClass, primaryButtonClass, accentTextClass } = useStorefrontPageShell();
 const { cartItems, totalAmount, totalCount } = useCart();
 
 const methods = computed(() => (props.payment_methods?.length ? props.payment_methods : []));
@@ -160,7 +162,7 @@ watch(
 <template>
     <Head :title="t('meta.checkout')" />
 
-    <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
+    <div :class="pageClass">
         <Header />
 
         <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -174,14 +176,14 @@ watch(
                 <ShoppingBag class="w-16 h-16 mx-auto text-[#DCCFC0] mb-4" />
                 <h2 class="text-2xl font-bold text-[#1E293B] mb-2">{{ t('checkout.empty') }}</h2>
                 <p class="text-[#64748B] mb-6">{{ t('checkout.empty_hint') }}</p>
-                <Link href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-[#E86A28] text-white rounded-xl font-bold">
+                <Link href="/" :class="[primaryButtonClass, 'px-6 py-3']">
                     {{ t('checkout.back_home') }}
                 </Link>
             </div>
 
             <div v-else class="flex flex-col lg:flex-row gap-8">
                 <!-- Checkout Form -->
-                <div class="w-full lg:w-2/3 bg-white p-6 md:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm">
+                <div :class="[panelClass, 'w-full lg:w-2/3 p-6 md:p-8']">
                     <h2 class="text-2xl font-bold text-[#1E293B] mb-6 border-b border-[#F0EAE1] pb-4">{{ t('checkout.delivery_info') }}</h2>
                     
                     <form @submit.prevent="submitOrder" class="space-y-6">
@@ -286,7 +288,7 @@ watch(
                             <div v-else-if="Object.keys(form.errors).some((key) => !['payment', 'payment_method', 'stock'].includes(key))" class="mb-4 p-3 bg-red-50 text-red-500 rounded-xl text-sm font-semibold">
                                 {{ t('checkout.form_errors') }}
                             </div>
-                            <button type="submit" :disabled="form.processing" class="w-full py-4 bg-[#E86A28] hover:bg-[#D35B1D] text-white font-bold text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer">
+                            <button type="submit" :disabled="form.processing" :class="[primaryButtonClass, 'w-full py-4 text-sm sm:text-base']">
                                 <span>{{ form.processing ? t('checkout.placing') : t('checkout.confirm_order') }}</span>
                                 <ArrowRight class="w-5 h-5" />
                             </button>
@@ -296,7 +298,7 @@ watch(
 
                 <!-- Order Summary -->
                 <div class="w-full lg:w-1/3">
-                    <div class="bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm sticky top-8">
+                    <div :class="[panelClass, 'p-6 sticky top-8']">
                         <h3 class="text-lg font-bold text-[#1E293B] mb-4">{{ t('checkout.order_summary') }}</h3>
                         
                         <div class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">

@@ -37,7 +37,7 @@ onMounted(() => {
 <template>
     <Head :title="t('cart.title')" />
 
-    <div class="min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
+    <div class="store-page min-h-screen bg-[#FDFBF7] font-hind-siliguri text-[#1E293B] flex flex-col">
         <Header />
 
         <main class="flex-1 max-w-xl mx-auto px-4 py-20 text-center w-full">

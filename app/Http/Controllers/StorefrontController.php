@@ -92,14 +92,7 @@ class StorefrontController extends Controller
             $productsQuery->latest('products.id');
         }
 
-        $imageMap = [
-            'cotton-shirt' => '/images/storefront/product-1.jpg',
-            'classic-watch' => '/images/storefront/product-2.jpg',
-            'ceramic-home-decor' => '/images/storefront/product-3.jpg',
-            'sneakers-shoes' => '/images/storefront/product-4.jpg',
-            'headphones-camera' => '/images/storefront/product-5.jpg',
-            'casual-backpack' => '/images/storefront/product-1.jpg',
-        ];
+        $imageMap = $this->storefrontImageMap();
 
         $products = $productsQuery->get()->map(function (Product $product) use ($imageMap) {
             $variant = $product->defaultVariant;
@@ -127,6 +120,7 @@ class StorefrontController extends Controller
                 'price' => (float) ($variant?->selling_price ?? 0),
                 'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
                 'image' => $image,
+                'fallback_image' => $imageMap[$product->slug] ?? '/images/storefront/product-1.jpg',
                 'short_description' => $product->short_description,
                 'display_short_description' => CatalogTranslator::product($product->slug, 'short_description', $product->short_description),
                 'is_featured' => (bool) $product->is_featured,
@@ -170,21 +164,15 @@ class StorefrontController extends Controller
 
         $this->applySearchCondition($productsQuery, $search);
 
-        $imageMap = [
-            'cotton-shirt' => '/images/storefront/product-1.jpg',
-            'classic-watch' => '/images/storefront/product-2.jpg',
-            'ceramic-home-decor' => '/images/storefront/product-3.jpg',
-            'sneakers-shoes' => '/images/storefront/product-4.jpg',
-            'headphones-camera' => '/images/storefront/product-5.jpg',
-            'casual-backpack' => '/images/storefront/product-1.jpg',
-        ];
+        $imageMap = $this->storefrontImageMap();
 
         $results = $productsQuery->limit(6)->get()->map(function (Product $product) use ($imageMap) {
             $variant = $product->defaultVariant;
             $primaryMedia = $product->media->firstWhere('is_primary', true) ?? $product->media->first();
 
-            $image = $imageMap[$product->slug]
-                ?? ($primaryMedia ? asset('storage/'.ltrim($primaryMedia->path, '/')) : '/images/storefront/product-1.jpg');
+            $image = $primaryMedia
+                ? asset('storage/'.ltrim($primaryMedia->path, '/'))
+                : ($imageMap[$product->slug] ?? '/images/storefront/product-1.jpg');
 
             return [
                 'id' => $product->id,
@@ -198,11 +186,29 @@ class StorefrontController extends Controller
                 'price' => (float) ($variant?->selling_price ?? 0),
                 'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
                 'image' => $image,
+                'fallback_image' => $imageMap[$product->slug] ?? '/images/storefront/product-1.jpg',
                 'url' => route('product.show', ['slug' => $product->slug]),
             ];
         });
 
         return response()->json($results);
+    }
+
+    /**
+     * Demo catalog image map used when uploaded media is missing or broken.
+     *
+     * @return array<string, string>
+     */
+    protected function storefrontImageMap(): array
+    {
+        return [
+            'cotton-shirt' => '/images/storefront/product-1.jpg',
+            'classic-watch' => '/images/storefront/product-2.jpg',
+            'ceramic-home-decor' => '/images/storefront/product-3.jpg',
+            'sneakers-shoes' => '/images/storefront/product-4.jpg',
+            'headphones-camera' => '/images/storefront/product-5.jpg',
+            'casual-backpack' => '/images/storefront/product-1.jpg',
+        ];
     }
 
     /**
@@ -260,21 +266,15 @@ class StorefrontController extends Controller
             ])
             ->firstOrFail();
 
-        $imageMap = [
-            'cotton-shirt' => '/images/storefront/product-1.jpg',
-            'classic-watch' => '/images/storefront/product-2.jpg',
-            'ceramic-home-decor' => '/images/storefront/product-3.jpg',
-            'sneakers-shoes' => '/images/storefront/product-4.jpg',
-            'headphones-camera' => '/images/storefront/product-5.jpg',
-            'casual-backpack' => '/images/storefront/product-1.jpg',
-        ];
+        $imageMap = $this->storefrontImageMap();
 
         $variant = $product->defaultVariant;
         $primaryMedia = $product->media->firstWhere('is_primary', true) ?? $product->media->first();
 
+        $fallbackImage = $imageMap[$product->slug] ?? '/images/storefront/product-1.jpg';
         $mainImage = $primaryMedia
             ? asset('storage/'.ltrim($primaryMedia->path, '/'))
-            : ($imageMap[$product->slug] ?? '/images/storefront/product-1.jpg');
+            : $fallbackImage;
 
         $mediaImages = $product->media->map(fn ($m) => asset('storage/'.ltrim($m->path, '/')))->all();
         if (empty($mediaImages)) {
@@ -359,6 +359,7 @@ class StorefrontController extends Controller
             'price' => (float) ($variant?->selling_price ?? 0),
             'compare_at_price' => $variant?->compare_at_price ? (float) $variant->compare_at_price : null,
             'image' => $mainImage,
+            'fallback_image' => $fallbackImage,
             'rating' => $avgRating > 0 ? $avgRating : 5.0,
             'rating_raw' => $avgRating,
             'reviews_count' => $reviewsCount,
@@ -379,8 +380,64 @@ class StorefrontController extends Controller
             'available_options' => $availableOptions,
         ];
 
+        $categoryIds = $product->categories->pluck('id');
+
+        $relatedProducts = Product::query()
+            ->where('products.is_active', true)
+            ->where('products.id', '!=', $product->id)
+            ->when(
+                $categoryIds->isNotEmpty(),
+                fn ($query) => $query->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds)),
+            )
+            ->with([
+                'categories:id,name,slug',
+                'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
+                'defaultVariant.inventory',
+                'media',
+            ])
+            ->withAvg(['reviews' => fn ($q) => $q->where('is_approved', true)], 'rating')
+            ->withCount(['reviews' => fn ($q) => $q->where('is_approved', true)])
+            ->latest('products.id')
+            ->limit(8)
+            ->get()
+            ->map(function (Product $related) use ($imageMap) {
+                $relatedVariant = $related->defaultVariant;
+                $relatedMedia = $related->media->firstWhere('is_primary', true) ?? $related->media->first();
+                $relatedFallback = $imageMap[$related->slug] ?? '/images/storefront/product-1.jpg';
+                $relatedImage = $relatedMedia
+                    ? asset('storage/'.ltrim($relatedMedia->path, '/'))
+                    : $relatedFallback;
+                $relatedInventory = $relatedVariant?->inventory;
+
+                return [
+                    'id' => $related->id,
+                    'default_variant_id' => $relatedVariant?->id,
+                    'name' => $related->name,
+                    'display_name' => CatalogTranslator::product($related->slug, 'name', $related->name),
+                    'slug' => $related->slug,
+                    'category_name' => $related->categories->first()?->name ?? __('storefront.product.general'),
+                    'category_display_name' => $related->categories->first()
+                        ? CatalogTranslator::category($related->categories->first()->slug, $related->categories->first()->name)
+                        : __('storefront.product.general'),
+                    'category_slug' => $related->categories->first()?->slug ?? 'general',
+                    'price' => (float) ($relatedVariant?->selling_price ?? 0),
+                    'compare_at_price' => $relatedVariant?->compare_at_price ? (float) $relatedVariant->compare_at_price : null,
+                    'image' => $relatedImage,
+                    'fallback_image' => $relatedFallback,
+                    'short_description' => $related->short_description,
+                    'display_short_description' => CatalogTranslator::product($related->slug, 'short_description', $related->short_description),
+                    'is_featured' => (bool) $related->is_featured,
+                    'rating' => round((float) ($related->reviews_avg_rating ?? 5.0), 1),
+                    'reviews_count' => (int) ($related->reviews_count ?? 0),
+                    'stock_quantity' => $relatedInventory ? (int) $relatedInventory->quantity : null,
+                    'is_in_stock' => $relatedInventory ? $relatedInventory->quantity > 0 : true,
+                ];
+            })
+            ->values();
+
         return Inertia::render('ProductDetail', [
             'product' => $formattedProduct,
+            'relatedProducts' => $relatedProducts,
         ]);
     }
 
