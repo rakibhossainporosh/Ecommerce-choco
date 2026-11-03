@@ -1945,6 +1945,166 @@
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     }
 
+    /*
+     * Create / Edit record pages:
+     * Full-width form. Actions under the fields (not a second floating card).
+     * Order: Cancel | Create another | Create/Save.
+     */
+    .fi-resource-create-record-page .fi-sc-form,
+    .fi-resource-edit-record-page .fi-sc-form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .fi-resource-create-record-page .fi-sc-form > .fi-sc,
+    .fi-resource-edit-record-page .fi-sc-form > .fi-sc,
+    .fi-resource-create-record-page .fi-sc-form .fi-section,
+    .fi-resource-edit-record-page .fi-sc-form .fi-section,
+    .fi-resource-create-record-page .fi-unified-record-form,
+    .fi-resource-edit-record-page .fi-unified-record-form {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Default: actions stay in-flow with a light divider — no separate card. */
+    .fi-resource-create-record-page .fi-sc-form > .fi-sc:has(.fi-sc-actions),
+    .fi-resource-edit-record-page .fi-sc-form > .fi-sc:has(.fi-sc-actions) {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 0 !important;
+        padding: 0.25rem 0 0 !important;
+        border: none !important;
+        border-top: 1px solid rgba(17, 24, 39, 0.08) !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        grid-column: 1 / -1 !important;
+    }
+
+    .dark .fi-resource-create-record-page .fi-sc-form > .fi-sc:has(.fi-sc-actions),
+    .dark .fi-resource-edit-record-page .fi-sc-form > .fi-sc:has(.fi-sc-actions) {
+        border-top-color: rgba(255, 255, 255, 0.1) !important;
+        background: transparent !important;
+    }
+
+    .fi-resource-create-record-page .fi-sc-actions,
+    .fi-resource-edit-record-page .fi-sc-actions {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        padding-top: 1rem !important;
+    }
+
+    /*
+     * Unified single-section resources (Units): fields + Cancel/Save in one card.
+     */
+    /*
+     * Unified single-section resources (Units): one seamless card — no line
+     * between fields and Cancel/Save. Compact field width (3-up).
+     */
+    body.fi-unified-record-form-page .fi-sc-form {
+        gap: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Keep Active status (and short fields) top-aligned with sibling inputs. */
+    body.fi-unified-record-form-page .fi-section-content .fi-grid {
+        align-items: start !important;
+    }
+
+    body.fi-unified-record-form-page .fi-unified-record-section,
+    body.fi-unified-record-form-page .fi-sc-form .fi-section {
+        box-shadow: none !important;
+        border: 1px solid rgba(17, 24, 39, 0.1) !important;
+        border-bottom: none !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-top-left-radius: 0.75rem !important;
+        border-top-right-radius: 0.75rem !important;
+    }
+
+    .dark body.fi-unified-record-form-page .fi-unified-record-section,
+    .dark body.fi-unified-record-form-page .fi-sc-form .fi-section {
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    body.fi-unified-record-form-page .fi-sc-form > .fi-sc:has(.fi-sc-actions) {
+        padding: 0.75rem 1.5rem 1.25rem !important;
+        border: 1px solid rgba(17, 24, 39, 0.1) !important;
+        border-top: none !important;
+        border-radius: 0 0 0.75rem 0.75rem !important;
+        background: #fff !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    body.dark.fi-unified-record-form-page .fi-sc-form > .fi-sc:has(.fi-sc-actions),
+    .dark body.fi-unified-record-form-page .fi-sc-form > .fi-sc:has(.fi-sc-actions) {
+        background: rgb(17 24 39) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        border-top: none !important;
+    }
+
+    body.fi-unified-record-form-page .fi-sc-actions {
+        padding-top: 0 !important;
+    }
+
+    /* Page forms: Cancel → Create another → Create/Save, pinned to the right. */
+    .fi-resource-create-record-page .fi-sc-actions .fi-ac:not(.fi-width-full),
+    .fi-resource-edit-record-page .fi-sc-actions .fi-ac:not(.fi-width-full) {
+        display: flex !important;
+        flex-direction: row-reverse !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
+        margin-left: auto !important;
+    }
+
+    /*
+     * Modals (desktop): same button order, pinned to the right edge.
+     * Confirmation modals (fi-align-center) are left unchanged.
+     */
+    .fi-modal-footer.fi-align-start .fi-modal-footer-actions,
+    .fi-modal-footer.fi-align-left .fi-modal-footer-actions,
+    .fi-modal-footer.fi-align-end .fi-modal-footer-actions,
+    .fi-modal-footer.fi-align-right .fi-modal-footer-actions {
+        display: flex !important;
+        flex-direction: row-reverse !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
+    }
+
+    @media (max-width: 640px) {
+        .fi-modal-footer.fi-align-start .fi-modal-footer-actions,
+        .fi-modal-footer.fi-align-left .fi-modal-footer-actions,
+        .fi-modal-footer.fi-align-end .fi-modal-footer-actions,
+        .fi-modal-footer.fi-align-right .fi-modal-footer-actions,
+        .fi-resource-create-record-page .fi-sc-actions .fi-ac:not(.fi-width-full),
+        .fi-resource-edit-record-page .fi-sc-actions .fi-ac:not(.fi-width-full) {
+            flex-direction: column !important;
+            flex-wrap: nowrap !important;
+            justify-content: flex-start !important;
+            align-items: stretch !important;
+        }
+
+        .fi-modal-footer.fi-align-start .fi-modal-footer-actions > *,
+        .fi-modal-footer.fi-align-left .fi-modal-footer-actions > *,
+        .fi-modal-footer.fi-align-end .fi-modal-footer-actions > *,
+        .fi-modal-footer.fi-align-right .fi-modal-footer-actions > *,
+        .fi-resource-create-record-page .fi-sc-actions .fi-ac:not(.fi-width-full) > *,
+        .fi-resource-edit-record-page .fi-sc-actions .fi-ac:not(.fi-width-full) > * {
+            width: 100% !important;
+        }
+    }
+
     .abandoned-cart-reminder-modal .fi-modal-footer .fi-modal-footer-actions {
         display: flex !important;
         flex-direction: row-reverse !important;

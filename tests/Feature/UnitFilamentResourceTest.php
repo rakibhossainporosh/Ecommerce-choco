@@ -192,7 +192,7 @@ test('12. Staff cannot access EditUnit page', function () {
     expect(UnitResource::canEdit($unit))->toBeFalse();
 });
 
-test('13. Admin can soft-delete unit from EditUnit page', function () {
+test('13. Admin can soft-delete unit from ListUnits table', function () {
     $admin = User::factory()->create(['can_access_admin_panel' => true]);
     $admin->assignRole('Admin');
     $this->actingAs($admin);
@@ -202,13 +202,13 @@ test('13. Admin can soft-delete unit from EditUnit page', function () {
         'code' => 'del-admin',
     ]);
 
-    Livewire::test(EditUnit::class, ['record' => $unit->getRouteKey()])
-        ->callAction('delete');
+    Livewire::test(ListUnits::class)
+        ->callTableAction('delete', $unit);
 
     expect($unit->fresh()->trashed())->toBeTrue();
 });
 
-test('14. Manager cannot delete unit', function () {
+test('14. Manager cannot delete unit and EditUnit has no delete action', function () {
     $manager = User::factory()->create(['can_access_admin_panel' => true]);
     $manager->assignRole('Manager');
     $this->actingAs($manager);
@@ -219,7 +219,10 @@ test('14. Manager cannot delete unit', function () {
         ->and(UnitResource::canDeleteAny())->toBeFalse();
 
     Livewire::test(EditUnit::class, ['record' => $unit->getRouteKey()])
-        ->assertActionHidden('delete');
+        ->assertActionDoesNotExist('delete');
+
+    Livewire::test(ListUnits::class)
+        ->assertTableActionHidden('delete', $unit);
 });
 
 test('15. Staff cannot delete unit', function () {

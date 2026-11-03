@@ -19,10 +19,12 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
+use Filament\Pages\BasePage;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
@@ -39,6 +41,9 @@ class AdminPanelProvider extends PanelProvider
 {
     public function boot(): void
     {
+        // Create / Edit record pages: actions sit under the whole form (not sticky float).
+        BasePage::alignFormActionsEnd();
+
         Table::configureUsing(function (Table $table): void {
             $table
                 ->emptyStateIcon(Heroicon::OutlinedInbox)
@@ -47,11 +52,15 @@ class AdminPanelProvider extends PanelProvider
         });
 
         CreateAction::configureUsing(function (CreateAction $action): void {
-            $action->successNotificationTitle(fn (CreateAction $a): string => filled($m = $a->getModelLabel()) ? __(':label created successfully', ['label' => $m]) : __('Created successfully'));
+            $action
+                ->modalFooterActionsAlignment(Alignment::End)
+                ->successNotificationTitle(fn (CreateAction $a): string => filled($m = $a->getModelLabel()) ? __(':label created successfully', ['label' => $m]) : __('Created successfully'));
         });
 
         EditAction::configureUsing(function (EditAction $action): void {
-            $action->successNotificationTitle(fn (EditAction $a): string => filled($m = $a->getModelLabel()) ? __(':label updated successfully', ['label' => $m]) : __('Changes saved successfully'));
+            $action
+                ->modalFooterActionsAlignment(Alignment::End)
+                ->successNotificationTitle(fn (EditAction $a): string => filled($m = $a->getModelLabel()) ? __(':label updated successfully', ['label' => $m]) : __('Changes saved successfully'));
         });
 
         DeleteAction::configureUsing(function (DeleteAction $action): void {

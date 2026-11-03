@@ -8,11 +8,14 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\FontWeight;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class UnitsTable
@@ -20,15 +23,26 @@ class UnitsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->withCount('variants'))
             ->columns([
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight(FontWeight::Medium),
 
                 TextColumn::make('code')
                     ->label('Code')
                     ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('gray'),
+
+                TextColumn::make('variants_count')
+                    ->label('Variants')
+                    ->counts('variants')
+                    ->badge()
+                    ->color('info')
                     ->sortable(),
 
                 IconColumn::make('is_active')
@@ -83,6 +97,10 @@ class UnitsTable
                             }
                         }),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading(__('No units yet'))
+            ->emptyStateDescription(__('Create selling units like Piece, Box, or Kilogram for your products.'))
+            ->emptyStateIcon(Heroicon::OutlinedScale)
+            ->striped();
     }
 }

@@ -11,4 +11,11 @@ class CreateUnit extends CreateRecord
     use HasDescriptiveNotifications;
 
     protected static string $resource = UnitResource::class;
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $extraBodyAttributes = [
+        'class' => 'fi-unified-record-form-page',
+    ];
 }
