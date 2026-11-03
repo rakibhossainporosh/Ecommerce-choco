@@ -194,8 +194,8 @@
                 <h3>{{ __('Fulfillment') }}</h3>
                 <div class="detail"><strong>{{ __('Items') }}:</strong> {{ $order->items->sum('quantity') }}</div>
                 <div class="detail"><strong>{{ __('Lines') }}:</strong> {{ $order->items->count() }}</div>
-                @if($order->latestShipment?->tracking_number)
-                    <div class="detail"><strong>{{ __('Tracking') }}:</strong> {{ $order->latestShipment->tracking_number }}</div>
+                @if($order->latestShipment?->tracking_code)
+                    <div class="detail"><strong>{{ __('Tracking') }}:</strong> {{ $order->latestShipment->tracking_code }}</div>
                 @endif
                 @if($order->tagList() !== [])
                     <div class="detail" style="margin-top: 6px;">

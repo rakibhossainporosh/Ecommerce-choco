@@ -748,10 +748,10 @@
                 <div class="cov-card-header">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 1rem;">⏱️</span>
-                        <strong style="font-size: 0.9375rem; color: var(--cov-text-title);">{{ __('Status history') }}</strong>
+                        <strong style="font-size: 0.9375rem; color: var(--cov-text-title);">{{ __('Status & activity') }}</strong>
                     </div>
                     <span style="font-size: 0.6875rem; color: var(--cov-text-muted);">
-                        {{ __(':count records', ['count' => $order->statusHistories->count()]) }}
+                        {{ __(':count records', ['count' => $order->statusHistories->count() + $order->activitiesAsSubject->count()]) }}
                     </span>
                 </div>
 
@@ -790,6 +790,32 @@
                     @else
                         <div style="text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: var(--cov-text-muted); font-style: italic;">
                             {{ __('No status changes for this order yet.') }}
+                        </div>
+                    @endif
+
+                    @if($order->activitiesAsSubject->isNotEmpty())
+                        <div style="margin-top: 1rem; padding-top: 0.875rem; border-top: 1px solid var(--cov-border-subtle);">
+                            <div style="font-size: 0.6875rem; font-weight: 700; color: var(--cov-text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.625rem;">
+                                {{ __('Staff activity') }}
+                            </div>
+                            <div class="cov-timeline">
+                                @foreach($order->activitiesAsSubject->sortByDesc('created_at')->take(12) as $activity)
+                                    <div class="cov-timeline-item">
+                                        <div class="cov-timeline-dot"></div>
+                                        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.35rem; font-size: 0.75rem;">
+                                            <div style="color: var(--cov-text-body);">
+                                                <span style="font-weight: 600;">{{ $activity->description }}</span>
+                                                <span style="color: var(--cov-text-muted);">
+                                                    · {{ __('By :name', ['name' => $activity->causer?->name ?? __('System')]) }}
+                                                </span>
+                                            </div>
+                                            <div style="color: var(--cov-text-muted); font-size: 0.6875rem; white-space: nowrap;">
+                                                {{ $activity->created_at?->translatedFormat('d M Y, h:i A') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -898,7 +924,9 @@
                     </div>
                 </div>
                 <div class="cov-card-body" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
-                    @php($orderTags = $order->tagList())
+                    @php
+                        $orderTags = $order->tagList();
+                    @endphp
                     @if($orderTags !== [])
                         <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
                             @foreach($orderTags as $tag)

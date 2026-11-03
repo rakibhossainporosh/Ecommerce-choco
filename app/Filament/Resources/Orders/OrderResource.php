@@ -89,7 +89,7 @@ class OrderResource extends Resource
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
-            ->with(['items', 'statusHistories.changedBy', 'latestShipment', 'activities.causer']);
+            ->with(['items', 'statusHistories.changedBy', 'latestShipment', 'activitiesAsSubject.causer']);
     }
 
     /**
