@@ -37,26 +37,30 @@ class ProductsTable
 
                         return $media?->url();
                     })
-                    ->circular(),
+                    ->circular()
+                    ->alignCenter(),
 
                 TextColumn::make('name')
                     ->label('Product Name')
                     ->searchable()
                     ->sortable()
-                    ->weight(FontWeight::Medium),
+                    ->weight(FontWeight::Medium)
+                    ->alignCenter(),
 
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->state(fn (Product $record): string => $record->defaultVariant?->sku ?? $record->variants->first()?->sku ?? '—')
                     ->searchable(query: fn (Builder $query, string $search) => $query->whereHas('variants', fn ($q) => $q->where('sku', 'like', "%{$search}%")))
                     ->copyable()
-                    ->placeholder(__('—')),
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
 
                 TextColumn::make('categories.name')
                     ->label('Categories')
                     ->badge()
                     ->separator(', ')
-                    ->color('gray'),
+                    ->color('gray')
+                    ->alignCenter(),
 
                 TextColumn::make('price')
                     ->label('Price')
@@ -85,7 +89,8 @@ class ProductsTable
                             ->where('is_default', true)
                             ->limit(1),
                         $direction
-                    )),
+                    ))
+                    ->alignCenter(),
 
                 TextColumn::make('stock_status')
                     ->label('Stock')
@@ -129,35 +134,45 @@ class ProductsTable
                         }
 
                         return 'success';
-                    }),
+                    })
+                    ->alignCenter()
+                    ->extraHeaderAttributes(['class' => 'fi-ta-header-cell-stock-status'])
+                    ->extraCellAttributes(['class' => 'fi-ta-cell-stock-status']),
 
                 TextColumn::make('brand.name')
                     ->label('Brand')
                     ->placeholder(__('—'))
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->alignCenter()
+                    ->extraHeaderAttributes(['class' => 'fi-ta-header-cell-brand-name'])
+                    ->extraCellAttributes(['class' => 'fi-ta-cell-brand-name']),
 
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
 
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 IconColumn::make('is_featured')
                     ->label('Featured')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->defaultSort('name', 'asc')
             ->filters([
