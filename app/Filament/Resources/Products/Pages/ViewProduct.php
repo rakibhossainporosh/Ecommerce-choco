@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Products\Pages;
 use App\Filament\Resources\Products\Actions\ProductCatalogActions;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Enums\Width;
@@ -58,7 +57,6 @@ class ViewProduct extends ViewRecord
             ProductCatalogActions::makeViewOnStoreAction(),
             ProductCatalogActions::makeDuplicateAction(),
             EditAction::make(),
-            DeleteAction::make(),
         ];
     }
 }
