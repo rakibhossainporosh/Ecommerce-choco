@@ -4,14 +4,10 @@ namespace App\Filament\Resources\CourierShipments;
 
 use App\Enums\CourierShipmentStatus;
 use App\Filament\Concerns\TranslatesResourceNavigation;
+use App\Filament\Resources\CourierShipments\Schemas\CourierShipmentForm;
 use App\Models\CourierShipment;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -39,31 +35,7 @@ class CourierShipmentResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->schema([
-                Grid::make(2)->schema([
-                    Select::make('order_id')
-                        ->relationship('order', 'order_number')
-                        ->searchable()
-                        ->required()
-                        ->disabledOn('edit'),
-                    Select::make('courier_id')
-                        ->relationship('courier', 'name')
-                        ->searchable()
-                        ->required(),
-                ]),
-                Grid::make(2)->schema([
-                    TextInput::make('tracking_number')
-                        ->maxLength(255),
-                    Select::make('status')
-                        ->options(CourierShipmentStatus::class)
-                        ->required(),
-                ]),
-                Grid::make(2)->schema([
-                    DateTimePicker::make('shipped_at'),
-                    DateTimePicker::make('delivered_at'),
-                ]),
-            ]);
+        return CourierShipmentForm::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -120,7 +92,6 @@ class CourierShipmentResource extends Resource
                     ->options(CourierShipmentStatus::class),
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
             ])
             ->bulkActions([
@@ -145,15 +116,8 @@ class CourierShipmentResource extends Resource
     }
 
     /**
-     * Only draft courier consignments remain freely editable.
+     * Draft consignments can be removed; dispatched history is retained for audit.
      */
-    public static function canEdit(Model $record): bool
-    {
-        /** @var CourierShipment $record */
-        return $record->status === CourierShipmentStatus::Pending
-            && parent::canEdit($record);
-    }
-
     public static function canDelete(Model $record): bool
     {
         /** @var CourierShipment $record */

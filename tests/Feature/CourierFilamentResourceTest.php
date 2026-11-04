@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CourierShipmentStatus;
 use App\Filament\Resources\Couriers\Pages as CourierPages;
 use App\Filament\Resources\CourierShipments\Pages as ShipmentPages;
 use App\Models\Courier;
@@ -73,4 +74,15 @@ test('courier shipment resource lists shipments', function () {
     Livewire::test(ShipmentPages\ListCourierShipments::class)
         ->assertSuccessful()
         ->assertCanSeeTableRecords(CourierShipment::all());
+});
+
+test('admin can edit courier shipment regardless of status', function () {
+    $shipment = CourierShipment::factory()->create([
+        'status' => CourierShipmentStatus::Dispatched,
+    ]);
+
+    $this->actingAs($this->admin);
+
+    Livewire::test(ShipmentPages\EditCourierShipment::class, ['record' => $shipment->getKey()])
+        ->assertSuccessful();
 });
