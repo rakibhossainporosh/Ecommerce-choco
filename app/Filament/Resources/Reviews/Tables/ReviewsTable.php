@@ -28,7 +28,8 @@ class ReviewsTable
                 TextColumn::make('user.name')
                     ->label('Reviewer')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->alignCenter(),
                 TextColumn::make('rating')
                     ->label('Rating')
                     ->badge()
@@ -38,12 +39,14 @@ class ReviewsTable
                         default => 'danger',
                     })
                     ->formatStateUsing(fn (int $state): string => "★ {$state}")
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('title')
                     ->label('Title')
                     ->searchable()
                     ->limit(30)
-                    ->placeholder(__('—')),
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
                 IconColumn::make('is_approved')
                     ->label('Approved')
                     ->boolean()
@@ -51,12 +54,14 @@ class ReviewsTable
                     ->falseIcon('heroicon-o-clock')
                     ->trueColor('success')
                     ->falseColor('warning')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('created_at')
                     ->label('Submitted At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->alignCenter(),
             ])
             ->defaultSort('created_at', 'desc')
             ->paginated(! app()->runningUnitTests())
