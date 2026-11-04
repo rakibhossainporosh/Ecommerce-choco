@@ -36,7 +36,8 @@ class ShippingMethodsTable
                     ->label('Code')
                     ->searchable()
                     ->copyable()
-                    ->color('gray'),
+                    ->color('gray')
+                    ->alignCenter(),
 
                 TextColumn::make('provider')
                     ->label('Courier')
@@ -45,34 +46,40 @@ class ShippingMethodsTable
                         ?? (is_string($state) ? ShippingProvider::tryFrom($state)?->label() : null)
                         ?? (string) $state
                     )
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('charge')
                     ->label('Shipping Fee')
                     ->formatStateUsing($currencyFormat)
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->alignCenter(),
 
                 TextColumn::make('free_shipping_threshold')
                     ->label('Free Above')
                     ->formatStateUsing(fn ($state) => $state ? $currencyFormat($state) : '—')
-                    ->placeholder(__('—')),
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
 
                 TextColumn::make('delivery_estimate')
                     ->label('Delivery Window')
-                    ->state(fn (ShippingMethod $record): string => $record->getEstimatedDeliveryText()),
+                    ->state(fn (ShippingMethod $record): string => $record->getEstimatedDeliveryText())
+                    ->alignCenter(),
 
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('shipments_count')
                     ->label('Shipments')
                     ->counts('shipments')
                     ->badge()
                     ->color('info')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
             ])
             ->defaultSort('charge', 'asc')
             ->filters([
