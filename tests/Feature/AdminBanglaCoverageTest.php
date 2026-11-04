@@ -117,8 +117,14 @@ test('bangla admin pages do not leave common english labels visible', function (
     ]))->toBe('পেমেন্ট PAY-1-এর ৳1,250.00 ফেরত দেবেন?');
 
     $styles = Blade::render("@include('filament.styles.admin-layout')");
+    $adminLayoutCss = file_get_contents(public_path('css/filament/admin-layout.css'));
 
     expect($styles)
-        ->toContain('content: "কাজ"')
-        ->not->toContain('content: "Actions"');
+        ->toContain('--fi-admin-actions-label: "কাজ"')
+        ->not->toContain('--fi-admin-actions-label: "Actions"');
+
+    expect($adminLayoutCss)
+        ->toContain('content: var(--fi-admin-actions-label, "Actions")')
+        ->toContain('fi-admin-sidebar-collapsed-desktop')
+        ->toContain('fi-admin-sidebar-nav-lock');
 });

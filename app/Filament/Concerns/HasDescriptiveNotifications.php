@@ -4,6 +4,8 @@ namespace App\Filament\Concerns;
 
 trait HasDescriptiveNotifications
 {
+    use UsesStableCancelNavigation;
+
     protected function getCreatedNotificationTitle(): ?string
     {
         $label = static::getResource()::getModelLabel();

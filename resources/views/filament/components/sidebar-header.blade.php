@@ -17,7 +17,7 @@
         {{-- Collapse Button in Expanded State (Sidebar icon with chevron pointing left) --}}
         <button
             type="button"
-            x-on:click="$store.sidebar.close()"
+            x-on:click="document.documentElement.classList.add('fi-admin-sidebar-user-toggle'); $store.sidebar.close(); setTimeout(() => document.documentElement.classList.remove('fi-admin-sidebar-user-toggle'), 280)"
             title="{{ __('Collapse sidebar') }}"
             class="custom-sidebar-toggle-btn"
         >
@@ -33,7 +33,7 @@
     <div x-show="! $store.sidebar.isOpen" class="custom-sidebar-header-collapsed">
         <button
             type="button"
-            x-on:click="$store.sidebar.open()"
+            x-on:click="document.documentElement.classList.add('fi-admin-sidebar-user-toggle'); $store.sidebar.open(); setTimeout(() => document.documentElement.classList.remove('fi-admin-sidebar-user-toggle'), 280)"
             title="{{ __('Expand sidebar') }}"
             class="custom-sidebar-toggle-btn"
         >

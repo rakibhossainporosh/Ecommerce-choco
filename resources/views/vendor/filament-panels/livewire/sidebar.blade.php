@@ -15,14 +15,12 @@
     {{-- format-ignore-start --}}
     <div
         x-data="{}"
-        @if ($isSidebarCollapsibleOnDesktop || $isSidebarFullyCollapsibleOnDesktop)
-            x-cloak
-        @else
-            x-cloak="-lg"
-        @endif
+        {{-- Desktop must not x-cloak: SPA morph remounts this Livewire sidebar and full x-cloak made it vanish/jump. --}}
+        x-cloak="-lg"
         x-bind:class="{ 'fi-sidebar-open': $store.sidebar.isOpen }"
         id="fi-main-sidebar"
-        class="fi-sidebar fi-main-sidebar"
+        {{-- fi-sidebar-open is painted by default so SPA morph does not flash collapsed width before Alpine binds. --}}
+        class="fi-sidebar fi-main-sidebar fi-sidebar-open"
     >
         {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_START) }}
 
