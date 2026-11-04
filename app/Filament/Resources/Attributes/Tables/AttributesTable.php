@@ -34,7 +34,8 @@ class AttributesTable
                     ->sortable()
                     ->copyable()
                     ->copyMessage(__('Slug copied'))
-                    ->color('gray'),
+                    ->color('gray')
+                    ->alignCenter(),
 
                 TextColumn::make('type')
                     ->label('Type')
@@ -46,7 +47,8 @@ class AttributesTable
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('scope')
                     ->label('Scope')
@@ -56,34 +58,40 @@ class AttributesTable
                         default => 'primary',
                     })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('values_count')
                     ->counts('values')
                     ->label('Values')
                     ->badge()
                     ->color('gray')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 IconColumn::make('is_required')
                     ->label('Required')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('sort_order')
                     ->label('Sort Order')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->defaultSort('sort_order', 'asc')
             ->filters([
