@@ -72,11 +72,29 @@ class CourierResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('code')->searchable()->sortable(),
-                TextColumn::make('api_base_url')->label('API URL')->toggleable(),
-                IconColumn::make('is_active')->boolean()->sortable(),
-                TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+                TextColumn::make('code')
+                    ->searchable()
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('api_base_url')
+                    ->label('API URL')
+                    ->placeholder(__('—'))
+                    ->toggleable()
+                    ->alignCenter(),
+                IconColumn::make('is_active')
+                    ->label('Is active')
+                    ->boolean()
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('created_at')
+                    ->dateTime('M j, Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->paginated(! app()->runningUnitTests())
             ->filters([
