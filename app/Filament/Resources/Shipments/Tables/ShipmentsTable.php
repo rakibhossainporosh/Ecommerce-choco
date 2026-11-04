@@ -38,17 +38,20 @@ class ShipmentsTable
                     ->label('Order #')
                     ->searchable()
                     ->sortable()
-                    ->copyable(),
+                    ->copyable()
+                    ->alignCenter(),
 
                 TextColumn::make('recipient_name')
                     ->label('Recipient')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('shipping_city')
                     ->label('City')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('provider')
                     ->label('Courier')
@@ -57,7 +60,8 @@ class ShipmentsTable
                         ?? (is_string($state) ? ShippingProvider::tryFrom($state)?->label() : null)
                         ?? (string) $state
                     )
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('status')
                     ->label('Status')
@@ -72,38 +76,50 @@ class ShipmentsTable
                         ShipmentStatus::Returned => 'purple',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('tracking_code')
                     ->label('Tracking #')
                     ->searchable()
                     ->copyable()
                     ->placeholder(__('—'))
-                    ->url(fn (Shipment $record): ?string => $record->getTrackingUrl(), shouldOpenInNewTab: true),
+                    ->url(fn (Shipment $record): ?string => $record->getTrackingUrl(), shouldOpenInNewTab: true)
+                    ->alignCenter(),
 
                 TextColumn::make('shipping_charge')
                     ->label('Fee')
                     ->formatStateUsing($currencyFormat)
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('shipped_at')
                     ->label('Dispatched At')
-                    ->dateTime('M j, Y H:i')
-                    ->placeholder(__('Pending'))
-                    ->sortable(),
+                    ->state(fn (Shipment $record): string => $record->shipped_at
+                        ? $record->shipped_at->format('M j, Y H:i')
+                        : __('Pending'))
+                    ->badge()
+                    ->color(fn (string $state): string => $state === __('Pending') ? 'warning' : 'gray')
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('delivered_at')
                     ->label('Delivered At')
-                    ->dateTime('M j, Y H:i')
-                    ->placeholder(__('Pending'))
+                    ->state(fn (Shipment $record): string => $record->delivered_at
+                        ? $record->delivered_at->format('M j, Y H:i')
+                        : __('Pending'))
+                    ->badge()
+                    ->color(fn (string $state): string => $state === __('Pending') ? 'warning' : 'gray')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime('M j, Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

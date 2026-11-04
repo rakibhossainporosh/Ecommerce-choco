@@ -41,7 +41,7 @@ afterEach(function () {
 
 test('1. ShipmentResource binds to Shipment model and registers proper navigation metadata', function () {
     expect(ShipmentResource::getModel())->toBe(Shipment::class)
-        ->and(ShipmentResource::getNavigationIcon())->toBe(Heroicon::OutlinedPaperAirplane)
+        ->and(ShipmentResource::getNavigationIcon())->toBe(Heroicon::OutlinedTruck)
         ->and(ShipmentResource::getNavigationLabel())->toBe('Shipments');
 });
 
