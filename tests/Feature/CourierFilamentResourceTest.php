@@ -36,10 +36,12 @@ test('courier resource lists couriers', function () {
 test('can create courier securely', function () {
     $this->actingAs($this->admin);
 
+    $code = 'fastpath-'.uniqid();
+
     Livewire::test(CourierPages\CreateCourier::class)
         ->fillForm([
             'name' => 'FastPath',
-            'code' => 'fastpath',
+            'code' => $code,
             'api_base_url' => 'https://api.fastpath.com',
             'is_active' => true,
             'credentials' => [
@@ -49,7 +51,7 @@ test('can create courier securely', function () {
         ->call('create')
         ->assertHasNoFormErrors();
 
-    $courier = Courier::where('code', 'fastpath')->first();
+    $courier = Courier::where('code', $code)->first();
     expect($courier)->not->toBeNull()
         ->and($courier->credentials['api_key'])->toBe('super-secret');
 });
@@ -63,7 +65,12 @@ test('existing credentials are obfuscated on edit page', function () {
 
     Livewire::test(CourierPages\EditCourier::class, ['record' => $courier->id])
         ->assertSuccessful()
-        ->assertFormSet(['credentials' => []]); // formatStateUsing returns []
+        ->assertFormSet([
+            'credentials' => [
+                'api_key' => null,
+                'secret_key' => null,
+            ],
+        ]);
 });
 
 test('courier shipment resource lists shipments', function () {

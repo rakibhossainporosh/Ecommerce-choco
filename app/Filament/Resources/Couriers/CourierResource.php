@@ -3,15 +3,10 @@
 namespace App\Filament\Resources\Couriers;
 
 use App\Filament\Concerns\TranslatesResourceNavigation;
+use App\Filament\Resources\Couriers\Schemas\CourierForm;
 use App\Models\Courier;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Forms\Components\KeyValue;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -38,34 +33,7 @@ class CourierResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->schema([
-                Section::make('Courier Details')->schema([
-                    Grid::make(2)->schema([
-                        TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('code')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(255),
-                    ]),
-                    TextInput::make('api_base_url')
-                        ->label('API Base URL')
-                        ->url()
-                        ->maxLength(255),
-                    Toggle::make('is_active')
-                        ->default(true),
-                ]),
-                Section::make('API Credentials')->schema([
-                    KeyValue::make('credentials')
-                        ->keyLabel(fn (): string => __('Credential Key'))
-                        ->valueLabel(fn (): string => __('Credential Value'))
-                        ->formatStateUsing(fn () => []) // Security: Hide existing credentials
-                        ->dehydrated(fn ($state) => filled($state)) // Only save if provided
-                        ->helperText(__('Existing credentials are not displayed for security. Entering new credentials will overwrite existing ones completely.')),
-                ]),
-            ]);
+        return CourierForm::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -101,7 +69,6 @@ class CourierResource extends Resource
                 //
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
             ])
             ->bulkActions([
