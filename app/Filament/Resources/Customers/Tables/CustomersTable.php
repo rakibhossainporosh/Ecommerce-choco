@@ -39,43 +39,50 @@ class CustomersTable
                     ->label('Phone Number')
                     ->searchable()
                     ->sortable()
-                    ->copyable(),
+                    ->copyable()
+                    ->alignCenter(),
 
                 TextColumn::make('email')
                     ->label('Email Address')
                     ->searchable()
                     ->sortable()
-                    ->placeholder(__('—')),
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
 
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('orders_count')
                     ->label('Orders')
                     ->counts('orders')
                     ->sortable()
                     ->badge()
-                    ->color('info'),
+                    ->color('info')
+                    ->alignCenter(),
 
                 TextColumn::make('total_spent')
                     ->label('Total Spent')
                     ->state(fn (Customer $record): float => $record->total_spent)
                     ->formatStateUsing($currencyFormat)
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 IconColumn::make('has_user_account')
                     ->label('Storefront User')
                     ->boolean()
                     ->state(fn (Customer $record): bool => $record->user_id !== null)
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Customer Since')
                     ->dateTime('M j, Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
