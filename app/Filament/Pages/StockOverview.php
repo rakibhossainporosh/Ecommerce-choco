@@ -49,6 +49,16 @@ class StockOverview extends Page implements HasTable
         return (bool) auth()->user()?->can('inventory.view');
     }
 
+    /**
+     * @return array<string>
+     */
+    public function getPageClasses(): array
+    {
+        return [
+            'fi-page-stock-overview',
+        ];
+    }
+
     public static function shouldRegisterNavigation(): bool
     {
         return static::canAccess();
@@ -164,12 +174,14 @@ class StockOverview extends Page implements HasTable
                     ->label('Variant')
                     ->placeholder(__('—'))
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('inventory.quantity')
                     ->label('Stock')
@@ -177,7 +189,8 @@ class StockOverview extends Page implements HasTable
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('quantity')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
-                    )),
+                    ))
+                    ->alignCenter(),
 
                 TextColumn::make('inventory.low_stock_threshold')
                     ->label('Threshold')
@@ -185,7 +198,8 @@ class StockOverview extends Page implements HasTable
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('low_stock_threshold')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
-                    )),
+                    ))
+                    ->alignCenter(),
 
                 TextColumn::make('stock_status')
                     ->label('Status')
@@ -223,7 +237,8 @@ class StockOverview extends Page implements HasTable
                         }
 
                         return 'success';
-                    }),
+                    })
+                    ->alignCenter(),
 
                 TextColumn::make('inventory.updated_at')
                     ->label('Updated')
@@ -232,7 +247,8 @@ class StockOverview extends Page implements HasTable
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('updated_at')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
                         $direction
-                    )),
+                    ))
+                    ->alignCenter(),
             ])
             ->filters([
                 SelectFilter::make('variant_status')
