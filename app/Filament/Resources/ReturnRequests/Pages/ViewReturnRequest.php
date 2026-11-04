@@ -11,11 +11,17 @@ use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 
 class ViewReturnRequest extends ViewRecord
 {
     protected static string $resource = ReturnRequestResource::class;
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
 
     protected function getHeaderActions(): array
     {
