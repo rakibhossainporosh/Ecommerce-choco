@@ -73,30 +73,43 @@ class CourierShipmentResource extends Resource
                 TextColumn::make('order.order_number')
                     ->searchable()
                     ->sortable()
-                    ->label('Order #'),
+                    ->label('Order #')
+                    ->weight('bold')
+                    ->copyable(),
                 TextColumn::make('courier.name')
                     ->searchable()
                     ->sortable()
-                    ->label('Courier'),
+                    ->label('Courier')
+                    ->alignCenter(),
                 TextColumn::make('tracking_number')
+                    ->label('Tracking number')
                     ->searchable()
-                    ->placeholder(__('—')),
+                    ->copyable()
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn ($state) => $state->getColor())
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('shipped_at')
-                    ->dateTime()
+                    ->label('Shipped at')
+                    ->dateTime('M j, Y H:i')
                     ->sortable()
-                    ->toggleable(),
+                    ->placeholder(__('Pending'))
+                    ->toggleable()
+                    ->alignCenter(),
                 TextColumn::make('delivered_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->placeholder(__('Pending'))
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->paginated(! app()->runningUnitTests())
             ->filters([
