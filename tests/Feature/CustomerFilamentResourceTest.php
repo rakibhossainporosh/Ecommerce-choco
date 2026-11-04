@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Resources\Customers\CustomerResource;
+use App\Filament\Resources\Customers\Pages\CreateCustomer;
 use App\Filament\Resources\Customers\Pages\EditCustomer;
 use App\Filament\Resources\Customers\Pages\ListCustomers;
 use App\Models\Customer;
@@ -43,7 +44,7 @@ test('1. CustomerResource binds to Customer model', function () {
     expect(CustomerResource::getModel())->toBe(Customer::class);
 });
 
-test('2. Admin can access CustomerResource index, edit, and view pages', function () {
+test('2. Admin can access CustomerResource index, create, edit, and view pages', function () {
     $admin = User::factory()->create(['can_access_admin_panel' => true]);
     $admin->assignRole('Admin');
 
@@ -52,6 +53,10 @@ test('2. Admin can access CustomerResource index, edit, and view pages', functio
         ->and(CustomerResource::canCreate())->toBeTrue();
 
     $customer = Customer::factory()->create();
+
+    $this->actingAs($admin)
+        ->get(CustomerResource::getUrl('create'))
+        ->assertOk();
 
     $this->actingAs($admin)
         ->get(CustomerResource::getUrl('view', ['record' => $customer]))
@@ -104,20 +109,36 @@ test('6. User with can_access_admin_panel set to false is forbidden', function (
         ->assertForbidden();
 });
 
-test('7. Customer creation is configured as a modal on ListCustomers page', function () {
+test('7. Customer creation uses a dedicated full-page CreateCustomer route', function () {
     $admin = User::factory()->create(['can_access_admin_panel' => true]);
     $admin->assignRole('Admin');
     $this->actingAs($admin);
 
-    expect(CustomerResource::getPages())->not->toHaveKey('create')
+    expect(CustomerResource::getPages())->toHaveKey('create')
         ->and(CustomerResource::canCreate())->toBeTrue();
 
     $listPage = new ListCustomers;
     $actions = invade($listPage)->getHeaderActions();
 
     expect($actions)->toHaveCount(1)
-        ->and($actions[0]->getName())->toBe('create')
-        ->and($actions[0]->getModalHeading())->toBe('Create Customer');
+        ->and($actions[0]->getName())->toBe('create');
+
+    $this->get(CustomerResource::getUrl('create'))->assertOk();
+
+    Livewire::test(CreateCustomer::class)
+        ->assertSuccessful()
+        ->fillForm([
+            'name' => 'New Store Customer',
+            'phone' => '01611223344',
+            'is_active' => true,
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas('customers', [
+        'name' => 'New Store Customer',
+        'phone' => '01611223344',
+    ]);
 });
 
 test('8. Duplicate phone number is rejected during customer form validation', function () {

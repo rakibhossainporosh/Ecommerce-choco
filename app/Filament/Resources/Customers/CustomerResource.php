@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Customers;
 
 use App\Filament\Concerns\TranslatesResourceNavigation;
+use App\Filament\Resources\Customers\Pages\CreateCustomer;
 use App\Filament\Resources\Customers\Pages\EditCustomer;
 use App\Filament\Resources\Customers\Pages\ListCustomers;
 use App\Filament\Resources\Customers\Pages\ViewCustomer;
@@ -88,6 +89,7 @@ class CustomerResource extends Resource
     {
         return [
             'index' => ListCustomers::route('/'),
+            'create' => CreateCustomer::route('/create'),
             'view' => ViewCustomer::route('/{record}'),
             'edit' => EditCustomer::route('/{record}/edit'),
         ];
