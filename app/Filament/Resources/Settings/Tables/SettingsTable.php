@@ -24,23 +24,32 @@ class SettingsTable
                 TextColumn::make('key')
                     ->sortable()
                     ->searchable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->alignCenter(),
                 TextColumn::make('label')
                     ->sortable()
                     ->searchable()
-                    ->limit(30),
+                    ->limit(30)
+                    ->alignCenter(),
                 TextColumn::make('type')
                     ->badge()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('value')
                     ->limit(50)
-                    ->searchable(),
+                    ->searchable()
+                    ->placeholder(__('—'))
+                    ->alignCenter(),
                 IconColumn::make('is_public')
+                    ->label('Is public')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 IconColumn::make('is_system')
+                    ->label('Is system')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
             ])
             ->filters([
                 SelectFilter::make('group')
