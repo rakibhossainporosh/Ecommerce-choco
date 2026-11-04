@@ -25,6 +25,7 @@ class ActivitiesTable
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('description')
+                    ->label('Description')
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'created' => __('Created'),
                         'updated' => __('Updated'),
@@ -33,7 +34,8 @@ class ActivitiesTable
                         null, '' => '',
                         default => __($state),
                     })
-                    ->searchable(),
+                    ->searchable()
+                    ->alignCenter(),
                 TextColumn::make('subject_type')
                     ->label('Subject')
                     ->formatStateUsing(function ($state, $record): string {
@@ -43,15 +45,20 @@ class ActivitiesTable
 
                         return UiText::line(class_basename((string) $state)).' #'.$record->subject_id;
                     })
-                    ->searchable(),
+                    ->searchable()
+                    ->alignCenter(),
                 TextColumn::make('causer.name')
                     ->label('Causer')
                     ->formatStateUsing(fn ($state): string => $state === 'Super Admin' ? __('Super Admin') : (string) ($state ?? ''))
-                    ->searchable(),
+                    ->placeholder(__('—'))
+                    ->searchable()
+                    ->alignCenter(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Created at')
+                    ->dateTime('M j, Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->alignCenter(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
