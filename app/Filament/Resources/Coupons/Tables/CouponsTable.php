@@ -24,29 +24,36 @@ class CouponsTable
                     ->weight('bold'),
                 TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('type')
                     ->badge()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('value')
                     ->numeric()
                     ->sortable()
-                    ->formatStateUsing(fn ($state, $record) => $record->type === CouponType::Percentage ? "{$state}%" : '৳'.number_format($state, 2)),
+                    ->formatStateUsing(fn ($state, $record) => $record->type === CouponType::Percentage ? "{$state}%" : '৳'.number_format($state, 2))
+                    ->alignCenter(),
                 TextColumn::make('used_count')
                     ->label('Usage')
                     ->formatStateUsing(fn ($state, $record) => $record->usage_limit ? "{$state} / {$record->usage_limit}" : $state)
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('expires_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->alignCenter(),
                 IconColumn::make('is_active')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->paginated(! app()->runningUnitTests())
             ->filters([
