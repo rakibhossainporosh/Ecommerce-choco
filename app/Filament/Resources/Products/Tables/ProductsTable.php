@@ -2,13 +2,18 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
+use App\Filament\Resources\Products\Actions\ProductCatalogActions;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -17,6 +22,8 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ProductsTable
 {
@@ -193,11 +200,119 @@ class ProductsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
+                ProductCatalogActions::makeDuplicateAction(),
+                ProductCatalogActions::makeViewOnStoreAction(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('activateSelected')
+                        ->label(__('Publish selected'))
+                        ->icon(Heroicon::OutlinedCheckCircle)
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading(__('Publish selected products'))
+                        ->modalDescription(__('Selected products will become active in the catalog (must already satisfy active-product rules).'))
+                        ->authorize('update')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records): void {
+                            $ok = 0;
+                            $failed = 0;
+
+                            foreach ($records as $product) {
+                                /** @var Product $product */
+                                if (! auth()->user()?->can('update', $product)) {
+                                    $failed++;
+
+                                    continue;
+                                }
+
+                                try {
+                                    $product->update(['is_active' => true]);
+                                    $ok++;
+                                } catch (\Throwable) {
+                                    $failed++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title(__('Bulk publish finished'))
+                                ->body(__(':ok published, :failed skipped.', ['ok' => $ok, 'failed' => $failed]))
+                                ->success()
+                                ->send();
+                        }),
+
+                    BulkAction::make('deactivateSelected')
+                        ->label(__('Unpublish selected'))
+                        ->icon(Heroicon::OutlinedXCircle)
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalHeading(__('Unpublish selected products'))
+                        ->authorize('update')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records): void {
+                            $ids = $records
+                                ->filter(fn (Product $product): bool => auth()->user()?->can('update', $product) ?? false)
+                                ->modelKeys();
+
+                            Product::query()->whereIn('id', $ids)->update([
+                                'is_active' => false,
+                                'is_featured' => false,
+                            ]);
+
+                            Notification::make()
+                                ->title(__('Selected products unpublished'))
+                                ->success()
+                                ->send();
+                        }),
+
+                    BulkAction::make('featureSelected')
+                        ->label(__('Feature selected'))
+                        ->icon(Heroicon::OutlinedStar)
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->authorize('update')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records): void {
+                            $ok = 0;
+                            $failed = 0;
+
+                            foreach ($records as $product) {
+                                /** @var Product $product */
+                                if (! auth()->user()?->can('update', $product)) {
+                                    $failed++;
+
+                                    continue;
+                                }
+
+                                try {
+                                    DB::transaction(function () use ($product): void {
+                                        if (! $product->is_active) {
+                                            $product->update(['is_active' => true]);
+                                        }
+                                        $product->update(['is_featured' => true]);
+                                    });
+                                    $ok++;
+                                } catch (\Throwable) {
+                                    $failed++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title(__('Bulk feature finished'))
+                                ->body(__(':ok featured, :failed skipped.', ['ok' => $ok, 'failed' => $failed]))
+                                ->success()
+                                ->send();
+                        }),
+
+                    BulkAction::make('exportSelected')
+                        ->label(__('Export CSV'))
+                        ->icon(Heroicon::OutlinedArrowDownTray)
+                        ->color('gray')
+                        ->action(fn (Collection $records) => ProductCatalogActions::exportCsv($records)),
+
                     DeleteBulkAction::make(),
                 ]),
             ]);

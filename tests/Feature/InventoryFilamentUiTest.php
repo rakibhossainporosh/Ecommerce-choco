@@ -546,7 +546,7 @@ test('17. Authorized user can edit low stock threshold without creating movement
             'low_stock_threshold' => 12,
         ])
         ->assertHasNoTableActionErrors()
-        ->assertNotified('Low stock threshold updated successfully.');
+        ->assertNotified('Threshold updated successfully.');
 
     expect($inventory->fresh()->low_stock_threshold)->toBe(12)
         ->and($inventory->fresh()->quantity)->toBe(20) // Quantity unchanged

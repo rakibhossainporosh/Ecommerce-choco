@@ -3,11 +3,14 @@
 namespace App\Filament\Resources\Products\Pages;
 
 use App\Filament\Concerns\HasDescriptiveNotifications;
+use App\Filament\Resources\Products\Actions\ProductCatalogActions;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Attribute;
 use App\Models\Product;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
 
 class EditProduct extends EditRecord
@@ -26,6 +29,11 @@ class EditProduct extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ProductCatalogActions::makeViewOnStoreAction(),
+            ProductCatalogActions::makeDuplicateAction(),
+            ViewAction::make()
+                ->label(__('View details'))
+                ->icon(Heroicon::OutlinedEye),
             DeleteAction::make(),
         ];
     }

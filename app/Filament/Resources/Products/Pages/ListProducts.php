@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Products\Pages;
 
+use App\Filament\Resources\Products\Actions\ProductCatalogActions;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListProducts extends ListRecords
@@ -16,6 +19,17 @@ class ListProducts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('exportAll')
+                ->label(__('Export CSV'))
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->action(function () {
+                    $query = $this->getFilteredTableQuery() ?? Product::query();
+
+                    return ProductCatalogActions::exportCsv(
+                        $query->with(['brand', 'categories', 'defaultVariant', 'variants.inventory'])->get()
+                    );
+                }),
             CreateAction::make(),
         ];
     }
