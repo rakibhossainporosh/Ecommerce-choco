@@ -4,10 +4,16 @@ namespace App\Filament\Resources\CourierShipments;
 
 use App\Enums\CourierShipmentStatus;
 use App\Filament\Concerns\TranslatesResourceNavigation;
+use App\Filament\Resources\CourierShipments\Pages\CreateCourierShipment;
+use App\Filament\Resources\CourierShipments\Pages\EditCourierShipment;
+use App\Filament\Resources\CourierShipments\Pages\ListCourierShipments;
+use App\Filament\Resources\CourierShipments\Pages\ViewCourierShipment;
 use App\Filament\Resources\CourierShipments\Schemas\CourierShipmentForm;
+use App\Filament\Resources\CourierShipments\Schemas\CourierShipmentInfolist;
 use App\Models\CourierShipment;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -37,6 +43,11 @@ class CourierShipmentResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return CourierShipmentForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return CourierShipmentInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -93,6 +104,7 @@ class CourierShipmentResource extends Resource
                     ->options(CourierShipmentStatus::class),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
@@ -111,9 +123,10 @@ class CourierShipmentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCourierShipments::route('/'),
-            'create' => Pages\CreateCourierShipment::route('/create'),
-            'edit' => Pages\EditCourierShipment::route('/{record}/edit'),
+            'index' => ListCourierShipments::route('/'),
+            'create' => CreateCourierShipment::route('/create'),
+            'view' => ViewCourierShipment::route('/{record}'),
+            'edit' => EditCourierShipment::route('/{record}/edit'),
         ];
     }
 

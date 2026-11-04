@@ -25,13 +25,13 @@ class BrandForm
             ->extraAttributes(['class' => 'fi-unified-record-form'])
             ->components([
                 Section::make('Brand Information')
-                    ->description(__('Core brand identity and search engine details.'))
+                    ->description(__('Core brand identity, logo, and search engine details.'))
                     ->icon(Heroicon::OutlinedBuildingStorefront)
                     ->columnSpanFull()
                     ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'md' => 2,
+                        'md' => 3,
                     ])
                     ->schema([
                         TextInput::make('name')
@@ -71,20 +71,6 @@ class BrandForm
                             ->unique(ignoreRecord: true)
                             ->rules(['alpha_dash']),
 
-                        Textarea::make('description')
-                            ->label('Description')
-                            ->placeholder(__('Enter a detailed biography, history, or overview of this brand...'))
-                            ->nullable()
-                            ->rows(4)
-                            ->columnSpanFull(),
-                    ]),
-
-                Section::make('Brand Logo & Media')
-                    ->description(__('Visual branding asset for the storefront.'))
-                    ->icon(Heroicon::OutlinedPhoto)
-                    ->columnSpanFull()
-                    ->extraAttributes(['class' => 'fi-unified-record-section'])
-                    ->schema([
                         FileUpload::make('logo')
                             ->label('Brand Logo')
                             ->image()
@@ -93,6 +79,13 @@ class BrandForm
                             ->maxSize(2048)
                             ->imageEditor()
                             ->helperText(__('PNG, JPG, or WebP up to 2MB.')),
+
+                        Textarea::make('description')
+                            ->label('Description')
+                            ->placeholder(__('Enter a detailed biography, history, or overview of this brand...'))
+                            ->nullable()
+                            ->rows(4)
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Display & Status')

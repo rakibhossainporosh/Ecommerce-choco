@@ -83,13 +83,13 @@ class CategoryForm
                     ]),
 
                 Section::make('Hierarchy & Placement')
-                    ->description(__('Category tree level and display sequence.'))
+                    ->description(__('Category tree level, display sequence, and storefront visibility.'))
                     ->icon(Heroicon::OutlinedRectangleStack)
                     ->columnSpanFull()
                     ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'md' => 2,
+                        'md' => 3,
                     ])
                     ->schema([
                         Select::make('parent_id')
@@ -152,14 +152,7 @@ class CategoryForm
                             ->default(0)
                             ->minValue(0)
                             ->required(),
-                    ]),
 
-                Section::make('Visibility & Status')
-                    ->description(__('Storefront catalog availability.'))
-                    ->icon(Heroicon::OutlinedEye)
-                    ->columnSpanFull()
-                    ->extraAttributes(['class' => 'fi-unified-record-section'])
-                    ->schema([
                         Toggle::make('is_active')
                             ->label('Active Status')
                             ->helperText(__('Disable to hide category from the store.'))

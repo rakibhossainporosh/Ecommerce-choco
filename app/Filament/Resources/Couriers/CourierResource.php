@@ -3,10 +3,16 @@
 namespace App\Filament\Resources\Couriers;
 
 use App\Filament\Concerns\TranslatesResourceNavigation;
+use App\Filament\Resources\Couriers\Pages\CreateCourier;
+use App\Filament\Resources\Couriers\Pages\EditCourier;
+use App\Filament\Resources\Couriers\Pages\ListCouriers;
+use App\Filament\Resources\Couriers\Pages\ViewCourier;
 use App\Filament\Resources\Couriers\Schemas\CourierForm;
+use App\Filament\Resources\Couriers\Schemas\CourierInfolist;
 use App\Models\Courier;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -35,6 +41,11 @@ class CourierResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return CourierForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return CourierInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -70,6 +81,7 @@ class CourierResource extends Resource
                 //
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
@@ -88,9 +100,10 @@ class CourierResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCouriers::route('/'),
-            'create' => Pages\CreateCourier::route('/create'),
-            'edit' => Pages\EditCourier::route('/{record}/edit'),
+            'index' => ListCouriers::route('/'),
+            'create' => CreateCourier::route('/create'),
+            'view' => ViewCourier::route('/{record}'),
+            'edit' => EditCourier::route('/{record}/edit'),
         ];
     }
 }

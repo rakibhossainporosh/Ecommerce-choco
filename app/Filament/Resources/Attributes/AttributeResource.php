@@ -6,8 +6,10 @@ use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Attributes\Pages\CreateAttribute;
 use App\Filament\Resources\Attributes\Pages\EditAttribute;
 use App\Filament\Resources\Attributes\Pages\ListAttributes;
+use App\Filament\Resources\Attributes\Pages\ViewAttribute;
 use App\Filament\Resources\Attributes\RelationManagers\ValuesRelationManager;
 use App\Filament\Resources\Attributes\Schemas\AttributeForm;
+use App\Filament\Resources\Attributes\Schemas\AttributeInfolist;
 use App\Filament\Resources\Attributes\Tables\AttributesTable;
 use App\Models\Attribute;
 use BackedEnum;
@@ -59,6 +61,11 @@ class AttributeResource extends Resource
         return AttributeForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return AttributeInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return AttributesTable::configure($table);
@@ -76,6 +83,7 @@ class AttributeResource extends Resource
         return [
             'index' => ListAttributes::route('/'),
             'create' => CreateAttribute::route('/create'),
+            'view' => ViewAttribute::route('/{record}'),
             'edit' => EditAttribute::route('/{record}/edit'),
         ];
     }

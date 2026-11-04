@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Units\Pages;
 
 use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Units\UnitResource;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditUnit extends EditRecord
@@ -18,4 +19,11 @@ class EditUnit extends EditRecord
     protected array $extraBodyAttributes = [
         'class' => 'fi-unified-record-form-page',
     ];
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            ViewAction::make(),
+        ];
+    }
 }

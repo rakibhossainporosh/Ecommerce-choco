@@ -4,7 +4,9 @@ namespace App\Filament\Resources\ShippingMethods;
 
 use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\ShippingMethods\Pages\ListShippingMethods;
+use App\Filament\Resources\ShippingMethods\Pages\ViewShippingMethod;
 use App\Filament\Resources\ShippingMethods\Schemas\ShippingMethodForm;
+use App\Filament\Resources\ShippingMethods\Schemas\ShippingMethodInfolist;
 use App\Filament\Resources\ShippingMethods\Tables\ShippingMethodsTable;
 use App\Models\ShippingMethod;
 use BackedEnum;
@@ -36,6 +38,11 @@ class ShippingMethodResource extends Resource
         return ShippingMethodForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return ShippingMethodInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return ShippingMethodsTable::configure($table);
@@ -45,6 +52,7 @@ class ShippingMethodResource extends Resource
     {
         return [
             'index' => ListShippingMethods::route('/'),
+            'view' => ViewShippingMethod::route('/{record}'),
         ];
     }
 }

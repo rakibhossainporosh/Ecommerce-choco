@@ -6,7 +6,9 @@ use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Brands\Pages\CreateBrand;
 use App\Filament\Resources\Brands\Pages\EditBrand;
 use App\Filament\Resources\Brands\Pages\ListBrands;
+use App\Filament\Resources\Brands\Pages\ViewBrand;
 use App\Filament\Resources\Brands\Schemas\BrandForm;
+use App\Filament\Resources\Brands\Schemas\BrandInfolist;
 use App\Filament\Resources\Brands\Tables\BrandsTable;
 use App\Models\Brand;
 use BackedEnum;
@@ -57,6 +59,11 @@ class BrandResource extends Resource
         return BrandForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return BrandInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return BrandsTable::configure($table);
@@ -72,6 +79,7 @@ class BrandResource extends Resource
         return [
             'index' => ListBrands::route('/'),
             'create' => CreateBrand::route('/create'),
+            'view' => ViewBrand::route('/{record}'),
             'edit' => EditBrand::route('/{record}/edit'),
         ];
     }

@@ -6,6 +6,7 @@ use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Categories\CategoryResource;
 use App\Models\Category;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Enums\Width;
@@ -31,6 +32,7 @@ class EditCategory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ViewAction::make(),
             DeleteAction::make()
                 ->before(function (DeleteAction $action, Category $record): void {
                     if ($record->hasChildren()) {
