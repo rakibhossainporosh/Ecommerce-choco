@@ -25,13 +25,15 @@ class BrandsTable
                 ImageColumn::make('logo')
                     ->label('Logo')
                     ->disk('public')
-                    ->circular(),
+                    ->circular()
+                    ->alignCenter(),
 
                 TextColumn::make('name')
                     ->label('Brand Name')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->alignCenter(),
 
                 TextColumn::make('slug')
                     ->label('Slug')
@@ -39,29 +41,34 @@ class BrandsTable
                     ->sortable()
                     ->copyable()
                     ->copyMessage(__('Slug copied'))
-                    ->color('gray'),
+                    ->color('gray')
+                    ->alignCenter(),
 
                 TextColumn::make('products_count')
                     ->counts('products')
                     ->label('Products')
                     ->badge()
                     ->color('info')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('sort_order')
                     ->label('Sort Order')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
             ])
             ->defaultSort('sort_order', 'asc')
             ->filters([
