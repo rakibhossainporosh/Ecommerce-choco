@@ -193,7 +193,7 @@ test('4. invalid file type rejected in upload validation', function () {
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$invalidPdf])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasErrors(['uploads.0']);
 
     expect($variant->media()->count())->toBe(0);
@@ -203,7 +203,7 @@ test('4. invalid file type rejected in upload validation', function () {
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$invalidText])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasErrors(['uploads.0']);
 
     expect($variant->media()->count())->toBe(0);
@@ -226,7 +226,7 @@ test('5. image above 5 MB is rejected', function () {
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$oversizedFile])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasErrors(['uploads.0']);
 
     expect($variant->media()->count())->toBe(0);
@@ -472,7 +472,7 @@ test('12. variant media can be independently managed via Livewire component and 
     // Upload to variant
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$file1, $file2])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasNoErrors();
 
     expect($variant->media()->count())->toBe(2);
@@ -504,9 +504,13 @@ test('12. variant media can be independently managed via Livewire component and 
     expect($vMedia1->fresh()->sort_order)->toBe(1)
         ->and($vMedia2->fresh()->sort_order)->toBe(2);
 
-    // Delete variant media
+    // Delete variant media (confirm dialog → delete)
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
-        ->call('deleteMedia', $vMedia1->id);
+        ->call('confirmDeleteMedia', $vMedia1->id)
+        ->assertSet('confirmingDeleteMediaId', $vMedia1->id)
+        ->assertSee('Delete photo')
+        ->call('deleteMedia', $vMedia1->id)
+        ->assertSet('confirmingDeleteMediaId', null);
 
     expect($variant->media()->count())->toBe(1)
         ->and($variant->media()->first()->id)->toBe($vMedia2->id)

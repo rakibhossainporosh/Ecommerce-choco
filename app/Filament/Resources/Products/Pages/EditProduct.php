@@ -16,6 +16,13 @@ class EditProduct extends EditRecord
 
     protected static string $resource = ProductResource::class;
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $extraBodyAttributes = [
+        'class' => 'fi-unified-record-form-page',
+    ];
+
     protected function getHeaderActions(): array
     {
         return [

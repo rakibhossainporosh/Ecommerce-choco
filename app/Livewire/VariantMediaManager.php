@@ -4,11 +4,13 @@ namespace App\Livewire;
 
 use App\Models\Media;
 use App\Models\ProductVariant;
+use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class VariantMediaManager extends Component
@@ -17,19 +19,91 @@ class VariantMediaManager extends Component
 
     public ProductVariant $variant;
 
-    /** @var array<UploadedFile> */
+    /** @var array<int, TemporaryUploadedFile|UploadedFile> */
     public array $uploads = [];
 
     public ?int $editingMediaId = null;
 
     public string $editingAltText = '';
 
+    public ?int $confirmingDeleteMediaId = null;
+
     public function mount(ProductVariant $variant): void
     {
         $this->variant = $variant;
     }
 
-    public function upload(): void
+    public function confirmDeleteMedia(int $mediaId): void
+    {
+        $this->confirmingDeleteMediaId = $mediaId;
+    }
+
+    public function cancelDeleteMedia(): void
+    {
+        $this->confirmingDeleteMediaId = null;
+    }
+
+    public function removeUpload(int $index): void
+    {
+        if (! array_key_exists($index, $this->uploads)) {
+            return;
+        }
+
+        $uploads = $this->uploads;
+        unset($uploads[$index]);
+        $this->uploads = array_values($uploads);
+    }
+
+    public function clearUploads(): void
+    {
+        $this->reset('uploads');
+    }
+
+    /**
+     * @return list<array{index: int, name: string, size: string, preview: ?string}>
+     */
+    public function selectedUploadPreviews(): array
+    {
+        $previews = [];
+
+        foreach ($this->uploads as $index => $file) {
+            if (! $file instanceof TemporaryUploadedFile && ! $file instanceof UploadedFile) {
+                continue;
+            }
+
+            $preview = null;
+
+            if ($file instanceof TemporaryUploadedFile) {
+                try {
+                    $preview = $file->temporaryUrl();
+                } catch (\Throwable) {
+                    $preview = null;
+                }
+            }
+
+            $bytes = (int) ($file->getSize() ?: 0);
+            $sizeLabel = $bytes >= 1048576
+                ? number_format($bytes / 1048576, 1).' MB'
+                : number_format(max($bytes / 1024, 0.1), 1).' KB';
+
+            $previews[] = [
+                'index' => $index,
+                'name' => $file->getClientOriginalName(),
+                'size' => $sizeLabel,
+                'preview' => $preview,
+            ];
+        }
+
+        return $previews;
+    }
+
+    /**
+     * Persist staged temporary uploads to this variant.
+     *
+     * Named savePhotos (not upload) because Livewire reserves $wire.upload()
+     * for the client-side file-upload API — wire:click="upload" never hits PHP.
+     */
+    public function savePhotos(): void
     {
         if (! auth()->user()?->can('products.update')) {
             abort(403, 'Unauthorized to upload variant media.');
@@ -46,11 +120,15 @@ class VariantMediaManager extends Component
                 'max:5120',
             ],
         ], [
+            'uploads.required' => __('Select at least one photo first.'),
+            'uploads.min' => __('Select at least one photo first.'),
             'uploads.*.image' => 'The uploaded file must be a valid image.',
             'uploads.*.mimes' => 'Images must be in jpeg, jpg, png, or webp format.',
             'uploads.*.mimetypes' => 'Images must be in jpeg, jpg, png, or webp format.',
             'uploads.*.max' => 'Each image must not exceed 5 MB in size.',
         ]);
+
+        $uploadedCount = 0;
 
         foreach ($this->uploads as $file) {
             $extension = $file->guessExtension() ?: $file->getClientOriginalExtension();
@@ -71,11 +149,19 @@ class VariantMediaManager extends Component
                 'width' => $dimensions ? $dimensions[0] : null,
                 'height' => $dimensions ? $dimensions[1] : null,
             ]);
+
+            $uploadedCount++;
         }
 
-        $this->uploads = [];
+        $this->reset('uploads');
         $this->variant->refresh();
         $this->dispatch('media-updated');
+
+        Notification::make()
+            ->title(__('Variant photos uploaded'))
+            ->body(trans_choice(':count photo saved to this variant.|:count photos saved to this variant.', $uploadedCount, ['count' => $uploadedCount]))
+            ->success()
+            ->send();
     }
 
     public function setPrimary(int $mediaId): void
@@ -129,8 +215,14 @@ class VariantMediaManager extends Component
         // After DB transaction commit: safely purge physical file if unreferenced
         Media::deletePhysicalFileIfUnreferenced($disk, $path);
 
+        $this->confirmingDeleteMediaId = null;
         $this->variant->refresh();
         $this->dispatch('media-updated');
+
+        Notification::make()
+            ->title(__('Photo deleted'))
+            ->success()
+            ->send();
     }
 
     public function reorder(array $orderedIds): void
@@ -188,6 +280,7 @@ class VariantMediaManager extends Component
         return view('livewire.variant-media-manager', [
             'ownMedia' => $ownMedia,
             'fallbackMedia' => $fallbackMedia,
+            'selectedUploads' => $this->selectedUploadPreviews(),
         ]);
     }
 }

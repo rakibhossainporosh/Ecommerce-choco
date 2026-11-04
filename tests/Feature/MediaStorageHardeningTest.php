@@ -176,7 +176,7 @@ test('4. Safe/generated storage paths are used for newly uploaded media', functi
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$vFile])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasNoErrors();
 
     $variantMedia = $variant->media()->first();
@@ -236,7 +236,7 @@ test('6. Allowed image types JPEG, JPG, PNG, WebP are accepted', function () {
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$jpg, $png, $webp])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasNoErrors();
 
     expect($variant->media()->count())->toBe(3);
@@ -259,7 +259,7 @@ test('7. Files above 5 MB remain strictly rejected', function () {
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$oversizedFile])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasErrors(['uploads.0']);
 
     expect($variant->media()->count())->toBe(0);
@@ -283,17 +283,17 @@ test('8. Invalid non-image uploads like PDF, TXT, PHP are rejected', function ()
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$pdf])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasErrors(['uploads.0']);
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$php])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasErrors(['uploads.0']);
 
     Livewire::test(VariantMediaManager::class, ['variant' => $variant])
         ->set('uploads', [$svg])
-        ->call('upload')
+        ->call('savePhotos')
         ->assertHasErrors(['uploads.0']);
 
     expect($variant->media()->count())->toBe(0);

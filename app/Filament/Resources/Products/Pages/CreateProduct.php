@@ -16,6 +16,13 @@ class CreateProduct extends CreateRecord
 
     protected static string $resource = ProductResource::class;
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $extraBodyAttributes = [
+        'class' => 'fi-unified-record-form-page',
+    ];
+
     protected function handleRecordCreation(array $data): Model
     {
         return DB::transaction(function () use ($data) {

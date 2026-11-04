@@ -68,40 +68,39 @@ class MediaRelationManager extends RelationManager
             ->recordTitleAttribute('original_name')
             ->defaultSort('sort_order', 'asc')
             ->reorderable('sort_order')
-            ->contentGrid([
-                'default' => 1,
-                'sm' => 2,
-                'md' => 3,
-                'lg' => 4,
-                'xl' => 4,
-            ])
+            ->striped()
             ->columns([
-                ImageColumn::make('path')
+                ImageColumn::make('preview')
                     ->label('Preview')
-                    ->disk('public')
-                    ->height('160px')
+                    ->state(fn (Media $record): ?string => filled($record->path) ? $record->url() : null)
+                    ->height(48)
+                    ->width(48)
                     ->extraImgAttributes([
-                        'class' => 'rounded-lg object-cover w-full shadow-sm',
+                        'class' => 'rounded-md object-cover',
                         'loading' => 'lazy',
                     ]),
 
                 TextColumn::make('is_primary')
                     ->label('Status')
                     ->badge()
+                    ->alignCenter()
                     ->color(fn (bool $state): string => $state ? 'success' : 'gray')
-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Primary Image' : 'Gallery Image')
-                    ->weight(FontWeight::Bold),
+                    ->formatStateUsing(fn (bool $state): string => $state ? __('Primary Image') : __('Gallery Image'))
+                    ->weight(FontWeight::Medium),
 
                 TextColumn::make('sort_order')
                     ->label('Order')
+                    ->alignCenter()
                     ->formatStateUsing(fn (int $state): string => "#{$state}")
                     ->color('gray')
                     ->sortable(),
 
                 TextColumn::make('alt_text')
                     ->label('Alt Text')
+                    ->alignCenter()
                     ->placeholder(__('No alt text added'))
                     ->limit(40)
+                    ->wrap()
                     ->color('gray'),
             ])
             ->headerActions([

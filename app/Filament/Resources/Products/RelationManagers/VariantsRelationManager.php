@@ -141,22 +141,26 @@ class VariantsRelationManager extends RelationManager
             ->columns([
                 ImageColumn::make('primary_image')
                     ->label('Image')
+                    ->alignCenter()
                     ->state(fn (ProductVariant $record): ?string => $record->getResolvedPrimaryMedia()?->url())
                     ->circular(),
 
                 TextColumn::make('sku')
                     ->label('SKU')
+                    ->alignCenter()
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('name')
                     ->label('Variant Name')
+                    ->alignCenter()
                     ->placeholder(__('—'))
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('media_status')
                     ->label('Media')
+                    ->alignCenter()
                     ->state(function (ProductVariant $record): string {
                         $count = $record->media()->count();
 
@@ -167,15 +171,18 @@ class VariantsRelationManager extends RelationManager
 
                 TextColumn::make('unit.name')
                     ->label('Unit')
+                    ->alignCenter()
                     ->sortable(),
 
                 TextColumn::make('selling_price')
                     ->label('Selling Price')
+                    ->alignCenter()
                     ->money('BDT')
                     ->sortable(),
 
                 TextColumn::make('inventory.quantity')
                     ->label('Stock')
+                    ->alignCenter()
                     ->placeholder(__('0'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('quantity')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
@@ -185,6 +192,7 @@ class VariantsRelationManager extends RelationManager
 
                 TextColumn::make('inventory.low_stock_threshold')
                     ->label('Threshold')
+                    ->alignCenter()
                     ->placeholder(__('0'))
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy(
                         Inventory::select('low_stock_threshold')->whereColumn('inventories.product_variant_id', 'product_variants.id'),
@@ -194,6 +202,7 @@ class VariantsRelationManager extends RelationManager
 
                 TextColumn::make('stock_status')
                     ->label('Status')
+                    ->alignCenter()
                     ->state(function (ProductVariant $record): string {
                         $inventory = $record->inventory;
 
@@ -225,11 +234,13 @@ class VariantsRelationManager extends RelationManager
 
                 IconColumn::make('is_default')
                     ->label('Default')
+                    ->alignCenter()
                     ->boolean()
                     ->sortable(),
 
                 IconColumn::make('is_active')
                     ->label('Active')
+                    ->alignCenter()
                     ->boolean()
                     ->sortable(),
             ])

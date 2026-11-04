@@ -1,146 +1,152 @@
-<div class="space-y-4">
-    {{-- Header Summary --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-        <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                {{ $variant->name ? $variant->name . ' (' . $variant->sku . ')' : $variant->sku }}
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ __('Stock change history. These rows are kept and are not deleted.') }}
-            </p>
-        </div>
-        <div class="flex items-center gap-2 text-xs">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                {{ __('Current Stock:') }} <strong class="ml-1">{{ $variant->inventory?->quantity ?? 0 }}</strong>
+<div class="variant-stock-history">
+    {{-- Summary strip — variant name lives in the Filament modal heading --}}
+    <div class="vsh-header">
+        <p class="vsh-subtitle">
+            {{ __('Stock change history. These rows are kept and are not deleted.') }}
+        </p>
+        <div class="vsh-stats" role="group" aria-label="{{ __('Stock summary') }}">
+            <span class="vsh-stat">
+                {{ __('Current Stock') }}
+                <strong>{{ $variant->inventory?->quantity ?? 0 }}</strong>
             </span>
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                {{ __('Threshold:') }} <strong class="ml-1">{{ $variant->inventory?->low_stock_threshold ?? 0 }}</strong>
+            <span class="vsh-stat">
+                {{ __('Threshold') }}
+                <strong>{{ $variant->inventory?->low_stock_threshold ?? 0 }}</strong>
             </span>
         </div>
     </div>
 
-    {{-- Movement Ledger Table --}}
-    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-        <table class="w-full text-left text-xs divide-y divide-gray-200 dark:divide-gray-800">
-            <thead class="bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
-                <tr>
-                    <th scope="col" class="px-3.5 py-3">{{ __('Date') }}</th>
-                    <th scope="col" class="px-3.5 py-3">{{ __('Type') }}</th>
-                    <th scope="col" class="px-3.5 py-3 text-right">{{ __('Before') }}</th>
-                    <th scope="col" class="px-3.5 py-3 text-right">{{ __('Change') }}</th>
-                    <th scope="col" class="px-3.5 py-3 text-right">{{ __('After') }}</th>
-                    <th scope="col" class="px-3.5 py-3">{{ __('Reason') }}</th>
-                    <th scope="col" class="px-3.5 py-3">{{ __('Note') }}</th>
-                    <th scope="col" class="px-3.5 py-3">{{ __('User') }}</th>
-                    <th scope="col" class="px-3.5 py-3">{{ __('Reference') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
-                @forelse ($movements as $movement)
-                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition">
-                        {{-- 1. Date --}}
-                        <td class="px-3.5 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400 font-mono">
-                            {{ $movement->created_at?->format('Y-m-d H:i:s') ?? '—' }}
-                        </td>
+    <div class="vsh-ledger">
+        <div class="vsh-ledger-bar">
+            <h3 class="vsh-ledger-title">{{ __('Inventory Movement Ledger') }}</h3>
+            @if ($movements->total() > 0)
+                <span class="vsh-count">
+                    {{ trans_choice(':count record|:count records', $movements->total(), ['count' => $movements->total()]) }}
+                </span>
+            @endif
+        </div>
 
-                        {{-- 2. Type --}}
-                        <td class="px-3.5 py-3 whitespace-nowrap">
+        @if ($movements->isEmpty())
+            <div class="vsh-empty-card" role="status">
+                <svg class="vsh-empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="vsh-empty-title">{{ __('No movements yet') }}</p>
+                <p class="vsh-empty-text">{{ __('No inventory movements recorded yet for this variant.') }}</p>
+            </div>
+        @else
+            <div class="vsh-table-wrap">
+                <table class="vsh-table">
+                    <colgroup>
+                        <col class="vsh-col-date" />
+                        <col class="vsh-col-type" />
+                        <col class="vsh-col-num" />
+                        <col class="vsh-col-num" />
+                        <col class="vsh-col-num" />
+                        <col class="vsh-col-text" />
+                        <col class="vsh-col-text" />
+                        <col class="vsh-col-user" />
+                        <col class="vsh-col-ref" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ __('Date') }}</th>
+                            <th scope="col">{{ __('Type') }}</th>
+                            <th scope="col" class="vsh-num">{{ __('Before') }}</th>
+                            <th scope="col" class="vsh-num">{{ __('Change') }}</th>
+                            <th scope="col" class="vsh-num">{{ __('After') }}</th>
+                            <th scope="col">{{ __('Reason') }}</th>
+                            <th scope="col">{{ __('Note') }}</th>
+                            <th scope="col">{{ __('User') }}</th>
+                            <th scope="col">{{ __('Reference') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($movements as $movement)
                             @php
                                 $typeVal = is_object($movement->type) ? $movement->type->value : (string) $movement->type;
                                 $isOpening = $typeVal === \App\Enums\InventoryMovementType::Opening->value;
                                 $isAdjustIn = $typeVal === \App\Enums\InventoryMovementType::AdjustmentIn->value;
                                 $isAdjustOut = $typeVal === \App\Enums\InventoryMovementType::AdjustmentOut->value;
                             @endphp
+                            <tr>
+                                <td class="vsh-mono vsh-muted">
+                                    {{ $movement->created_at?->format('Y-m-d H:i:s') ?? '—' }}
+                                </td>
 
-                            @if ($isOpening)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                    {{ \App\Enums\InventoryMovementType::Opening->label() }}
-                                </span>
-                            @elseif ($isAdjustIn)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                    {{ \App\Enums\InventoryMovementType::AdjustmentIn->label() }}
-                                </span>
-                            @elseif ($isAdjustOut)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                                    {{ \App\Enums\InventoryMovementType::AdjustmentOut->label() }}
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
-                                    {{ $typeVal }}
-                                </span>
-                            @endif
-                        </td>
+                                <td>
+                                    @if ($isOpening)
+                                        <span class="vsh-badge vsh-badge-info">
+                                            {{ \App\Enums\InventoryMovementType::Opening->label() }}
+                                        </span>
+                                    @elseif ($isAdjustIn)
+                                        <span class="vsh-badge vsh-badge-success">
+                                            {{ \App\Enums\InventoryMovementType::AdjustmentIn->label() }}
+                                        </span>
+                                    @elseif ($isAdjustOut)
+                                        <span class="vsh-badge vsh-badge-danger">
+                                            {{ \App\Enums\InventoryMovementType::AdjustmentOut->label() }}
+                                        </span>
+                                    @else
+                                        <span class="vsh-badge vsh-badge-muted">
+                                            {{ $typeVal }}
+                                        </span>
+                                    @endif
+                                </td>
 
-                        {{-- 3. Before --}}
-                        <td class="px-3.5 py-3 whitespace-nowrap text-right font-mono">
-                            {{ $movement->quantity_before }}
-                        </td>
+                                <td class="vsh-num vsh-mono">
+                                    {{ $movement->quantity_before }}
+                                </td>
 
-                        {{-- 4. Change --}}
-                        <td class="px-3.5 py-3 whitespace-nowrap text-right font-mono font-semibold">
-                            @if ($isAdjustOut)
-                                <span class="text-rose-600 dark:text-rose-400">-{{ $movement->quantity }}</span>
-                            @else
-                                <span class="text-emerald-600 dark:text-emerald-400">+{{ $movement->quantity }}</span>
-                            @endif
-                        </td>
+                                <td class="vsh-num vsh-mono vsh-change">
+                                    @if ($isAdjustOut)
+                                        <span class="vsh-delta-out">-{{ $movement->quantity }}</span>
+                                    @else
+                                        <span class="vsh-delta-in">+{{ $movement->quantity }}</span>
+                                    @endif
+                                </td>
 
-                        {{-- 5. After --}}
-                        <td class="px-3.5 py-3 whitespace-nowrap text-right font-mono font-bold text-gray-900 dark:text-white">
-                            {{ $movement->quantity_after }}
-                        </td>
+                                <td class="vsh-num vsh-mono vsh-after">
+                                    {{ $movement->quantity_after }}
+                                </td>
 
-                        {{-- 6. Reason --}}
-                        <td class="px-3.5 py-3 text-gray-600 dark:text-gray-300 max-w-xs truncate" title="{{ $movement->reason }}">
-                            {{ $movement->reason ?: '—' }}
-                        </td>
+                                <td class="vsh-truncate" title="{{ $movement->reason }}">
+                                    {{ $movement->reason ?: '—' }}
+                                </td>
 
-                        {{-- 7. Note --}}
-                        <td class="px-3.5 py-3 text-gray-500 dark:text-gray-400 max-w-xs truncate" title="{{ $movement->note }}">
-                            {{ $movement->note ?: '—' }}
-                        </td>
+                                <td class="vsh-truncate vsh-muted" title="{{ $movement->note }}">
+                                    {{ $movement->note ?: '—' }}
+                                </td>
 
-                        {{-- 8. User --}}
-                        <td class="px-3.5 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                            @if ($movement->creator)
-                                <span class="font-medium">{{ $movement->creator->name }}</span>
-                            @elseif ($movement->created_by)
-                                <span class="text-gray-400 dark:text-gray-500">{{ __('User #:id', ['id' => $movement->created_by]) }}</span>
-                            @else
-                                <span class="text-gray-400 dark:text-gray-500">{{ __('System') }}</span>
-                            @endif
-                        </td>
+                                <td>
+                                    @if ($movement->creator)
+                                        <span class="vsh-user">{{ $movement->creator->name }}</span>
+                                    @elseif ($movement->created_by)
+                                        <span class="vsh-muted">{{ __('User #:id', ['id' => $movement->created_by]) }}</span>
+                                    @else
+                                        <span class="vsh-muted">{{ __('System') }}</span>
+                                    @endif
+                                </td>
 
-                        {{-- 9. Reference --}}
-                        <td class="px-3.5 py-3 whitespace-nowrap">
-                            @if ($movement->reference_type && $movement->reference_id)
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[11px] bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                                    {{ class_basename($movement->reference_type) }} #{{ $movement->reference_id }}
-                                </span>
-                            @else
-                                <span class="text-gray-400 dark:text-gray-500">—</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="9" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                            <div class="flex flex-col items-center justify-center space-y-1">
-                                <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p class="text-sm font-medium">{{ __('No inventory movements recorded yet for this variant.') }}</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                                <td>
+                                    @if ($movement->reference_type && $movement->reference_id)
+                                        <span class="vsh-ref">
+                                            {{ class_basename($movement->reference_type) }} #{{ $movement->reference_id }}
+                                        </span>
+                                    @else
+                                        <span class="vsh-muted">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
 
-        {{-- Pagination --}}
-        @if ($movements->hasPages())
-            <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
-                {{ $movements->links() }}
+                @if ($movements->hasPages())
+                    <div class="vsh-pagination">
+                        {{ $movements->links() }}
+                    </div>
+                @endif
             </div>
         @endif
     </div>

@@ -105,7 +105,9 @@ test('1. Admin can access history action and view movement history component', f
     Livewire::test(VariantStockHistory::class, ['variant' => $variant])
         ->assertSuccessful()
         ->assertSee('Inventory Movement Ledger')
-        ->assertSee('20');
+        ->assertSee('1 record')
+        ->assertSee('20')
+        ->assertDontSee('No movements yet');
 });
 
 test('2. Manager can access history action and view movement history component', function () {
@@ -354,6 +356,26 @@ test('10. Reference displays dash placeholder when null', function () {
     Livewire::test(VariantStockHistory::class, ['variant' => $variant])
         ->assertSuccessful()
         ->assertSee('—');
+});
+
+test('10b. Empty ledger shows dedicated empty state without table chrome', function () {
+    [$product, $variant] = createHistoryTestProductWithVariant();
+    Inventory::createForVariant($variant, 0, 5);
+
+    $admin = User::factory()->create(['can_access_admin_panel' => true]);
+    $admin->assignRole('Admin');
+
+    $this->actingAs($admin);
+
+    expect($variant->inventoryMovements()->count())->toBe(0);
+
+    Livewire::test(VariantStockHistory::class, ['variant' => $variant])
+        ->assertSuccessful()
+        ->assertSee('Inventory Movement Ledger')
+        ->assertSee('No movements yet')
+        ->assertSee('No inventory movements recorded yet for this variant.')
+        ->assertDontSeeHtml('<table class="vsh-table">')
+        ->assertDontSee('1 record');
 });
 
 /*
