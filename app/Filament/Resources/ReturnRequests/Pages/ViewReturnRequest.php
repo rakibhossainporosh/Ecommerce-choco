@@ -18,6 +18,13 @@ class ViewReturnRequest extends ViewRecord
 {
     protected static string $resource = ReturnRequestResource::class;
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $extraBodyAttributes = [
+        'class' => 'fi-unified-record-form-page',
+    ];
+
     public function getMaxContentWidth(): Width|string|null
     {
         return Width::Full;

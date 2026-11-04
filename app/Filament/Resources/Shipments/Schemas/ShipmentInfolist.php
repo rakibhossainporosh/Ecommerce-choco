@@ -8,6 +8,7 @@ use App\Models\Shipment;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class ShipmentInfolist
 {
@@ -21,12 +22,17 @@ class ShipmentInfolist
         );
 
         return $schema
+            ->columns(1)
+            ->extraAttributes(['class' => 'fi-unified-record-form'])
             ->components([
                 Section::make('Consignment & Carrier')
+                    ->icon(Heroicon::OutlinedTruck)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
-                        'md' => 4,
+                        'md' => 2,
+                        'lg' => 4,
                     ])
                     ->schema([
                         TextEntry::make('shipment_number')
@@ -85,14 +91,21 @@ class ShipmentInfolist
 
                         TextEntry::make('dispatchedBy.name')
                             ->label('Fulfillment Officer')
-                            ->placeholder(__('System')),
+                            ->placeholder(__('System'))
+                            ->columnSpan([
+                                'md' => 2,
+                                'lg' => 4,
+                            ]),
                     ]),
 
                 Section::make('Recipient & Delivery Destination')
+                    ->icon(Heroicon::OutlinedMapPin)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
-                        'md' => 3,
+                        'md' => 2,
+                        'lg' => 4,
                     ])
                     ->schema([
                         TextEntry::make('recipient_name')
@@ -105,7 +118,10 @@ class ShipmentInfolist
 
                         TextEntry::make('shipping_address_line')
                             ->label('Delivery Street Address')
-                            ->columnSpanFull(),
+                            ->columnSpan([
+                                'md' => 2,
+                                'lg' => 2,
+                            ]),
 
                         TextEntry::make('shipping_area')
                             ->label('Area / Thana')
@@ -123,10 +139,13 @@ class ShipmentInfolist
                     ]),
 
                 Section::make('Milestone Timestamps')
+                    ->icon(Heroicon::OutlinedClock)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
-                        'md' => 4,
+                        'md' => 2,
+                        'lg' => 4,
                     ])
                     ->schema([
                         TextEntry::make('created_at')

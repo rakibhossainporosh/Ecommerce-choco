@@ -91,7 +91,9 @@ class AddressesRelationManager extends RelationManager
                 TextColumn::make('type')
                     ->label('Type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->grow()
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->color(fn (string $state): string => match (strtolower($state)) {
                         'shipping' => 'info',
                         'billing' => 'warning',
                         default => 'gray',
@@ -99,21 +101,31 @@ class AddressesRelationManager extends RelationManager
 
                 TextColumn::make('address_line')
                     ->label('Address')
-                    ->limit(40),
+                    ->limit(40)
+                    ->alignCenter()
+                    ->grow(),
 
                 TextColumn::make('area')
-                    ->label('Area'),
+                    ->label('Area')
+                    ->alignCenter()
+                    ->grow(),
 
                 TextColumn::make('city')
-                    ->label('City'),
+                    ->label('City')
+                    ->alignCenter()
+                    ->grow(),
 
                 TextColumn::make('postcode')
                     ->label('Postcode')
-                    ->placeholder(__('—')),
+                    ->placeholder(__('—'))
+                    ->alignCenter()
+                    ->grow(),
 
                 IconColumn::make('is_default')
                     ->label('Default')
-                    ->boolean(),
+                    ->boolean()
+                    ->alignCenter()
+                    ->grow(),
             ])
             ->headerActions([
                 CreateAction::make(),

@@ -7,15 +7,24 @@ use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class ActivityInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
+            ->extraAttributes(['class' => 'fi-unified-record-form'])
             ->components([
                 Section::make('Activity Details')
-                    ->columns(2)
+                    ->icon(Heroicon::OutlinedClipboardDocumentList)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
+                    ->columns([
+                        'default' => 1,
+                        'md' => 2,
+                    ])
                     ->schema([
                         TextEntry::make('log_name')
                             ->badge()
@@ -48,6 +57,13 @@ class ActivityInfolist
                         TextEntry::make('created_at')->dateTime(),
                     ]),
                 Section::make('Properties')
+                    ->icon(Heroicon::OutlinedQueueList)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
+                    ->columns([
+                        'default' => 1,
+                        'md' => 2,
+                    ])
                     ->schema([
                         KeyValueEntry::make('properties.attributes')
                             ->label('New Attributes'),

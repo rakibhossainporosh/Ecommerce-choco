@@ -7,6 +7,7 @@ use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class CustomerInfolist
 {
@@ -20,12 +21,17 @@ class CustomerInfolist
         );
 
         return $schema
+            ->columns(1)
+            ->extraAttributes(['class' => 'fi-unified-record-form'])
             ->components([
                 Section::make('Customer Profile')
+                    ->description(__('Identity, contact details, and optional linked store account.'))
+                    ->icon(Heroicon::OutlinedUser)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
-                        'md' => 3,
+                        'md' => 2,
                     ])
                     ->schema([
                         TextEntry::make('name')
@@ -40,13 +46,13 @@ class CustomerInfolist
                             ->label('Email Address')
                             ->placeholder(__('No email registered')),
 
-                        IconEntry::make('is_active')
-                            ->label('Status')
-                            ->boolean(),
-
                         TextEntry::make('user.email')
                             ->label('Storefront Account')
                             ->placeholder(__('Guest / Not registered')),
+
+                        IconEntry::make('is_active')
+                            ->label('Status')
+                            ->boolean(),
 
                         TextEntry::make('created_at')
                             ->label('Customer Since')
@@ -59,9 +65,13 @@ class CustomerInfolist
                     ]),
 
                 Section::make('Commerce Summary')
+                    ->description(__('Order volume and lifetime value for this customer.'))
+                    ->icon(Heroicon::OutlinedChartBar)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
+                        'md' => 2,
                     ])
                     ->schema([
                         TextEntry::make('orders_count')
@@ -78,9 +88,13 @@ class CustomerInfolist
                     ]),
 
                 Section::make('Default Addresses')
+                    ->description(__('Preferred shipping and billing destinations.'))
+                    ->icon(Heroicon::OutlinedMapPin)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
+                        'md' => 2,
                     ])
                     ->schema([
                         TextEntry::make('default_shipping_address')

@@ -8,6 +8,7 @@ use App\Support\PaymentMethodPresenter;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class PaymentInfolist
 {
@@ -21,12 +22,16 @@ class PaymentInfolist
         );
 
         return $schema
+            ->columns(1)
+            ->extraAttributes(['class' => 'fi-unified-record-form'])
             ->components([
                 Section::make('Transaction Overview')
+                    ->icon(Heroicon::OutlinedBanknotes)
                     ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
+                        'md' => 2,
                         'lg' => 4,
                     ])
                     ->schema([

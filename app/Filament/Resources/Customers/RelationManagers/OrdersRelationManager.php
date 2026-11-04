@@ -36,11 +36,14 @@ class OrdersRelationManager extends RelationManager
                     ->label('Order #')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->grow(),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
+                    ->alignCenter()
+                    ->grow()
                     ->color(fn ($state): string => match ($state instanceof OrderStatus ? $state : OrderStatus::tryFrom((string) $state)) {
                         OrderStatus::Pending => 'warning',
                         OrderStatus::Confirmed => 'info',
@@ -54,6 +57,8 @@ class OrdersRelationManager extends RelationManager
                 TextColumn::make('payment_status')
                     ->label('Payment')
                     ->badge()
+                    ->alignCenter()
+                    ->grow()
                     ->color(fn ($state): string => match ($state instanceof PaymentStatus ? $state : PaymentStatus::tryFrom((string) $state)) {
                         PaymentStatus::Paid => 'success',
                         PaymentStatus::Unpaid => 'danger',
@@ -65,11 +70,15 @@ class OrdersRelationManager extends RelationManager
                 TextColumn::make('grand_total')
                     ->label('Grand Total')
                     ->formatStateUsing($currencyFormat)
+                    ->alignCenter()
+                    ->grow()
                     ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Placed At')
                     ->dateTime('M j, Y H:i')
+                    ->alignCenter()
+                    ->grow()
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')

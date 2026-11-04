@@ -5,9 +5,9 @@ namespace App\Filament\Resources\ReturnRequests\Schemas;
 use App\Models\ReturnRequest;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class ReturnRequestInfolist
 {
@@ -22,12 +22,15 @@ class ReturnRequestInfolist
 
         return $schema
             ->columns(1)
+            ->extraAttributes(['class' => 'fi-unified-record-form'])
             ->components([
                 Section::make('Return Request Information')
+                    ->icon(Heroicon::OutlinedArrowUturnLeft)
                     ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->columns([
                         'default' => 1,
-                        'sm' => 2,
+                        'md' => 2,
                         'lg' => 3,
                     ])
                     ->schema([
@@ -74,73 +77,72 @@ class ReturnRequestInfolist
                             ->columnSpanFull(),
                     ]),
 
-                Grid::make([
-                    'default' => 1,
-                    'lg' => 2,
-                ])
+                Section::make('Returned Items')
+                    ->icon(Heroicon::OutlinedArchiveBox)
                     ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
                     ->schema([
-                        Section::make('Returned Items')
+                        RepeatableEntry::make('items')
+                            ->hiddenLabel()
+                            ->placeholder(__('Full order return — no line items recorded.'))
                             ->schema([
-                                RepeatableEntry::make('items')
-                                    ->hiddenLabel()
-                                    ->placeholder(__('Full order return — no line items recorded.'))
-                                    ->schema([
-                                        TextEntry::make('orderItem.product_name')
-                                            ->label('Product')
-                                            ->state(fn ($record): string => $record->orderItem?->variant_name
-                                                ?: $record->orderItem?->product_name
-                                                ?: '—'),
+                                TextEntry::make('orderItem.product_name')
+                                    ->label('Product')
+                                    ->state(fn ($record): string => $record->orderItem?->variant_name
+                                        ?: $record->orderItem?->product_name
+                                        ?: '—'),
 
-                                        TextEntry::make('quantity')
-                                            ->label('Qty'),
+                                TextEntry::make('quantity')
+                                    ->label('Qty'),
 
-                                        TextEntry::make('refund_amount')
-                                            ->label('Line Refund')
-                                            ->formatStateUsing($currencyFormat),
-                                    ])
-                                    ->columns([
-                                        'default' => 1,
-                                        'md' => 3,
-                                    ]),
+                                TextEntry::make('refund_amount')
+                                    ->label('Line Refund')
+                                    ->formatStateUsing($currencyFormat),
                             ])
-                            ->collapsed(false),
+                            ->columns([
+                                'default' => 1,
+                                'md' => 3,
+                            ]),
+                    ])
+                    ->collapsed(false),
 
-                        Section::make('Status Timeline')
+                Section::make('Status Timeline')
+                    ->icon(Heroicon::OutlinedClock)
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'fi-unified-record-section'])
+                    ->schema([
+                        RepeatableEntry::make('statusHistories')
+                            ->hiddenLabel()
+                            ->placeholder(__('No status history yet.'))
                             ->schema([
-                                RepeatableEntry::make('statusHistories')
-                                    ->hiddenLabel()
-                                    ->placeholder(__('No status history yet.'))
-                                    ->schema([
-                                        TextEntry::make('created_at')
-                                            ->label('When')
-                                            ->dateTime('M j, Y H:i'),
+                                TextEntry::make('created_at')
+                                    ->label('When')
+                                    ->dateTime('M j, Y H:i'),
 
-                                        TextEntry::make('from_status')
-                                            ->label('From')
-                                            ->badge()
-                                            ->placeholder('—'),
+                                TextEntry::make('from_status')
+                                    ->label('From')
+                                    ->badge()
+                                    ->placeholder('—'),
 
-                                        TextEntry::make('to_status')
-                                            ->label('To')
-                                            ->badge(),
+                                TextEntry::make('to_status')
+                                    ->label('To')
+                                    ->badge(),
 
-                                        TextEntry::make('changedBy.name')
-                                            ->label('By')
-                                            ->placeholder(__('System / Customer')),
+                                TextEntry::make('changedBy.name')
+                                    ->label('By')
+                                    ->placeholder(__('System / Customer')),
 
-                                        TextEntry::make('reason')
-                                            ->label('Note')
-                                            ->placeholder('—')
-                                            ->columnSpanFull(),
-                                    ])
-                                    ->columns([
-                                        'default' => 1,
-                                        'md' => 2,
-                                    ]),
+                                TextEntry::make('reason')
+                                    ->label('Note')
+                                    ->placeholder('—')
+                                    ->columnSpanFull(),
                             ])
-                            ->collapsed(false),
-                    ]),
+                            ->columns([
+                                'default' => 1,
+                                'md' => 2,
+                            ]),
+                    ])
+                    ->collapsed(false),
             ]);
     }
 }
