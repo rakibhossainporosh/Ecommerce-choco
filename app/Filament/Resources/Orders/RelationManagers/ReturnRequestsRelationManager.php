@@ -174,15 +174,25 @@ class ReturnRequestsRelationManager extends RelationManager
 
                         return $data;
                     })
-                    ->using(function (array $data) use ($order): ReturnRequest {
+                    ->using(function (array $data, CreateAction $action) use ($order): ReturnRequest {
                         $lineItems = $data['line_items'] ?? [];
                         unset($data['line_items']);
 
-                        return ReturnRequest::createPendingForOrder(
-                            $order,
-                            $data,
-                            is_array($lineItems) ? $lineItems : [],
-                        );
+                        try {
+                            return ReturnRequest::createPendingForOrder(
+                                $order,
+                                $data,
+                                is_array($lineItems) ? $lineItems : [],
+                            );
+                        } catch (DomainException $exception) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Return Request Failed'))
+                                ->body($exception->getMessage())
+                                ->send();
+
+                            $action->halt();
+                        }
                     }),
             ])
             ->recordActions([

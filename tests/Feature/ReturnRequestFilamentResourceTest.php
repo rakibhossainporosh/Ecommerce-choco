@@ -58,6 +58,32 @@ test('can create return request via modal', function () {
     ]);
 });
 
+test('creating return request for order with open return shows toast instead of server error', function () {
+    $this->actingAs($this->admin);
+
+    $order = Order::factory()->create(['grand_total' => 500, 'status' => OrderStatus::Delivered]);
+    ReturnRequest::factory()->create([
+        'order_id' => $order->id,
+        'status' => ReturnRequestStatus::Pending,
+        'refund_amount' => 100,
+    ]);
+    $user = User::factory()->create();
+
+    Livewire::test(ListReturnRequests::class)
+        ->callAction('create', [
+            'order_id' => $order->id,
+            'user_id' => $user->id,
+            'reason' => 'Duplicate open return attempt',
+            'admin_note' => null,
+            'refund_amount' => 100,
+            'line_items' => [],
+        ])
+        ->assertNotified('Return Request Failed')
+        ->assertSuccessful();
+
+    expect(ReturnRequest::query()->where('order_id', $order->id)->count())->toBe(1);
+});
+
 test('can approve return request via lifecycle action', function () {
     $order = Order::factory()->create(['grand_total' => 100, 'status' => OrderStatus::Delivered]);
     $returnRequest = ReturnRequest::factory()->create([

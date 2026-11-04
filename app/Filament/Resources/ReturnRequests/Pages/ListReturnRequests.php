@@ -6,7 +6,9 @@ use App\Enums\ReturnRequestStatus;
 use App\Filament\Resources\ReturnRequests\ReturnRequestResource;
 use App\Models\Order;
 use App\Models\ReturnRequest;
+use DomainException;
 use Filament\Actions\CreateAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Support\Enums\Width;
@@ -28,17 +30,27 @@ class ListReturnRequests extends ListRecords
                 ->modalDescription(__('Enter transaction and defect details to record a return request against an order.'))
                 ->modalIcon(Heroicon::OutlinedArrowUturnLeft)
                 ->modalWidth(Width::TwoExtraLarge)
-                ->using(function (array $data): Model {
+                ->using(function (array $data, CreateAction $action): Model {
                     $lineItems = $data['line_items'] ?? [];
                     unset($data['line_items'], $data['status']);
 
                     $order = Order::with('items')->findOrFail($data['order_id']);
 
-                    return ReturnRequest::createPendingForOrder(
-                        $order,
-                        $data,
-                        is_array($lineItems) ? $lineItems : [],
-                    );
+                    try {
+                        return ReturnRequest::createPendingForOrder(
+                            $order,
+                            $data,
+                            is_array($lineItems) ? $lineItems : [],
+                        );
+                    } catch (DomainException $exception) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Return Request Failed'))
+                            ->body($exception->getMessage())
+                            ->send();
+
+                        $action->halt();
+                    }
                 }),
         ];
     }
