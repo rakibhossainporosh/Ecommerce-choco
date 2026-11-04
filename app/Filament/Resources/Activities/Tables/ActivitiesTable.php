@@ -3,9 +3,6 @@
 namespace App\Filament\Resources\Activities\Tables;
 
 use App\Support\UiText;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -67,12 +64,9 @@ class ActivitiesTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                DeleteAction::make(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                //
             ]);
     }
 }

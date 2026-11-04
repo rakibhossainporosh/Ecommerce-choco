@@ -8,8 +8,10 @@ use App\Models\ReturnRequest;
 use App\Models\User;
 use App\Observers\OrderObserver;
 use App\Observers\ReturnRequestObserver;
+use App\Policies\ActivityPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
 
             return null;
         });
+
+        // Spatie's Activity model lives outside App\Models, so auto-discovery cannot map it.
+        Gate::policy(Activity::class, ActivityPolicy::class);
 
         Order::observe(OrderObserver::class);
         ReturnRequest::observe(ReturnRequestObserver::class);

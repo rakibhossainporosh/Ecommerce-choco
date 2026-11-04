@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
 class ActivityResource extends Resource
@@ -55,7 +56,34 @@ class ActivityResource extends Resource
         ];
     }
 
+    /**
+     * Activity logs are immutable audit records; creation is system-driven only.
+     */
     public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Activity logs must never be edited; tampering would invalidate the audit trail.
+     */
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    /**
+     * Activity logs must never be deleted from the admin panel.
+     */
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    /**
+     * Bulk deletion of activity logs is prohibited.
+     */
+    public static function canDeleteAny(): bool
     {
         return false;
     }
