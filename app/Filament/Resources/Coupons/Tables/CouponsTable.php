@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Coupons\Tables;
 
 use App\Enums\CouponType;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
@@ -66,6 +67,7 @@ class CouponsTable
             ->actions([
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 }

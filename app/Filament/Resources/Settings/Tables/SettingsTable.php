@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Settings\Tables;
 
 use App\Enums\SettingType;
 use App\Models\Setting;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
@@ -66,6 +67,7 @@ class SettingsTable
             ->actions([
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->paginated(! app()->runningUnitTests())
             ->defaultSort('group', 'asc');

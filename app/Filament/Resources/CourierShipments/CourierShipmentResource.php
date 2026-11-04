@@ -6,6 +6,7 @@ use App\Enums\CourierShipmentStatus;
 use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\CourierShipments\Schemas\CourierShipmentForm;
 use App\Models\CourierShipment;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -93,6 +94,7 @@ class CourierShipmentResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
                 //

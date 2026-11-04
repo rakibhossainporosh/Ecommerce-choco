@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Couriers;
 use App\Filament\Concerns\TranslatesResourceNavigation;
 use App\Filament\Resources\Couriers\Schemas\CourierForm;
 use App\Models\Courier;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -70,6 +71,7 @@ class CourierResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
                 //

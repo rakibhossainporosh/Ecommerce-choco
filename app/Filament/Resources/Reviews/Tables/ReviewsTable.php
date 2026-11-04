@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Reviews\Tables;
 
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -100,6 +101,7 @@ class ReviewsTable
                     }),
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
                 BulkAction::make('approve_selected')
