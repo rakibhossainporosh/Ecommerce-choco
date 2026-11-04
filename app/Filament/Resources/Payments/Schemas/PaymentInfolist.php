@@ -23,10 +23,11 @@ class PaymentInfolist
         return $schema
             ->components([
                 Section::make('Transaction Overview')
+                    ->columnSpanFull()
                     ->columns([
                         'default' => 1,
                         'sm' => 2,
-                        'md' => 4,
+                        'lg' => 4,
                     ])
                     ->schema([
                         TextEntry::make('payment_number')
