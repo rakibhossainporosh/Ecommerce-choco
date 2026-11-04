@@ -7,6 +7,7 @@ use App\Filament\Resources\Coupons\CouponResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Enums\Width;
 
 class EditCoupon extends EditRecord
 {
@@ -20,6 +21,11 @@ class EditCoupon extends EditRecord
     protected array $extraBodyAttributes = [
         'class' => 'fi-unified-record-form-page',
     ];
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
 
     protected function getHeaderActions(): array
     {

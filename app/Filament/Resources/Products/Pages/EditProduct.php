@@ -10,6 +10,7 @@ use App\Models\Product;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +26,11 @@ class EditProduct extends EditRecord
     protected array $extraBodyAttributes = [
         'class' => 'fi-unified-record-form-page',
     ];
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
 
     protected function getHeaderActions(): array
     {

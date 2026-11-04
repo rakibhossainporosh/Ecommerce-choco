@@ -6,6 +6,7 @@ use App\Enums\SettingType;
 use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Settings\SettingResource;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Support\Enums\Width;
 
 class CreateSetting extends CreateRecord
 {
@@ -19,6 +20,11 @@ class CreateSetting extends CreateRecord
     protected array $extraBodyAttributes = [
         'class' => 'fi-unified-record-form-page',
     ];
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {

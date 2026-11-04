@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Coupons\Pages;
 use App\Filament\Concerns\HasDescriptiveNotifications;
 use App\Filament\Resources\Coupons\CouponResource;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Support\Enums\Width;
 
 class CreateCoupon extends CreateRecord
 {
@@ -18,4 +19,9 @@ class CreateCoupon extends CreateRecord
     protected array $extraBodyAttributes = [
         'class' => 'fi-unified-record-form-page',
     ];
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
 }
