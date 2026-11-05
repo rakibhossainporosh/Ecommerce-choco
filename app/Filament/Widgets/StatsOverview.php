@@ -2,14 +2,26 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\CourierShipmentStatus;
+use App\Enums\ReturnRequestStatus;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Coupon;
+use App\Models\CourierShipment;
 use App\Models\Customer;
 use App\Models\Inventory;
 use App\Models\Order;
+use App\Models\Payment;
+use App\Models\Product;
+use App\Models\ReturnRequest;
+use App\Models\Review;
+use App\Support\AdminDashboard;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Models\Activity;
 
 class StatsOverview extends BaseWidget
 {
@@ -17,14 +29,12 @@ class StatsOverview extends BaseWidget
 
     public static function canView(): bool
     {
-        $user = auth()->user();
-
-        return (bool) ($user?->can('orders.view') || $user?->can('reports.view') || $user?->can('customers.view') || $user?->can('inventory.view'));
+        return AdminDashboard::canSeeOperationalStats();
     }
 
     protected function getStats(): array
     {
-        $stats = Cache::remember('admin.dashboard.stats_overview', now()->addSeconds(60), function (): array {
+        $stats = Cache::remember('admin.dashboard.stats_overview.v2', now()->addSeconds(60), function (): array {
             $today = Carbon::today();
             $weekStart = $today->copy()->subDays(6)->startOfDay();
             $monthStart = Carbon::now()->startOfMonth();
@@ -70,6 +80,13 @@ class StatsOverview extends BaseWidget
                 ')
                 ->first();
 
+            $courierTotals = CourierShipment::query()
+                ->selectRaw('
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as pending
+                ', [CourierShipmentStatus::Pending->value])
+                ->first();
+
             return [
                 'total_revenue' => (float) ($orderTotals->total_revenue ?? 0),
                 'today_revenue' => (float) ($orderTotals->today_revenue ?? 0),
@@ -82,6 +99,21 @@ class StatsOverview extends BaseWidget
                 'revenue_trend' => $revenueTrend,
                 'orders_trend' => $ordersTrend,
                 'customers_trend' => $customersTrend,
+                'products_total' => Product::query()->count(),
+                'products_active' => Product::query()->where('is_active', true)->count(),
+                'categories_total' => Category::query()->count(),
+                'brands_total' => Brand::query()->count(),
+                'courier_shipments_total' => (int) ($courierTotals->total ?? 0),
+                'courier_shipments_pending' => (int) ($courierTotals->pending ?? 0),
+                'activities_today' => Activity::query()->whereDate('created_at', $today)->count(),
+                'reviews_pending' => Review::query()->where('is_approved', false)->count(),
+                'returns_open' => ReturnRequest::query()->whereNotIn('status', [
+                    ReturnRequestStatus::Completed->value,
+                    ReturnRequestStatus::Rejected->value,
+                    ReturnRequestStatus::Cancelled->value,
+                ])->count(),
+                'coupons_active' => Coupon::query()->where('is_active', true)->count(),
+                'payments_total' => Payment::query()->count(),
             ];
         });
 
@@ -120,6 +152,84 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon($lowStockCount > 0 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-check-badge')
                 ->color($lowStockCount > 0 ? 'danger' : 'success')
                 ->url('/admin/inventory/stock-overview');
+        }
+
+        if ($user?->can('products.view')) {
+            $cards[] = Stat::make(__('Products'), number_format($stats['products_total']))
+                ->description(__(':count active', ['count' => number_format($stats['products_active'])]))
+                ->descriptionIcon('heroicon-m-cube')
+                ->color('primary')
+                ->url('/admin/products');
+        }
+
+        if ($user?->can('categories.view')) {
+            $cards[] = Stat::make(__('Categories'), number_format($stats['categories_total']))
+                ->description(__('Catalog structure'))
+                ->descriptionIcon('heroicon-m-tag')
+                ->color('warning')
+                ->url('/admin/categories');
+        }
+
+        if ($user?->can('brands.view')) {
+            $cards[] = Stat::make(__('Brands'), number_format($stats['brands_total']))
+                ->description(__('Brand listings'))
+                ->descriptionIcon('heroicon-m-building-storefront')
+                ->color('info')
+                ->url('/admin/brands');
+        }
+
+        if ($user?->can('courier-shipments.view')) {
+            $pendingShipments = $stats['courier_shipments_pending'];
+
+            $cards[] = Stat::make(__('Courier Shipments'), number_format($stats['courier_shipments_total']))
+                ->description($pendingShipments > 0
+                    ? __(':count awaiting dispatch', ['count' => $pendingShipments])
+                    : __('No pending shipments'))
+                ->descriptionIcon($pendingShipments > 0 ? 'heroicon-m-clock' : 'heroicon-m-check-circle')
+                ->color($pendingShipments > 0 ? 'warning' : 'success')
+                ->url('/admin/courier-shipments');
+        }
+
+        if ($user?->can('activities.view')) {
+            $cards[] = Stat::make(__('Activities Today'), number_format($stats['activities_today']))
+                ->description(__('Admin audit trail'))
+                ->descriptionIcon('heroicon-m-clipboard-document-list')
+                ->color('gray')
+                ->url('/admin/activities');
+        }
+
+        if ($user?->can('reviews.view')) {
+            $pendingReviews = $stats['reviews_pending'];
+
+            $cards[] = Stat::make(__('Reviews'), number_format($pendingReviews))
+                ->description($pendingReviews > 0 ? __('Awaiting moderation') : __('All reviews moderated'))
+                ->descriptionIcon($pendingReviews > 0 ? 'heroicon-m-star' : 'heroicon-m-check-badge')
+                ->color($pendingReviews > 0 ? 'warning' : 'success')
+                ->url('/admin/reviews');
+        }
+
+        if ($user?->can('returns.view')) {
+            $cards[] = Stat::make(__('Open Returns'), number_format($stats['returns_open']))
+                ->description(__('Needs attention'))
+                ->descriptionIcon('heroicon-m-arrow-uturn-left')
+                ->color($stats['returns_open'] > 0 ? 'danger' : 'success')
+                ->url('/admin/return-requests');
+        }
+
+        if ($user?->can('coupons.view')) {
+            $cards[] = Stat::make(__('Active Coupons'), number_format($stats['coupons_active']))
+                ->description(__('Ready to use'))
+                ->descriptionIcon('heroicon-m-ticket')
+                ->color('primary')
+                ->url('/admin/coupons');
+        }
+
+        if ($user?->can('payments.view') && ! $canSeeOrders) {
+            $cards[] = Stat::make(__('Payments'), number_format($stats['payments_total']))
+                ->description(__('Payment records'))
+                ->descriptionIcon('heroicon-m-banknotes')
+                ->color('success')
+                ->url('/admin/payments');
         }
 
         return $cards;

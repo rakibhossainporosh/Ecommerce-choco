@@ -100,14 +100,15 @@ test('admin can create a role and that user only sees the allowed area', functio
         ->assertSee(ProductResource::getUrl('index'), false)
         ->assertDontSee(OrderResource::getUrl('index'), false)
         ->assertDontSee(RoleResource::getUrl('index'), false)
-        ->assertDontSee('Total Revenue');
+        ->assertDontSee('Total Revenue')
+        ->assertSee('Products');
 
     $this->get(ProductResource::getUrl('index'))->assertSuccessful();
     $this->get(OrderResource::getUrl('index'))->assertForbidden();
     $this->get(RoleResource::getUrl('index'))->assertForbidden();
     $this->get(UserResource::getUrl('index'))->assertForbidden();
 
-    expect(StatsOverview::canView())->toBeFalse()
+    expect(StatsOverview::canView())->toBeTrue()
         ->and(LatestOrders::canView())->toBeFalse()
         ->and(OrdersChart::canView())->toBeFalse()
         ->and(OrderStatusChart::canView())->toBeFalse();

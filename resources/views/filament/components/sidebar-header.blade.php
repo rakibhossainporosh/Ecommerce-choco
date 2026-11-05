@@ -17,7 +17,12 @@
         {{-- Collapse Button in Expanded State (Sidebar icon with chevron pointing left) --}}
         <button
             type="button"
-            x-on:click="document.documentElement.classList.add('fi-admin-sidebar-user-toggle'); $store.sidebar.close(); setTimeout(() => document.documentElement.classList.remove('fi-admin-sidebar-user-toggle'), 280)"
+            x-on:click="
+                document.documentElement.classList.add('fi-admin-sidebar-user-toggle');
+                window.__fiAdminSyncSidebarLayout?.(false);
+                $store.sidebar.close();
+                setTimeout(() => document.documentElement.classList.remove('fi-admin-sidebar-user-toggle'), 280);
+            "
             title="{{ __('Collapse sidebar') }}"
             class="custom-sidebar-toggle-btn"
         >
@@ -33,7 +38,12 @@
     <div x-show="! $store.sidebar.isOpen" class="custom-sidebar-header-collapsed">
         <button
             type="button"
-            x-on:click="document.documentElement.classList.add('fi-admin-sidebar-user-toggle'); $store.sidebar.open(); setTimeout(() => document.documentElement.classList.remove('fi-admin-sidebar-user-toggle'), 280)"
+            x-on:click="
+                document.documentElement.classList.add('fi-admin-sidebar-user-toggle');
+                window.__fiAdminSyncSidebarLayout?.(true);
+                $store.sidebar.open();
+                setTimeout(() => document.documentElement.classList.remove('fi-admin-sidebar-user-toggle'), 280);
+            "
             title="{{ __('Expand sidebar') }}"
             class="custom-sidebar-toggle-btn"
         >

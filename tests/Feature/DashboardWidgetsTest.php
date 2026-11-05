@@ -1,9 +1,11 @@
 <?php
 
+use App\Filament\Widgets\LatestActivities;
 use App\Filament\Widgets\LatestOrders;
 use App\Filament\Widgets\OrdersChart;
 use App\Filament\Widgets\OrderStatusChart;
 use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\WorkspaceOverview;
 use App\Models\Customer;
 use App\Models\Inventory;
 use App\Models\Order;
@@ -12,6 +14,7 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -28,7 +31,57 @@ test('admin can access dashboard and view widgets', function () {
     $this->actingAs($this->admin);
 
     $response = $this->get('/admin');
-    $response->assertSuccessful();
+    $response->assertSuccessful()
+        ->assertSeeLivewire(WorkspaceOverview::class)
+        ->assertSeeLivewire(StatsOverview::class);
+});
+
+test('limited module users still see a useful dashboard', function () {
+    $role = Role::create([
+        'name' => 'Ops desk',
+        'guard_name' => 'web',
+    ]);
+    $role->givePermissionTo([
+        'dashboard.view',
+        'categories.view',
+        'courier-shipments.view',
+        'activities.view',
+    ]);
+
+    $user = User::factory()->create([
+        'name' => 'Desk Operator',
+        'can_access_admin_panel' => true,
+    ]);
+    $user->assignRole($role);
+
+    $this->actingAs($user);
+
+    $this->get('/admin')
+        ->assertSuccessful()
+        ->assertSeeLivewire(WorkspaceOverview::class)
+        ->assertSeeLivewire(StatsOverview::class)
+        ->assertSeeLivewire(LatestActivities::class)
+        ->assertDontSee('Total Revenue')
+        ->assertSee('Categories')
+        ->assertSee('Courier Shipments')
+        ->assertSee('Activities');
+
+    Livewire::test(WorkspaceOverview::class)
+        ->assertSuccessful()
+        ->assertSee('Desk Operator')
+        ->assertSee('Ops desk')
+        ->assertDontSee('Organize your product categories');
+
+    Livewire::test(StatsOverview::class)
+        ->assertSuccessful()
+        ->assertSee('Categories')
+        ->assertSee('Courier Shipments')
+        ->assertSee('Activities Today')
+        ->assertDontSee('Total Revenue');
+
+    Livewire::test(LatestActivities::class)
+        ->assertSuccessful()
+        ->assertSee('Recent Activity');
 });
 
 test('stats overview widget correctly calculates revenue, orders, customers and stock alert', function () {
