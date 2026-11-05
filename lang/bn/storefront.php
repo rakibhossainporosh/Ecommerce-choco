@@ -122,6 +122,7 @@ return [
         'in_stock_badge' => 'স্টক আছে',
         'reviews_count' => ':countটি রিভিউ',
         'details_heading' => 'পণ্যের বিস্তারিত',
+        'video_heading' => 'পণ্যের ভিডিও',
         'perk_fast_delivery' => 'দ্রুত ডেলিভারি',
         'perk_cod' => 'ক্যাশ অন ডেলিভারি',
         'perk_easy_return' => 'সহজ রিটার্ন',

@@ -11,6 +11,7 @@ import Footer from '../../Components/Footer.vue';
 import OccasionRibbon from '../../Components/OccasionRibbon.vue';
 import OccasionCountdown from '../../Components/OccasionCountdown.vue';
 import ProductCard from '../../Components/ProductCard.vue';
+import ProductYoutube from '../../Components/ProductYoutube.vue';
 import { useCart } from '../../Composables/useCart';
 import { useI18n } from '../../Composables/useI18n';
 import { useRecentlyViewed } from '../../Composables/useRecentlyViewed';
@@ -451,6 +452,8 @@ const submitReview = () => {
                     <p v-else>{{ productShortDesc || t('product.fallback_description') }}</p>
                 </div>
             </div>
+
+            <ProductYoutube :video="product.youtube" />
 
             <!-- Customer Reviews Section -->
             <div id="reviews" class="mt-8 bg-white rounded-3xl p-6 sm:p-10 border border-[#EAE3D6] shadow-sm">

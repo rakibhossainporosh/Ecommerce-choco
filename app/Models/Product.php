@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\YoutubeVideo;
 use Database\Factories\ProductFactory;
 use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,7 +21,7 @@ use InvalidArgumentException;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['name', 'slug', 'short_description', 'description', 'meta_title', 'meta_description', 'is_active', 'is_featured', 'brand_id'])]
+#[Fillable(['name', 'slug', 'short_description', 'description', 'youtube_url', 'meta_title', 'meta_description', 'is_active', 'is_featured', 'brand_id'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -923,6 +924,18 @@ class Product extends Model
                 $errors['brand_id'] = ['Cannot assign a soft-deleted brand to a product.'];
             } elseif (! $brand->is_active && (! $this->exists || $this->isDirty('brand_id'))) {
                 $errors['brand_id'] = ['Cannot assign an inactive brand to a product.'];
+            }
+        }
+
+        if (blank($this->youtube_url)) {
+            $this->youtube_url = null;
+        } else {
+            $canonicalYoutubeUrl = YoutubeVideo::watchUrl($this->youtube_url);
+
+            if ($canonicalYoutubeUrl === null) {
+                $errors['youtube_url'] = ['Enter a valid YouTube video link.'];
+            } else {
+                $this->youtube_url = $canonicalYoutubeUrl;
             }
         }
 

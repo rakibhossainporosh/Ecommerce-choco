@@ -10,6 +10,7 @@ import Footer from '../../Components/Footer.vue';
 import OccasionRibbon from '../../Components/OccasionRibbon.vue';
 import OccasionCountdown from '../../Components/OccasionCountdown.vue';
 import ProductCard from '../../Components/ProductCard.vue';
+import ProductYoutube from '../../Components/ProductYoutube.vue';
 import { useProductDetailPage } from '../../Composables/useProductDetailPage';
 import { useRecentlyViewed } from '../../Composables/useRecentlyViewed';
 
@@ -229,6 +230,8 @@ const onGallerySwipe = (event) => {
                     <h2 class="text-xs font-black uppercase tracking-[0.14em] mb-3">{{ t('product.details_heading') }}</h2>
                     <div class="text-sm text-[#3e516b] leading-relaxed" v-html="productDescriptionHtml || productShortDesc" />
                 </section>
+
+                <ProductYoutube :video="product.youtube" />
 
                 <section class="mt-4 bg-white border border-[#d5e0ee] rounded-sm p-5 sm:p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e7eef8] pb-4 mb-4">

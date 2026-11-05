@@ -10,6 +10,7 @@ import Footer from '../../Components/Footer.vue';
 import OccasionRibbon from '../../Components/OccasionRibbon.vue';
 import OccasionCountdown from '../../Components/OccasionCountdown.vue';
 import ProductCard from '../../Components/ProductCard.vue';
+import ProductYoutube from '../../Components/ProductYoutube.vue';
 import { useProductDetailPage } from '../../Composables/useProductDetailPage';
 import { useRecentlyViewed } from '../../Composables/useRecentlyViewed';
 
@@ -234,6 +235,8 @@ const onMainImageError = () => {
                     <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 leading-[1.35]" style="font-family: var(--store-display)">{{ t('product.details_heading') }}</h2>
                     <div class="prose max-w-none text-[#5c6f67]" v-html="productDescriptionHtml || productShortDesc" />
                 </section>
+
+                <ProductYoutube :video="product.youtube" />
 
                 <section class="mt-10 pt-10 border-t border-[#1a2e28]/10">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

@@ -122,6 +122,7 @@ return [
         'in_stock_badge' => 'In stock',
         'reviews_count' => ':count reviews',
         'details_heading' => 'Product details',
+        'video_heading' => 'Product video',
         'perk_fast_delivery' => 'Fast delivery',
         'perk_cod' => 'Cash on delivery',
         'perk_easy_return' => 'Easy returns',

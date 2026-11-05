@@ -20,8 +20,10 @@ use App\Payments\PaymentManager;
 use App\Services\AbandonedCartService;
 use App\Support\CatalogTranslator;
 use App\Support\CheckoutShipping;
+use App\Support\YoutubeVideo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -251,7 +253,7 @@ class StorefrontController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     * @return Collection<int, array<string, mixed>>
      */
     protected function suggestedStorefrontProducts(int $limit = 8)
     {
@@ -431,6 +433,10 @@ class StorefrontController extends Controller
             'display_short_description' => CatalogTranslator::product($product->slug, 'short_description', $product->short_description),
             'description' => $product->description,
             'display_description' => CatalogTranslator::product($product->slug, 'description', $product->description),
+            'youtube' => ($youtubeEmbed = YoutubeVideo::embedUrl($product->youtube_url)) === null ? null : [
+                'embed_url' => $youtubeEmbed,
+                'watch_url' => YoutubeVideo::watchUrl($product->youtube_url),
+            ],
             'is_featured' => (bool) $product->is_featured,
             'stock_quantity' => $stockQuantity,
             'is_in_stock' => $isInStock,

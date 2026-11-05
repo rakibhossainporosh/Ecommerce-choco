@@ -6,6 +6,7 @@ use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Unit;
+use App\Support\YoutubeVideo;
 use Closure;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -165,6 +166,26 @@ class ProductForm
                             ->nullable()
                             ->rows(5)
                             ->columnSpanFull(),
+
+                        TextInput::make('youtube_url')
+                            ->label('YouTube video')
+                            ->placeholder('https://www.youtube.com/watch?v=...')
+                            ->prefixIcon(Heroicon::OutlinedPlayCircle)
+                            ->helperText(__('Paste a YouTube link. Customers can watch it on the product page or open it on YouTube. Leave blank to hide the video.'))
+                            ->nullable()
+                            ->maxLength(255)
+                            ->columnSpanFull()
+                            ->rules([
+                                fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                                    if (blank($value)) {
+                                        return;
+                                    }
+
+                                    if (YoutubeVideo::id((string) $value) === null) {
+                                        $fail(__('Enter a valid YouTube video link.'));
+                                    }
+                                },
+                            ]),
                     ]),
 
                 Section::make('Initial Default Variant')
