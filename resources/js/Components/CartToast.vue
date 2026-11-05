@@ -32,7 +32,7 @@ const shellClass = () => {
         >
             <div
                 v-if="toast.visible"
-                class="fixed bottom-5 left-1/2 z-[70] w-[min(92vw,24rem)] -translate-x-1/2 px-4 py-3 shadow-2xl"
+                class="fixed bottom-[calc(var(--store-mobile-nav-offset)+1.25rem)] left-1/2 z-[70] w-[min(92vw,24rem)] -translate-x-1/2 px-4 py-3 shadow-2xl"
                 :class="shellClass()"
                 role="status"
             >

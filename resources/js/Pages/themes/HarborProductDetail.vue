@@ -298,7 +298,7 @@ const onGallerySwipe = (event) => {
             </div>
         </main>
 
-        <div class="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#d5e0ee] bg-white/95 backdrop-blur-sm p-3 shadow-[0_-8px_24px_rgb(15_23_42/0.08)]">
+        <div class="lg:hidden fixed bottom-[var(--store-mobile-nav-offset)] inset-x-0 z-30 border-t border-[#d5e0ee] bg-white/95 backdrop-blur-sm p-3 shadow-[0_-8px_24px_rgb(15_23_42/0.08)]">
             <div class="flex items-center gap-2">
                 <div class="min-w-0">
                     <p class="text-sm font-black text-[#1d4ed8] truncate">{{ formatPrice(currentPrice) }}</p>

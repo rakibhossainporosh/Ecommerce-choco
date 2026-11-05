@@ -52,6 +52,12 @@ return [
         'cart' => 'Cart',
         'language' => 'Language',
         'tagline_fallback' => 'Your everyday favorites',
+        'nav_home' => 'Home',
+        'nav_categories' => 'Categories',
+        'nav_cart' => 'Cart',
+        'nav_wishlist' => 'Wishlist',
+        'nav_account' => 'Account',
+        'nav_login' => 'Sign in',
     ],
     'hero' => [
         'shop_now' => 'Shop now',

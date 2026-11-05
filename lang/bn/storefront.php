@@ -52,6 +52,12 @@ return [
         'cart' => 'কার্ট',
         'language' => 'ভাষা',
         'tagline_fallback' => 'আপনার প্রতিদিনের পছন্দ',
+        'nav_home' => 'হোম',
+        'nav_categories' => 'ক্যাটাগরি',
+        'nav_cart' => 'কার্ট',
+        'nav_wishlist' => 'পছন্দ',
+        'nav_account' => 'অ্যাকাউন্ট',
+        'nav_login' => 'লগইন',
     ],
     'hero' => [
         'shop_now' => 'কেনাকাটা করুন',

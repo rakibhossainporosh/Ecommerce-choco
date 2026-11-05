@@ -733,7 +733,7 @@ const submitReview = () => {
             </div>
         </Teleport>
 
-        <div class="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#EAE3D6] bg-white/95 backdrop-blur-sm p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
+        <div class="lg:hidden fixed bottom-[var(--store-mobile-nav-offset)] inset-x-0 z-30 border-t border-[#EAE3D6] bg-white/95 backdrop-blur-sm p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
             <div class="flex items-center gap-2 max-w-7xl mx-auto">
                 <div class="min-w-0">
                     <p class="text-sm font-bold text-[#E86A28] truncate">{{ formatPrice(currentPrice) }}</p>

@@ -17,6 +17,272 @@
     --color-warm-border: #EAE3D6;
 }
 
+:root {
+    --store-mobile-nav-offset: 0px;
+    --store-mobile-nav-height: 3.5rem;
+}
+
+@media (max-width: 1023px) {
+    :root {
+        --store-mobile-nav-offset: calc(var(--store-mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+    }
+
+    html,
+    body {
+        overflow-x: clip;
+        max-width: 100%;
+    }
+
+    html:not(.store-mobile-nav-hidden) body {
+        padding-bottom: var(--store-mobile-nav-offset);
+    }
+
+    html.store-mobile-nav-hidden {
+        --store-mobile-nav-offset: 0px;
+    }
+
+    /* Solid edge-to-edge app tab bar (Daraz/Amazon-app style) — not a floating pill */
+    .store-mobile-app-nav {
+        position: fixed;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 50;
+        width: auto;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        box-sizing: border-box;
+        padding: 0 0 env(safe-area-inset-bottom, 0px);
+        border-top-width: 1px;
+        border-top-style: solid;
+        box-shadow: 0 -1px 0 rgb(15 23 42 / 0.04);
+        overflow: hidden;
+    }
+
+    .store-mobile-app-nav--warm {
+        background: #ffffff;
+        border-top-color: #eae3d6;
+        color: #64748b;
+    }
+
+    .store-mobile-app-nav--warm .is-active {
+        color: #e86a28;
+    }
+
+    .store-mobile-app-nav--warm .store-mobile-app-nav__badge {
+        background: #e86a28;
+        color: #ffffff;
+    }
+
+    .store-mobile-app-nav--grove {
+        background: #14241e;
+        border-top-color: rgb(255 255 255 / 0.12);
+        color: #9fb5ab;
+        box-shadow: 0 -1px 0 rgb(0 0 0 / 0.2);
+    }
+
+    .store-mobile-app-nav--grove .is-active {
+        color: #9fd6c4;
+    }
+
+    .store-mobile-app-nav--grove .store-mobile-app-nav__badge {
+        background: #9fd6c4;
+        color: #14241e;
+    }
+
+    .store-mobile-app-nav--harbor {
+        background: #ffffff;
+        border-top-color: #d5e0ee;
+        color: #64748b;
+    }
+
+    .store-mobile-app-nav--harbor .is-active {
+        color: #1d4ed8;
+    }
+
+    .store-mobile-app-nav--harbor .store-mobile-app-nav__badge {
+        background: #1d4ed8;
+        color: #ffffff;
+    }
+
+    .store-mobile-app-nav__row {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        height: var(--store-mobile-nav-height);
+    }
+
+    .store-mobile-app-nav__tab {
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.15rem;
+        padding: 0.25rem 0.15rem;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        text-decoration: none;
+        font-size: 0.625rem;
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .store-mobile-app-nav__tab span:last-child {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .store-mobile-app-nav__icon {
+        width: 1.2rem;
+        height: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .store-mobile-app-nav__icon-wrap {
+        position: relative;
+        display: inline-flex;
+    }
+
+    .store-mobile-app-nav__badge {
+        position: absolute;
+        top: -0.35rem;
+        right: -0.55rem;
+        min-width: 0.95rem;
+        height: 0.875rem;
+        padding: 0 0.2rem;
+        border-radius: 999px;
+        font-size: 0.5rem;
+        font-weight: 700;
+        line-height: 0.875rem;
+        text-align: center;
+    }
+
+    .store-mobile-app-nav-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 55;
+        background: rgb(0 0 0 / 0.4);
+    }
+
+    .store-mobile-app-nav-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: var(--store-mobile-nav-offset);
+        z-index: 56;
+        width: 100%;
+        max-width: 100%;
+        max-height: 70vh;
+        margin: 0;
+        border-radius: 1rem 1rem 0 0;
+        border-width: 1px 0 0;
+        border-style: solid;
+        box-sizing: border-box;
+        overflow: hidden;
+        box-shadow: 0 -8px 28px rgb(15 23 42 / 0.12);
+    }
+
+    .store-mobile-app-nav-sheet--warm {
+        background: #ffffff;
+        color: #1e293b;
+        border-color: #eae3d6;
+    }
+
+    .store-mobile-app-nav-sheet--warm .store-mobile-app-nav-sheet__item:hover {
+        background: #faf7f2;
+        color: #e86a28;
+    }
+
+    .store-mobile-app-nav-sheet--grove {
+        background: #14241e;
+        color: #d7efe7;
+        border-color: #1a2e28;
+    }
+
+    .store-mobile-app-nav-sheet--grove .store-mobile-app-nav-sheet__item:hover {
+        background: rgb(255 255 255 / 0.05);
+        color: #ffffff;
+    }
+
+    .store-mobile-app-nav-sheet--harbor {
+        background: #ffffff;
+        color: #0f172a;
+        border-color: #d5e0ee;
+    }
+
+    .store-mobile-app-nav-sheet--harbor .store-mobile-app-nav-sheet__item:hover {
+        background: #f4f7fb;
+        color: #1d4ed8;
+    }
+
+    .store-mobile-app-nav-sheet__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgb(15 23 42 / 0.08);
+    }
+
+    .store-mobile-app-nav-sheet--grove .store-mobile-app-nav-sheet__head {
+        border-bottom-color: rgb(255 255 255 / 0.1);
+    }
+
+    .store-mobile-app-nav-sheet__head h2 {
+        margin: 0;
+        font-size: 0.875rem;
+        font-weight: 700;
+    }
+
+    .store-mobile-app-nav-sheet__head button {
+        display: inline-flex;
+        padding: 0.5rem;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: inherit;
+    }
+
+    .store-mobile-app-nav-sheet__body {
+        overflow-y: auto;
+        max-height: min(60vh, 28rem);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .store-mobile-app-nav-sheet__empty {
+        margin: 0;
+        padding: 2rem 1rem;
+        text-align: center;
+        font-size: 0.875rem;
+        opacity: 0.7;
+    }
+
+    .store-mobile-app-nav-sheet__item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0.875rem 1rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: inherit;
+        text-decoration: none;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .store-mobile-app-nav-sheet__item--child {
+        padding-left: 2rem;
+        font-size: 0.875rem;
+        opacity: 0.92;
+    }
+}
+
 body {
     font-family: var(--font-bengali);
     background-color: var(--color-warm-bg);

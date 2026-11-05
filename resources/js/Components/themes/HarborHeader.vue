@@ -46,7 +46,7 @@ const {
                             {{ loc.short }}
                         </button>
                     </template>
-                    <Link :href="page.props.customer ? '/account' : '/login'" class="inline-flex items-center gap-1.5 hover:text-white">
+                    <Link :href="page.props.customer ? '/account' : '/login'" class="hidden lg:inline-flex items-center gap-1.5 hover:text-white" :title="page.props.customer ? t('header.account') : t('header.login')">
                         <User class="w-3.5 h-3.5" />
                         <span>{{ page.props.customer ? page.props.customer.name : t('header.login') }}</span>
                     </Link>
@@ -110,7 +110,7 @@ const {
                         />
                     </div>
 
-                    <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+                    <div class="hidden lg:flex items-center gap-1 sm:gap-2 shrink-0">
                         <button type="button" class="relative z-10 p-2.5 text-[#0f172a] hover:bg-[#f4f7fb] rounded-sm" :title="t('header.wishlist')" @click.stop="openWishlist()">
                             <Heart class="w-5 h-5" />
                             <span v-if="wishlistCount > 0" class="absolute top-1 right-1 min-w-4 h-4 px-1 bg-[#1d4ed8] text-white text-[10px] font-bold rounded-sm flex items-center justify-center">{{ wishlistCount }}</span>

@@ -197,27 +197,27 @@ onUnmounted(() => {
     <header class="store-header sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EAE3D6] shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
         <OccasionFrame />
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="store-header-row flex items-center justify-between h-20 gap-4">
+            <div class="store-header-row flex items-center justify-between h-20 gap-2 sm:gap-4 min-w-0">
                 <!-- Brand / Logo -->
-                <a href="/" class="flex items-center gap-3 group shrink-0">
+                <a href="/" class="flex items-center gap-2.5 sm:gap-3 group min-w-0 shrink">
                     <img 
                         v-if="page.props.site_settings?.site_logo" 
                         :src="page.props.site_settings.site_logo" 
                         :alt="page.props.site_settings?.site_name || 'Logo'" 
-                        class="h-11 w-auto max-w-[160px] object-contain drop-shadow-xs transition-transform group-hover:scale-105"
+                        class="h-11 w-auto max-w-[120px] sm:max-w-[160px] object-contain drop-shadow-xs transition-transform group-hover:scale-105 shrink-0"
                     />
                     <template v-else>
-                        <div class="store-logo-mark w-11 h-11 rounded-full bg-[#E86A28] flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
+                        <div class="store-logo-mark w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#E86A28] flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105 shrink-0">
                             <!-- Stylized Nobo Icon matching screenshot -->
                             <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
                                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
-                        <div class="flex flex-col">
-                            <span class="text-xl font-bold tracking-tight text-[#1E293B] group-hover:text-[#E86A28] transition-colors leading-tight">
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-lg sm:text-xl font-bold tracking-tight text-[#1E293B] group-hover:text-[#E86A28] transition-colors leading-tight truncate">
                                 {{ page.props.site_settings?.site_name || 'Nobo Shop' }}
                             </span>
-                            <span class="text-[12px] text-[#64748B] font-medium leading-none mt-0.5">
+                            <span class="hidden sm:block text-[12px] text-[#64748B] font-medium leading-none mt-0.5 truncate">
                                 {{ page.props.site_settings?.site_tagline || t('header.tagline_fallback') }}
                             </span>
                         </div>
@@ -329,7 +329,7 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Navigation & Action Icons -->
-                <div class="flex items-center gap-6 sm:gap-8">
+                <div class="flex items-center gap-2 lg:gap-6 xl:gap-8 shrink-0">
                     <!-- Nav Links -->
                     <nav class="hidden lg:flex items-center gap-6 text-[15px] font-medium text-[#475569]">
                         <Link href="/" class="text-[#1E293B] hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
@@ -409,11 +409,11 @@ onUnmounted(() => {
                         <Link href="/track-order" class="hover:text-[#E86A28] transition-colors font-bold text-[#E86A28]">{{ t('header.track') }}</Link>
                     </nav>
 
-                    <!-- Icons: Account, Wishlist & Cart -->
-                    <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Icons: language always; account/wishlist/cart desktop-only (mobile uses bottom app nav) -->
+                    <div class="flex items-center gap-1.5 sm:gap-3">
                         <div
                             v-if="locales.length"
-                            class="flex items-center gap-0.5 px-2 py-1.5 text-xs font-bold bg-[#FAF7F2] border border-[#EAE3D6] rounded-xl shadow-2xs"
+                            class="flex items-center gap-0.5 px-1.5 sm:px-2 py-1.5 text-xs font-bold bg-[#FAF7F2] border border-[#EAE3D6] rounded-xl shadow-2xs"
                             role="group"
                             :aria-label="t('header.language')"
                         >
@@ -430,31 +430,31 @@ onUnmounted(() => {
                             </template>
                         </div>
 
-                        <!-- Customer Account / Login -->
+                        <!-- Customer Account / Login (desktop — mobile tab bar covers this) -->
                         <Link
                             v-if="page.props.customer"
                             href="/account"
-                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
+                            class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
                             :title="t('header.account')"
                         >
                             <User class="w-4 h-4 text-[#E86A28]" />
-                            <span class="hidden sm:inline max-w-[90px] truncate">{{ page.props.customer.name }}</span>
+                            <span class="max-w-[90px] truncate">{{ page.props.customer.name }}</span>
                         </Link>
                         <Link
                             v-else
                             href="/login"
-                            class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
+                            class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-[#1E293B] hover:text-[#E86A28] bg-[#FAF7F2] hover:bg-white border border-[#EAE3D6] rounded-xl transition-all shadow-2xs"
                             :title="t('header.login')"
                         >
                             <User class="w-4 h-4 text-[#E86A28]" />
-                            <span class="hidden sm:inline">{{ t('header.login') }}</span>
+                            <span>{{ t('header.login') }}</span>
                         </Link>
 
-                        <!-- Wishlist -->
+                        <!-- Wishlist (desktop — mobile tab bar covers this) -->
                         <button
                             @click="openWishlist"
                             type="button"
-                            class="relative p-2 text-[#475569] hover:text-[#E86A28] transition-colors"
+                            class="relative hidden lg:inline-flex p-2 text-[#475569] hover:text-[#E86A28] transition-colors"
                             :title="t('header.wishlist')"
                         >
                             <Heart class="w-6 h-6 stroke-[1.8]" />
@@ -466,11 +466,11 @@ onUnmounted(() => {
                             </span>
                         </button>
 
-                        <!-- Cart -->
+                        <!-- Cart (desktop — mobile tab bar covers this) -->
                         <button
                             @click="openCart"
                             type="button"
-                            class="relative p-2 text-[#475569] hover:text-[#E86A28] transition-colors"
+                            class="relative hidden lg:inline-flex p-2 text-[#475569] hover:text-[#E86A28] transition-colors"
                             :title="t('header.cart')"
                         >
                             <ShoppingBag class="w-6 h-6 stroke-[1.8]" />
