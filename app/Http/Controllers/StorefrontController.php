@@ -20,6 +20,7 @@ use App\Payments\PaymentManager;
 use App\Services\AbandonedCartService;
 use App\Support\CatalogTranslator;
 use App\Support\CheckoutShipping;
+use App\Support\MetaPixel;
 use App\Support\YoutubeVideo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -695,6 +696,8 @@ class StorefrontController extends Controller
         if (filled($start->redirectUrl)) {
             return Inertia::location($start->redirectUrl);
         }
+
+        MetaPixel::rememberPurchase($order->fresh(), $request);
 
         return redirect()->route('checkout.success', ['order_number' => $order->order_number]);
     }

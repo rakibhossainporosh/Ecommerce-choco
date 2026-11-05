@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Payments\Contracts\PaymentGateway;
 use App\Payments\PaymentGatewayException;
 use App\Payments\PaymentGatewayMode;
 use App\Payments\PaymentManager;
+use App\Support\MetaPixel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,6 +27,12 @@ class PaymentReturnController extends Controller
         }
 
         if ($result->wasPaid() && filled($result->orderNumber)) {
+            $order = Order::query()->where('order_number', $result->orderNumber)->first();
+
+            if ($order instanceof Order) {
+                MetaPixel::rememberPurchase($order, $request);
+            }
+
             return redirect()->route('checkout.success', ['order_number' => $result->orderNumber]);
         }
 

@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue';
+import { trackMeta } from './useMetaPixel';
 
 const isCartOpen = ref(false);
 const isWishlistOpen = ref(false);
@@ -144,6 +145,18 @@ export function useCart() {
         saveCart();
         showToast('', name);
         isCartOpen.value = true;
+        trackMeta('AddToCart', {
+            content_ids: [String(product.id)],
+            content_name: name,
+            content_type: 'product',
+            contents: [{
+                id: String(product.id),
+                quantity: Number(quantity),
+                item_price: Number(price),
+            }],
+            num_items: Number(quantity),
+            value: Number(price) * Number(quantity),
+        });
     };
 
     const updateQuantity = (cartItemId, delta) => {
@@ -184,6 +197,12 @@ export function useCart() {
                 category_display_name: product.category_display_name,
                 is_in_stock: product.is_in_stock,
                 slug: product.slug,
+            });
+            trackMeta('AddToWishlist', {
+                content_ids: [String(product.id)],
+                content_name: product.display_name || product.name,
+                content_type: 'product',
+                value: Number(product.price || 0),
             });
         }
         saveWishlist();

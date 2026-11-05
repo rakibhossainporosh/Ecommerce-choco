@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Enums\SettingType;
 use App\Filament\Concerns\TranslatesPageNavigation;
 use App\Models\Setting;
+use App\Support\MetaPixel;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -105,6 +106,8 @@ class FooterSettings extends Page
             'contact_email' => Setting::get('contact_email', 'support@noboshop.com'),
             'footer_copyright' => Setting::get('footer_copyright', '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।'),
             'footer_payment_methods' => is_array($paymentMethods) ? $paymentMethods : ['bKash', 'Nagad', 'VISA'],
+            'meta_pixel_id' => Setting::get('meta_pixel_id', ''),
+            'meta_pixel_access_token' => '',
         ]);
     }
 
@@ -300,6 +303,30 @@ class FooterSettings extends Page
                                     ]),
                             ]),
 
+                        Tab::make('Marketing')
+                            ->icon(Heroicon::OutlinedMegaphone)
+                            ->schema([
+                                Section::make('Meta Pixel')
+                                    ->description(__('Paste the Pixel ID from Meta Events Manager. Events stay off until an ID is saved.'))
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            TextInput::make('meta_pixel_id')
+                                                ->label('Meta Pixel ID')
+                                                ->placeholder('123456789012345')
+                                                ->helperText(__('Numbers only. Empty turns the pixel off.'))
+                                                ->nullable()
+                                                ->rules(['nullable', 'regex:/^(\d{5,20})?$/']),
+                                            TextInput::make('meta_pixel_access_token')
+                                                ->label('Conversions API token')
+                                                ->password()
+                                                ->revealable()
+                                                ->dehydrated()
+                                                ->helperText(__('Optional. Leave blank to keep the saved token.'))
+                                                ->nullable(),
+                                        ]),
+                                    ]),
+                            ]),
+
                         Tab::make('Legal & Payments')
                             ->icon(Heroicon::OutlinedShieldCheck)
                             ->schema([
@@ -350,6 +377,22 @@ class FooterSettings extends Page
         foreach ($state as $key => $val) {
             $type = SettingType::String;
             $group = 'footer';
+            $isPublic = true;
+
+            if ($key === 'meta_pixel_access_token') {
+                if (! is_string($val) || trim($val) === '') {
+                    continue;
+                }
+
+                $val = trim($val);
+                $group = 'marketing';
+                $isPublic = false;
+            }
+
+            if ($key === 'meta_pixel_id') {
+                $group = 'marketing';
+                $val = MetaPixel::normalizeId(is_string($val) ? $val : null);
+            }
 
             if (in_array($key, ['site_name', 'site_tagline', 'site_logo', 'site_favicon', 'site_locale'])) {
                 $group = 'general';
@@ -371,7 +414,7 @@ class FooterSettings extends Page
                     'value' => $val,
                     'type' => $type,
                     'group' => $group,
-                    'is_public' => true,
+                    'is_public' => $isPublic,
                 ]
             );
 
@@ -407,6 +450,8 @@ class FooterSettings extends Page
             'contact_email' => 'Contact Email',
             'footer_copyright' => 'Footer Copyright Text',
             'footer_payment_methods' => 'Footer Payment Methods',
+            'meta_pixel_id' => 'Meta Pixel ID',
+            'meta_pixel_access_token' => 'Meta Conversions API token',
             default => str_replace('_', ' ', ucwords($key, '_')),
         };
     }

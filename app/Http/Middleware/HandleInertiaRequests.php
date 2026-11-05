@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Support\CatalogTranslator;
 use App\Support\LocaleManager;
 use App\Support\LocalizedContent;
+use App\Support\MetaPixel;
 use App\Support\ReturnPolicySettings;
 use App\Support\StorefrontOccasion;
 use App\Support\StorefrontTheme;
@@ -47,6 +48,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'locale' => fn (): string => app()->getLocale(),
+            'meta_pixel' => fn (): array => MetaPixel::share(),
             'seo' => function () use ($request): ?array {
                 $seo = $request->attributes->get('storefront_seo');
 

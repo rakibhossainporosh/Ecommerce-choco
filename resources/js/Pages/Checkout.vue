@@ -7,6 +7,7 @@ import Header from '../Components/Header.vue';
 import Footer from '../Components/Footer.vue';
 import ProductCard from '../Components/ProductCard.vue';
 import { useCart, setCartContact } from '../Composables/useCart';
+import { trackMeta } from '../Composables/useMetaPixel';
 import { useI18n } from '../Composables/useI18n';
 import { useStorefrontPageShell } from '../Composables/useStorefrontPageShell';
 
@@ -136,6 +137,14 @@ const selectedMethod = computed(() => methods.value.find((method) => method.key 
 const paymentError = computed(() => form.errors.payment || form.errors.payment_method || page.props.errors?.payment || '');
 
 const submitOrder = () => {
+    const paymentInfo = {
+        content_ids: cartItems.value.map((item) => String(item.id)),
+        content_type: 'product',
+        currency: page.props?.meta_pixel?.currency,
+        num_items: cartItems.value.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+        value: Number(grandTotal.value || 0),
+    };
+
     form.shipping_amount = shippingCharge.value;
     form.cart_items = cartItems.value.map(item => ({
         id: item.id,
@@ -144,6 +153,9 @@ const submitOrder = () => {
     }));
     form.post('/checkout', {
         preserveScroll: true,
+        onSuccess: () => {
+            trackMeta('AddPaymentInfo', paymentInfo);
+        },
     });
 };
 

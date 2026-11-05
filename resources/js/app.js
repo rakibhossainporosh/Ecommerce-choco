@@ -2,6 +2,7 @@ import { createApp, h } from 'vue';
 import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import SeoLayout from './Components/SeoLayout.vue';
+import { trackMeta } from './Composables/useMetaPixel';
 
 const fallbackStoreName = () => {
     const fromMeta = document.querySelector('meta[name="store-name"]')?.getAttribute('content');
@@ -48,6 +49,7 @@ createInertiaApp({
         router.on('success', (event) => {
             storeName = resolveStoreName(event.detail.page);
             applyStoreTheme(event.detail.page);
+            trackMeta('PageView');
         });
 
         createApp({ render: () => h(App, props) })

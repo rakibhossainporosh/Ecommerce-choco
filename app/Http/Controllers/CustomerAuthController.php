@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\ReturnRequest;
 use App\Services\SmsService;
+use App\Support\MetaPixel;
 use App\Support\ReturnItemValidator;
 use App\Support\ReturnPolicySettings;
 use Illuminate\Http\RedirectResponse;
@@ -139,6 +140,7 @@ class CustomerAuthController extends Controller
 
         Auth::guard('customer')->login($customer);
         $request->session()->regenerate();
+        MetaPixel::rememberRegistration($customer->id);
 
         return redirect()->route('customer.account')->with('success', __('storefront.auth.registered'));
     }
