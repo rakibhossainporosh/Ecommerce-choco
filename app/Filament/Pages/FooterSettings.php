@@ -104,7 +104,6 @@ class FooterSettings extends Page
             'contact_address' => Setting::get('contact_address', '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ'),
             'contact_phone' => Setting::get('contact_phone', '+৮৮০ ৫২৩৪ ৫৬৭৮৯০'),
             'contact_email' => Setting::get('contact_email', 'support@noboshop.com'),
-            'footer_copyright' => Setting::get('footer_copyright', '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।'),
             'footer_payment_methods' => is_array($paymentMethods) ? $paymentMethods : ['bKash', 'Nagad', 'VISA'],
             'meta_pixel_id' => Setting::get('meta_pixel_id', ''),
             'meta_pixel_access_token' => '',
@@ -327,17 +326,12 @@ class FooterSettings extends Page
                                     ]),
                             ]),
 
-                        Tab::make('Legal & Payments')
-                            ->icon(Heroicon::OutlinedShieldCheck)
+                        Tab::make('Payments')
+                            ->icon(Heroicon::OutlinedCreditCard)
                             ->schema([
-                                Section::make('Legal Copyright & Payment Trust Badges')
-                                    ->description(__('Configure bottom copyright notices and accepted payment gateway trust badges.'))
+                                Section::make('Payment Trust Badges')
+                                    ->description(__('Configure accepted payment gateway trust badges shown in the storefront footer.'))
                                     ->schema([
-                                        TextInput::make('footer_copyright')
-                                            ->label('Copyright Notice')
-                                            ->placeholder(__('© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।'))
-                                            ->helperText(__('Note: {year} is automatically replaced with the current year dynamically.'))
-                                            ->required(),
                                         TagsInput::make('footer_payment_methods')
                                             ->label('Accepted Payment Method Badges')
                                             ->placeholder(__('Add payment method and press Enter'))
@@ -448,7 +442,6 @@ class FooterSettings extends Page
             'contact_address' => 'Contact Address',
             'contact_phone' => 'Contact Phone',
             'contact_email' => 'Contact Email',
-            'footer_copyright' => 'Footer Copyright Text',
             'footer_payment_methods' => 'Footer Payment Methods',
             'meta_pixel_id' => 'Meta Pixel ID',
             'meta_pixel_access_token' => 'Meta Conversions API token',

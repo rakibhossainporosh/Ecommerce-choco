@@ -175,16 +175,7 @@ class SettingSeeder extends Seeder
                 'is_public' => true,
                 'is_system' => false,
             ],
-            // Footer Bottom: Copyright & Payment Methods
-            [
-                'key' => 'footer_copyright',
-                'label' => 'Footer Copyright Text',
-                'value' => '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।',
-                'type' => SettingType::String,
-                'group' => 'footer',
-                'is_public' => true,
-                'is_system' => false,
-            ],
+            // Footer Bottom: Payment Methods
             [
                 'key' => 'footer_payment_methods',
                 'label' => 'Footer Payment Methods',

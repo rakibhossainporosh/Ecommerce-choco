@@ -17,8 +17,7 @@ const { t } = useI18n();
 const settings = computed(() => page.props.site_settings || {});
 
 const copyrightText = computed(() => {
-    const text = settings.value.footer_copyright || t('footer.copyright_fallback');
-    return text.replace('{year}', new Date().getFullYear());
+    return t('footer.copyright_fallback').replace('{year}', String(new Date().getFullYear()));
 });
 
 const isInternalLink = (url) => {

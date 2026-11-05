@@ -113,10 +113,6 @@ class LocalizedContent
                 'en' => '523, Nobo Shop Tower, Dhanmondi, Dhaka-1205, Bangladesh',
                 'bn' => '৫২৩, নবো শপ টাওয়ার, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ',
             ],
-            'footer_copyright' => [
-                'en' => '© {year} Nobo Shop. All rights reserved.',
-                'bn' => '© {year} Nobo Shop. সর্বস্বত্ব সংরক্ষিত।',
-            ],
         ];
     }
 

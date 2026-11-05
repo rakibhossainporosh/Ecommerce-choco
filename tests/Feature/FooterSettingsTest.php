@@ -38,6 +38,7 @@ test('storefront receives all dynamic footer settings', function () {
             ->has('footer_col2_links', 4)
             ->has('footer_col3_links', 4)
             ->has('footer_payment_methods', 3)
+            ->missing('footer_copyright')
             ->etc()
         )
     );
@@ -56,6 +57,7 @@ test('admin can access footer settings page and save new values', function () {
             'site_name' => 'Nobo Shop',
             'footer_col2_title' => 'প্রয়োজনীয় লিংক',
         ])
+        ->assertDontSee('Copyright Notice')
         ->fillForm([
             'site_locale' => 'en',
             'site_name' => 'মডেল শপ',
@@ -64,7 +66,6 @@ test('admin can access footer settings page and save new values', function () {
             'contact_phone' => '+8801999999999',
             'contact_email' => 'custom@shop.com',
             'contact_address' => 'ঢাকা, বাংলাদেশ',
-            'footer_copyright' => '© {year} Model Shop All Rights Reserved.',
             'footer_payment_methods' => ['bKash', 'Rocket', 'Upay'],
         ])
         ->call('save')
@@ -85,6 +86,7 @@ test('admin can access footer settings page and save new values', function () {
         ->where('site_settings.footer_col2_title', 'জরুরি লিংক')
         ->where('site_settings.contact_phone', '+8801999999999')
         ->where('site_settings.footer_payment_methods', ['bKash', 'Rocket', 'Upay'])
+        ->missing('site_settings.footer_copyright')
     );
 });
 
