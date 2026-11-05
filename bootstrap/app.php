@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetApplicationLocale;
+use App\Http\Middleware\ShareStorefrontSeo;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin*') ? '/admin/login' : '/login');
         $middleware->web(append: [
             SetApplicationLocale::class,
+            ShareStorefrontSeo::class,
             HandleInertiaRequests::class,
         ]);
         $middleware->validateCsrfTokens(except: [

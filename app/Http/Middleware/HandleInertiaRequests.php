@@ -47,6 +47,11 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'locale' => fn (): string => app()->getLocale(),
+            'seo' => function () use ($request): ?array {
+                $seo = $request->attributes->get('storefront_seo');
+
+                return is_array($seo) ? $seo : null;
+            },
             'locales' => fn (): array => LocaleManager::options(),
             'translations' => fn (): array => $this->storefrontTranslations(),
             'global_categories' => function () {

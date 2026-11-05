@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import {
     ShoppingBag, Plus, Minus, Heart, Star, MessageSquare,
     ShieldCheck, Truck, RotateCcw, X, Check, ChevronRight, ZoomIn,
@@ -87,8 +87,6 @@ const onMainImageError = () => {
 </script>
 
 <template>
-    <Head :title="t('meta.product', { name: productTitle })" />
-
     <div class="min-h-screen bg-[#f3efe8] text-[#1a2e28] flex flex-col">
         <Header />
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import {
     ShoppingBag, Plus, Minus, Heart, ChevronRight, Star,
     CheckCircle2, MessageSquare, ShieldCheck, Truck, RotateCcw,
@@ -200,13 +200,6 @@ const submitReview = () => {
 </script>
 
 <template>
-    <Head :title="t('meta.product', { name: productTitle })">
-        <meta name="description" :content="productShortDesc" />
-        <meta property="og:title" :content="t('meta.product', { name: productTitle })" />
-        <meta property="og:description" :content="productShortDesc" />
-        <meta property="og:image" :content="activeImage" />
-    </Head>
-
     <div :class="pageShellClass">
         <Header />
 

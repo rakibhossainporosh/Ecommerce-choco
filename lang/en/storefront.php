@@ -16,6 +16,18 @@ return [
         'privacy' => 'Privacy policy',
         'terms' => 'Terms and conditions',
         'returns' => 'Return policy',
+        'descriptions' => [
+            'home' => 'Shop everyday essentials with fast delivery and cash on delivery.',
+            'category' => 'Shop :name at :store.',
+            'about' => 'Learn about :store, the products we sell, and how we deliver.',
+            'contact' => 'Contact :store for orders, delivery, and support.',
+            'faq' => 'Answers about orders, delivery, payments, and returns at :store.',
+            'privacy' => 'How :store collects, uses, and protects your information.',
+            'terms' => 'The terms for shopping at :store.',
+            'returns' => 'How returns and refunds work at :store.',
+            'product' => 'Buy :name from :store.',
+            'private' => 'This page is for shoppers who are already using the store.',
+        ],
     ],
     'header' => [
         'search' => 'Search',

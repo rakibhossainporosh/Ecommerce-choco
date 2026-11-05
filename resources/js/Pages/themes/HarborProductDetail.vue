@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import {
     ShoppingBag, Plus, Minus, Heart, Star, MessageSquare,
     ShieldCheck, Truck, RotateCcw, ChevronRight, X, Check,
@@ -79,8 +79,6 @@ const onGallerySwipe = (event) => {
 </script>
 
 <template>
-    <Head :title="t('meta.product', { name: productTitle })" />
-
     <div class="min-h-screen bg-[#f4f7fb] text-[#0f172a] flex flex-col">
         <Header />
 

@@ -8,9 +8,13 @@ use App\Http\Controllers\CustomerReturnController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\StorefrontSeoController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
+
+Route::get('/robots.txt', [StorefrontSeoController::class, 'robots'])->name('seo.robots');
+Route::get('/sitemap.xml', [StorefrontSeoController::class, 'sitemap'])->name('seo.sitemap');
 
 Route::get('/', [StorefrontController::class, 'index'])->name('home');
 Route::get('/search/suggestions', [StorefrontController::class, 'suggestions'])->name('search.suggestions');
