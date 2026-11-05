@@ -303,6 +303,8 @@ return [
         'login_intro' => 'Use your phone number or email and password.',
         'login_field' => 'Phone or email',
         'password' => 'Password',
+        'show_password' => 'Show password',
+        'hide_password' => 'Hide password',
         'remember' => 'Keep me signed in',
         'submit_login' => 'Sign in',
         'no_account' => 'New here?',

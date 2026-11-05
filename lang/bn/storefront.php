@@ -303,6 +303,8 @@ return [
         'login_intro' => 'ফোন নম্বর বা ইমেইল এবং পাসওয়ার্ড দিন।',
         'login_field' => 'ফোন বা ইমেইল',
         'password' => 'পাসওয়ার্ড',
+        'show_password' => 'পাসওয়ার্ড দেখান',
+        'hide_password' => 'পাসওয়ার্ড লুকান',
         'remember' => 'লগইন মনে রাখুন',
         'submit_login' => 'লগইন করুন',
         'no_account' => 'নতুন?',

@@ -1,6 +1,7 @@
 <script setup>
+import { ref } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { LogIn, Phone, Lock, ArrowRight, CheckCircle2 } from 'lucide-vue-next';
+import { LogIn, Phone, Lock, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
 import { useI18n } from '../../Composables/useI18n';
@@ -15,6 +16,8 @@ const form = useForm({
     password: '',
     remember: false,
 });
+
+const showPassword = ref(false);
 
 const submit = () => {
     form.post('/login', {
@@ -71,11 +74,22 @@ const submit = () => {
                                 </div>
                                 <input
                                     v-model="form.password"
-                                    type="password"
+                                    :type="showPassword ? 'text' : 'password'"
                                     required
                                     placeholder="••••••••"
-                                    :class="[fieldClass, 'pl-10 pr-4']"
+                                    autocomplete="current-password"
+                                    :class="[fieldClass, 'pl-10 pr-11']"
                                 />
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#64748B] cursor-pointer"
+                                    :aria-label="showPassword ? t('auth.hide_password') : t('auth.show_password')"
+                                    :aria-pressed="showPassword"
+                                    @click="showPassword = !showPassword"
+                                >
+                                    <EyeOff v-if="showPassword" class="w-4 h-4" />
+                                    <Eye v-else class="w-4 h-4" />
+                                </button>
                             </div>
                             <p v-if="form.errors.password" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.password }}</p>
                         </div>
