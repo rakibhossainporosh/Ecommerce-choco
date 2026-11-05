@@ -11,18 +11,42 @@ const page = usePage();
 const { t } = useI18n();
 const { pageClass, panelClass, primaryButtonClass, accentTextClass, inkClass, mutedClass, fieldClass } = useStorefrontPageShell();
 
+const mode = ref('password');
+const showPassword = ref(false);
+const otpSent = ref(false);
+
 const form = useForm({
     login: '',
     password: '',
     remember: false,
 });
 
-const showPassword = ref(false);
+const otpForm = useForm({
+    login: '',
+    code: '',
+    remember: false,
+});
 
 const submit = () => {
     form.post('/login', {
         onFinish: () => form.reset('password'),
     });
+};
+
+const sendOtp = () => {
+    otpForm.transform((data) => ({ login: data.login })).post('/login/otp', {
+        preserveScroll: true,
+        onSuccess: () => {
+            otpSent.value = true;
+        },
+    });
+};
+
+const verifyOtp = () => {
+    otpForm.transform((data) => ({
+        code: data.code,
+        remember: data.remember,
+    })).post('/login/otp/verify');
 };
 </script>
 
@@ -48,7 +72,26 @@ const submit = () => {
                         <span class="text-sm font-semibold">{{ page.props.flash.success }}</span>
                     </div>
 
-                    <form @submit.prevent="submit" class="space-y-5">
+                    <div class="mb-6 grid grid-cols-2 gap-2 p-1 rounded-xl bg-black/5">
+                        <button
+                            type="button"
+                            class="h-10 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"
+                            :class="mode === 'password' ? [primaryButtonClass, 'shadow-sm'] : mutedClass"
+                            @click="mode = 'password'"
+                        >
+                            {{ t('auth.password_tab') }}
+                        </button>
+                        <button
+                            type="button"
+                            class="h-10 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"
+                            :class="mode === 'otp' ? [primaryButtonClass, 'shadow-sm'] : mutedClass"
+                            @click="mode = 'otp'"
+                        >
+                            {{ t('auth.otp_tab') }}
+                        </button>
+                    </div>
+
+                    <form v-if="mode === 'password'" class="space-y-5" @submit.prevent="submit">
                         <div>
                             <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.login_field') }}</label>
                             <div class="relative">
@@ -94,7 +137,7 @@ const submit = () => {
                             <p v-if="form.errors.password" class="text-xs text-red-500 mt-1 font-medium">{{ form.errors.password }}</p>
                         </div>
 
-                        <div class="flex items-center justify-between text-sm">
+                        <div class="flex items-center justify-between gap-3 text-sm">
                             <label class="flex items-center gap-2 cursor-pointer text-[#64748B]">
                                 <input
                                     v-model="form.remember"
@@ -105,6 +148,9 @@ const submit = () => {
                                 />
                                 <span>{{ t('auth.remember') }}</span>
                             </label>
+                            <Link href="/forgot-password" class="font-semibold hover:underline shrink-0" :class="accentTextClass">
+                                {{ t('auth.forgot_password') }}
+                            </Link>
                         </div>
 
                         <button
@@ -114,6 +160,75 @@ const submit = () => {
                         >
                             <span>{{ form.processing ? t('auth.logging_in') : t('auth.submit_login') }}</span>
                             <ArrowRight class="w-4 h-4" />
+                        </button>
+                    </form>
+
+                    <form v-else class="space-y-5" @submit.prevent="otpSent ? verifyOtp() : sendOtp()">
+                        <div>
+                            <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.login_field') }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
+                                    <Phone class="w-4 h-4" />
+                                </div>
+                                <input
+                                    v-model="otpForm.login"
+                                    type="text"
+                                    required
+                                    :placeholder="t('auth.login_placeholder')"
+                                    :class="[fieldClass, 'pl-10 pr-4']"
+                                />
+                            </div>
+                            <p v-if="otpForm.errors.login" class="text-xs text-red-500 mt-1 font-medium">{{ otpForm.errors.login }}</p>
+                        </div>
+
+                        <div v-if="otpSent">
+                            <label class="block text-xs font-semibold text-[#64748B] uppercase mb-1.5">{{ t('auth.otp_code') }}</label>
+                            <input
+                                v-model="otpForm.code"
+                                type="text"
+                                inputmode="numeric"
+                                maxlength="6"
+                                required
+                                autocomplete="one-time-code"
+                                :class="[fieldClass, 'tracking-[0.3em] text-center text-lg font-bold']"
+                            />
+                            <p v-if="otpForm.errors.code" class="text-xs text-red-500 mt-1 font-medium">{{ otpForm.errors.code }}</p>
+                        </div>
+
+                        <label v-if="otpSent" class="flex items-center gap-2 cursor-pointer text-sm text-[#64748B]">
+                            <input
+                                v-model="otpForm.remember"
+                                type="checkbox"
+                                class="rounded-sm border-current"
+                                :class="accentTextClass"
+                                style="accent-color: currentColor"
+                            />
+                            <span>{{ t('auth.remember') }}</span>
+                        </label>
+
+                        <button
+                            type="submit"
+                            :disabled="otpForm.processing"
+                            :class="[primaryButtonClass, 'w-full h-12 text-sm cursor-pointer']"
+                        >
+                            <span>
+                                {{
+                                    otpForm.processing
+                                        ? (otpSent ? t('auth.verifying') : t('auth.sending'))
+                                        : (otpSent ? t('auth.otp_verify') : t('auth.otp_send'))
+                                }}
+                            </span>
+                            <ArrowRight class="w-4 h-4" />
+                        </button>
+
+                        <button
+                            v-if="otpSent"
+                            type="button"
+                            class="w-full text-xs font-semibold hover:underline"
+                            :class="accentTextClass"
+                            @click="sendOtp"
+                        >
+                            {{ t('auth.otp_send') }}
                         </button>
                     </form>
 

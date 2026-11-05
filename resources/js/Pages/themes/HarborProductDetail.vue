@@ -87,7 +87,7 @@ const onGallerySwipe = (event) => {
                 <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#6d83a0] overflow-x-auto">
                     <Link href="/" class="hover:text-[#1d4ed8]">{{ t('header.home') }}</Link>
                     <ChevronRight class="w-3 h-3" />
-                    <Link :href="'/?category=' + product.category_slug" class="hover:text-[#1d4ed8]">{{ productCategory }}</Link>
+                    <Link :href="'/category/' + product.category_slug" class="hover:text-[#1d4ed8]">{{ productCategory }}</Link>
                     <ChevronRight class="w-3 h-3" />
                     <span class="text-[#0f172a] truncate">{{ productTitle }}</span>
                 </div>

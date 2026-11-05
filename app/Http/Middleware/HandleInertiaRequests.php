@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Category;
 use App\Models\Setting;
 use App\Support\CatalogTranslator;
+use App\Support\Ga4;
 use App\Support\LocaleManager;
 use App\Support\LocalizedContent;
 use App\Support\MetaPixel;
@@ -49,6 +50,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'locale' => fn (): string => app()->getLocale(),
             'meta_pixel' => fn (): array => MetaPixel::share(),
+            'ga4' => fn (): array => Ga4::share(),
             'seo' => function () use ($request): ?array {
                 $seo = $request->attributes->get('storefront_seo');
 

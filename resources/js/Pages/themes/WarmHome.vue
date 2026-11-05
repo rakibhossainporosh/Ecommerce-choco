@@ -7,18 +7,20 @@ import CampaignSale from '../../Components/CampaignSale.vue';
 import CategoryFilter from '../../Components/CategoryFilter.vue';
 import ProductCard from '../../Components/ProductCard.vue';
 import ProductGridSkeleton from '../../Components/ProductGridSkeleton.vue';
-import Footer from '../../Components/Footer.vue';
-import { useHomePage } from '../../Composables/useHomePage';
+    import CatalogPager from '../../Components/CatalogPager.vue';
+    import Footer from '../../Components/Footer.vue';
+    import { useHomePage } from '../../Composables/useHomePage';
 
 const props = defineProps({
     categories: { type: Array, default: () => [] },
     products: { type: Array, default: () => [] },
+    pagination: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
 });
 
 const {
-    t, saleProducts, showSale, catalogProducts, isCatalogLoading,
-    updateFilters, handleSearch, handleClearAllFilters,
+    t, saleProducts, showSale, catalogProducts, isCatalogLoading, resultTotal,
+    updateFilters, pageUrl, handleSearch, handleClearAllFilters,
     handleSelectCategory, handleSelectSort, emptyMessage,
 } = useHomePage(props);
 </script>
@@ -51,7 +53,7 @@ const {
                             <Tag class="w-4 h-4 text-[#E86A28]" />
                             <span><strong>{{ t('home.offers_banner') }}</strong> {{ t('home.offers_banner_note') }}</span>
                             <span class="text-xs bg-[#E86A28] text-white px-2.5 py-0.5 rounded-full font-bold">
-                                {{ t('home.offer_count', { count: products.length }) }}
+                                {{ t('home.offer_count', { count: resultTotal }) }}
                             </span>
                         </div>
                         <button type="button" class="text-xs font-bold text-[#E86A28] hover:text-[#C2410C] flex items-center gap-1.5 cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-[#FDBA74]" @click="updateFilters({ offer: false })">
@@ -65,7 +67,7 @@ const {
                             <Search class="w-4 h-4 text-[#E86A28]" />
                             <span>{{ t('home.results_for', { query: filters.search }) }}</span>
                             <span class="text-xs bg-[#F6F1E9] text-[#64748B] px-2.5 py-0.5 rounded-full font-semibold">
-                                {{ t('home.result_count', { count: products.length }) }}
+                                {{ t('home.result_count', { count: resultTotal }) }}
                             </span>
                         </div>
                         <button type="button" class="text-xs font-semibold text-[#E86A28] hover:underline flex items-center gap-1 cursor-pointer" @click="handleSearch('')">
@@ -88,6 +90,8 @@ const {
                     <div v-else-if="catalogProducts.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                         <ProductCard v-for="product in catalogProducts" :key="product.id" :product="product" />
                     </div>
+
+                    <CatalogPager :pagination="pagination" :build-url="pageUrl" />
                 </div>
             </OccasionSection>
         </main>

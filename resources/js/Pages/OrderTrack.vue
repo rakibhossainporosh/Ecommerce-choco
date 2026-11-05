@@ -34,8 +34,8 @@ const phone = ref(props.searched_phone || '');
 const isSearching = ref(false);
 
 const handleSearch = () => {
-    if (!orderNumber.value) return;
-    
+    if (!orderNumber.value || !phone.value) return;
+
     isSearching.value = true;
     router.get('/track-order', {
         order_number: orderNumber.value,
@@ -134,6 +134,7 @@ const getCurrentStepIndex = () => {
                         <input
                             v-model="phone"
                             type="text"
+                            required
                             :placeholder="t('track.phone')"
                             :class="[fieldClass, 'px-4 py-3.5 text-[15px]']"
                         />
@@ -248,6 +249,27 @@ const getCurrentStepIndex = () => {
                                     {{ order.payment_status === 'paid' ? t('track.paid') : t('track.unpaid') }}
                                 </span>
                             </div>
+                        </div>
+
+                        <div class="border-t border-black/5 pt-6">
+                            <h3 class="font-bold mb-3 text-sm uppercase tracking-wider" :class="mutedClass">{{ t('track.shipments') }}</h3>
+                            <div v-if="order.shipments?.length" class="space-y-3">
+                                <div v-for="shipment in order.shipments" :key="shipment.shipment_number" class="text-sm">
+                                    <div class="font-medium" :class="inkClass">{{ shipment.shipment_number }} · {{ shipment.status }}</div>
+                                    <div v-if="shipment.tracking_code" class="mt-1" :class="mutedClass">{{ t('track.tracking_code') }}: {{ shipment.tracking_code }}</div>
+                                    <a
+                                        v-if="shipment.tracking_url"
+                                        :href="shipment.tracking_url"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="inline-flex mt-2 text-sm font-semibold underline"
+                                        :class="accentTextClass"
+                                    >
+                                        {{ t('track.tracking_link') }}
+                                    </a>
+                                </div>
+                            </div>
+                            <p v-else class="text-sm" :class="mutedClass">{{ t('track.no_shipment') }}</p>
                         </div>
                     </div>
                 </div>

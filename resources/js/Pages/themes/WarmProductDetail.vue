@@ -219,7 +219,7 @@ const submitReview = () => {
             <nav class="flex items-center gap-2 text-sm text-[#64748B] mb-8 overflow-x-auto whitespace-nowrap">
                 <Link href="/" class="hover:text-[#E86A28] transition-colors">{{ t('header.home') }}</Link>
                 <ChevronRight class="w-4 h-4 shrink-0" />
-                <Link :href="'/?category=' + product.category_slug" class="hover:text-[#E86A28] transition-colors">
+                <Link :href="'/category/' + product.category_slug" class="hover:text-[#E86A28] transition-colors">
                     {{ productCategory }}
                 </Link>
                 <ChevronRight class="w-4 h-4 shrink-0" />

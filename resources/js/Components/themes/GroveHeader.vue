@@ -50,7 +50,7 @@ const navCategories = computed(() => (categories || []).filter((cat) => cat.slug
                     <Link
                         v-for="cat in navCategories"
                         :key="cat.id"
-                        :href="'/?category=' + cat.slug"
+                        :href="'/category/' + cat.slug"
                         class="text-[12px] font-medium uppercase tracking-[0.14em] text-[#b7d0c6] hover:text-white transition-colors whitespace-nowrap"
                     >
                         {{ cat.display_name || cat.name }}
@@ -119,7 +119,7 @@ const navCategories = computed(() => (categories || []).filter((cat) => cat.slug
                 <Link
                     v-for="cat in navCategories"
                     :key="cat.id"
-                    :href="'/?category=' + cat.slug"
+                    :href="'/category/' + cat.slug"
                     class="text-[11px] font-medium uppercase tracking-[0.14em] text-[#b7d0c6] whitespace-nowrap"
                 >{{ cat.display_name || cat.name }}</Link>
                 <Link href="/?offer=1#lookbook" class="text-[11px] font-medium uppercase tracking-[0.14em] text-[#9fd6c4] whitespace-nowrap">{{ t('header.offers') }}</Link>

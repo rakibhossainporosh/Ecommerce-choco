@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Enums\ReturnRequestStatus;
+use App\Mail\CustomerPasswordResetMail;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\ReturnRequest;
+use App\Models\Setting;
 use App\Services\SmsService;
+use App\Support\CustomerOtp;
 use App\Support\MetaPixel;
 use App\Support\ReturnItemValidator;
 use App\Support\ReturnPolicySettings;
@@ -15,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -177,6 +181,7 @@ class CustomerAuthController extends Controller
         $orders = (clone $ordersQuery)
             ->with([
                 'items',
+                'shipments',
                 'statusHistories' => function ($q) {
                     $q->latest();
                 },
@@ -237,6 +242,12 @@ class CustomerAuthController extends Controller
                         'created_at' => $openReturn->created_at?->format('d M Y, h:i A'),
                     ] : null,
                     'items' => $returnableItems,
+                    'shipments' => $order->shipments->map(fn ($shipment) => [
+                        'shipment_number' => $shipment->shipment_number,
+                        'status' => $shipment->status->value,
+                        'tracking_code' => $shipment->tracking_code,
+                        'tracking_url' => $shipment->getTrackingUrl(),
+                    ])->values()->all(),
                 ];
             });
 
@@ -279,6 +290,24 @@ class CustomerAuthController extends Controller
                 'created_at' => $notification->created_at?->format('d M Y, h:i A'),
             ]);
 
+        $addresses = $customer->addresses()
+            ->where('type', 'shipping')
+            ->orderByDesc('is_default')
+            ->latest('id')
+            ->get()
+            ->map(fn ($address) => [
+                'id' => $address->id,
+                'name' => $address->name,
+                'phone' => $address->phone,
+                'address_line' => $address->address_line,
+                'area' => $address->area,
+                'city' => $address->city,
+                'postcode' => $address->postcode,
+                'country' => $address->country,
+                'is_default' => (bool) $address->is_default,
+                'formatted' => $address->formatted_address,
+            ]);
+
         return Inertia::render('Customer/Account', [
             'customer' => [
                 'id' => $customer->id,
@@ -288,6 +317,7 @@ class CustomerAuthController extends Controller
                 'member_since' => $customer->created_at->format('d M Y'),
             ],
             'orders' => $orders,
+            'addresses' => $addresses,
             'return_requests' => $returnRequests,
             'notifications' => $notifications,
             'return_window_days' => ReturnPolicySettings::windowDays(),
@@ -333,6 +363,185 @@ class CustomerAuthController extends Controller
         return redirect()
             ->route('customer.account', ['tab' => 'notifications'])
             ->with('success', __('storefront.account.notifications_marked_read'));
+    }
+
+    public function showForgotPassword(): Response|RedirectResponse
+    {
+        if (Auth::guard('customer')->check()) {
+            return redirect()->route('customer.account');
+        }
+
+        return Inertia::render('Auth/ForgotPassword');
+    }
+
+    public function sendPasswordResetCode(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'login' => 'required|string|max:255',
+        ]);
+
+        $customer = $this->findActiveCustomerByLogin($validated['login']);
+
+        if (! $customer || ! $customer->password) {
+            throw ValidationException::withMessages([
+                'login' => __('storefront.auth.reset_not_found'),
+            ]);
+        }
+
+        $code = CustomerOtp::issue(CustomerOtp::PURPOSE_RESET, $customer);
+        $this->deliverCustomerCode($customer, $code, reset: true);
+
+        $request->session()->put('customer_password_reset_id', $customer->id);
+
+        return redirect()
+            ->route('customer.password.reset')
+            ->with('success', __('storefront.auth.reset_code_sent'));
+    }
+
+    public function showResetPassword(Request $request): Response|RedirectResponse
+    {
+        if (Auth::guard('customer')->check()) {
+            return redirect()->route('customer.account');
+        }
+
+        if (! $request->session()->get('customer_password_reset_id')) {
+            return redirect()->route('customer.password.forgot');
+        }
+
+        return Inertia::render('Auth/ResetPassword');
+    }
+
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $customerId = $request->session()->get('customer_password_reset_id');
+
+        if (! $customerId) {
+            return redirect()->route('customer.password.forgot');
+        }
+
+        $validated = $request->validate([
+            'code' => 'required|string|size:6',
+            'password' => ['required', 'confirmed', Password::min(6)],
+        ]);
+
+        $customer = Customer::query()->whereKey($customerId)->where('is_active', true)->first();
+
+        if (! $customer) {
+            $request->session()->forget('customer_password_reset_id');
+
+            return redirect()->route('customer.password.forgot');
+        }
+
+        CustomerOtp::verify(CustomerOtp::PURPOSE_RESET, $customer, $validated['code']);
+
+        $customer->password = $validated['password'];
+        $customer->save();
+
+        $request->session()->forget('customer_password_reset_id');
+
+        Auth::guard('customer')->login($customer);
+        $request->session()->regenerate();
+
+        return redirect()->route('customer.account')->with('success', __('storefront.auth.password_reset_done'));
+    }
+
+    public function sendLoginOtp(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'login' => 'required|string|max:255',
+        ]);
+
+        $customer = $this->findActiveCustomerByLogin($validated['login']);
+
+        if (! $customer || ! $customer->password) {
+            throw ValidationException::withMessages([
+                'login' => __('storefront.auth.otp_not_found'),
+            ]);
+        }
+
+        $code = CustomerOtp::issue(CustomerOtp::PURPOSE_LOGIN, $customer);
+        $this->deliverCustomerCode($customer, $code, reset: false);
+
+        $request->session()->put('customer_otp_login_id', $customer->id);
+
+        return back()->with('success', __('storefront.auth.otp_sent'));
+    }
+
+    public function verifyLoginOtp(Request $request): RedirectResponse
+    {
+        $customerId = $request->session()->get('customer_otp_login_id');
+
+        $validated = $request->validate([
+            'code' => 'required|string|size:6',
+            'remember' => 'sometimes|boolean',
+        ]);
+
+        if (! $customerId) {
+            throw ValidationException::withMessages([
+                'code' => __('storefront.auth.otp_request_first'),
+            ]);
+        }
+
+        $customer = Customer::query()->whereKey($customerId)->where('is_active', true)->first();
+
+        if (! $customer) {
+            $request->session()->forget('customer_otp_login_id');
+
+            throw ValidationException::withMessages([
+                'code' => __('storefront.auth.otp_request_first'),
+            ]);
+        }
+
+        CustomerOtp::verify(CustomerOtp::PURPOSE_LOGIN, $customer, $validated['code']);
+        $request->session()->forget('customer_otp_login_id');
+
+        Auth::guard('customer')->login($customer, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('customer.account'))->with('success', __('storefront.auth.welcome', ['name' => $customer->name]));
+    }
+
+    protected function findActiveCustomerByLogin(string $loginInput): ?Customer
+    {
+        $loginInput = trim($loginInput);
+        $isEmail = filter_var($loginInput, FILTER_VALIDATE_EMAIL);
+        $customerQuery = Customer::query()->where('is_active', true);
+
+        if ($isEmail) {
+            return $customerQuery->where('email', $loginInput)->first();
+        }
+
+        $cleaned = preg_replace('/[^\d]/', '', $loginInput) ?: '';
+
+        return $customerQuery->where(function ($q) use ($loginInput, $cleaned) {
+            $q->where('phone', $loginInput)
+                ->orWhere('phone', $cleaned);
+            if (str_starts_with($cleaned, '8801')) {
+                $q->orWhere('phone', substr($cleaned, 2));
+            }
+        })->first();
+    }
+
+    protected function deliverCustomerCode(Customer $customer, string $code, bool $reset): void
+    {
+        $shopName = (string) (Setting::get('site_name', 'Nobo Shop') ?: 'Nobo Shop');
+        $smsBody = $reset
+            ? __('storefront.auth.reset_sms', ['code' => $code, 'shop' => $shopName])
+            : __('storefront.auth.otp_sms', ['code' => $code, 'shop' => $shopName]);
+
+        try {
+            app(SmsService::class)->send($customer->phone, $smsBody);
+        } catch (\Throwable) {
+            // Continue — email may still deliver.
+        }
+
+        if (filled($customer->email)) {
+            try {
+                Mail::to($customer->email)->send(new CustomerPasswordResetMail($customer, $code, $shopName, $reset));
+            } catch (\Throwable) {
+                // SMS may still have delivered.
+            }
+        }
     }
 
     /**

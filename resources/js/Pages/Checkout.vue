@@ -24,6 +24,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    saved_addresses: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const page = usePage();
@@ -57,6 +61,8 @@ const methodCharge = (method) => {
 const loggedInCustomer = page.props.customer;
 const initialCityMethods = methodsForCity('Dhaka');
 
+const defaultAddress = props.saved_addresses.find((address) => address.is_default) || props.saved_addresses[0] || null;
+
 const form = useForm({
     customer_name: loggedInCustomer ? loggedInCustomer.name : '',
     customer_phone: loggedInCustomer ? loggedInCustomer.phone : '',
@@ -68,6 +74,8 @@ const form = useForm({
     coupon_code: null,
     payment_method: methods.value[0]?.key || 'cod',
     transaction_reference: '',
+    customer_address_id: defaultAddress?.id || null,
+    save_address: false,
     cart_items: cartItems.value.map(item => ({
         id: item.id,
         variant_id: item.variant_id || item.id,
@@ -167,6 +175,33 @@ const updateShipping = () => {
     form.shipping_amount = shippingCharge.value;
 };
 
+const applySavedAddress = (address) => {
+    if (!address) {
+        form.customer_address_id = null;
+        return;
+    }
+
+    form.customer_address_id = address.id;
+    form.save_address = false;
+    form.shipping_address_line = [address.address_line, address.area].filter(Boolean).join(', ');
+    form.shipping_city = String(address.city || '').toLowerCase() === 'dhaka' ? 'Dhaka' : 'Outside Dhaka';
+    if (address.name) {
+        form.customer_name = address.name;
+    }
+    if (address.phone) {
+        form.customer_phone = address.phone;
+    }
+    updateShipping();
+};
+
+const useNewAddress = () => {
+    form.customer_address_id = null;
+};
+
+if (defaultAddress) {
+    applySavedAddress(defaultAddress);
+}
+
 watch(
     () => [form.customer_name, form.customer_phone, form.customer_email],
     () => {
@@ -234,9 +269,38 @@ watch(
                             </div>
                         </div>
 
+                        <div v-if="saved_addresses.length" class="space-y-3">
+                            <p class="text-sm font-semibold" :class="mutedClass">{{ t('checkout.saved_addresses') }}</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button
+                                    v-for="address in saved_addresses"
+                                    :key="address.id"
+                                    type="button"
+                                    class="text-left min-h-11 border p-4 rounded-xl transition-colors"
+                                    :class="form.customer_address_id === address.id ? choiceSelectedClass : choiceIdleClass"
+                                    @click="applySavedAddress(address)"
+                                >
+                                    <span class="block text-sm font-bold" :class="inkClass">
+                                        {{ address.name || form.customer_name }}
+                                        <span v-if="address.is_default" class="ml-2 text-[11px] font-semibold uppercase opacity-70">{{ t('checkout.default_badge') }}</span>
+                                    </span>
+                                    <span class="block text-sm mt-1" :class="mutedClass">{{ address.formatted }}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="text-left min-h-11 border p-4 rounded-xl transition-colors"
+                                    :class="!form.customer_address_id ? choiceSelectedClass : choiceIdleClass"
+                                    @click="useNewAddress"
+                                >
+                                    <span class="block text-sm font-bold" :class="inkClass">{{ t('checkout.use_new_address') }}</span>
+                                </button>
+                            </div>
+                            <span v-if="form.errors.customer_address_id" class="text-red-500 text-xs">{{ form.errors.customer_address_id }}</span>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.city') }} *</label>
-                            <select v-model="form.shipping_city" required :class="fieldClass" @change="updateShipping">
+                            <select v-model="form.shipping_city" required :class="fieldClass" :disabled="!!form.customer_address_id" @change="updateShipping">
                                 <option value="Dhaka">{{ props.shipping_methods.length ? t('checkout.inside_dhaka') : t('checkout.city_dhaka_option', { charge: shippingDhaka }) }}</option>
                                 <option value="Outside Dhaka">{{ props.shipping_methods.length ? t('checkout.outside_dhaka') : t('checkout.city_outside_option', { charge: shippingOutside }) }}</option>
                             </select>
@@ -263,9 +327,14 @@ watch(
 
                         <div>
                             <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.full_address') }} *</label>
-                            <textarea v-model="form.shipping_address_line" required rows="3" :class="fieldClass" :placeholder="t('checkout.address_placeholder')"></textarea>
+                            <textarea v-model="form.shipping_address_line" required rows="3" :class="fieldClass" :placeholder="t('checkout.address_placeholder')" :readonly="!!form.customer_address_id"></textarea>
                             <span v-if="form.errors.shipping_address_line" class="text-red-500 text-xs mt-1">{{ form.errors.shipping_address_line }}</span>
                         </div>
+
+                        <label v-if="loggedInCustomer && !form.customer_address_id" class="flex items-start gap-3 text-sm" :class="mutedClass">
+                            <input v-model="form.save_address" type="checkbox" class="mt-1 h-4 w-4" :class="accentTextClass" style="accent-color: currentColor">
+                            <span>{{ t('checkout.save_address') }}</span>
+                        </label>
 
                         <fieldset class="pt-6 border-t border-black/5 space-y-3">
                             <legend class="text-sm font-semibold" :class="mutedClass">{{ t('checkout.payment_method') }}</legend>

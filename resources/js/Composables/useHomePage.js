@@ -2,6 +2,37 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { useI18n } from './useI18n';
 
+function catalogPath(category) {
+    if (category && category !== 'all') {
+        return `/category/${category}`;
+    }
+
+    return '/';
+}
+
+function buildCatalogQuery(filters, page = null) {
+    const query = {};
+
+    if (filters.search) {
+        query.search = filters.search;
+    }
+
+    if (filters.sort && filters.sort !== 'newest') {
+        query.sort = filters.sort;
+    }
+
+    if (filters.offer) {
+        query.offer = 1;
+    }
+
+    const pageNumber = page ?? filters.page;
+    if (pageNumber && Number(pageNumber) > 1) {
+        query.page = Number(pageNumber);
+    }
+
+    return query;
+}
+
 export function useHomePage(props) {
     const { t } = useI18n();
     const page = usePage();
@@ -13,7 +44,11 @@ export function useHomePage(props) {
     onMounted(() => {
         removeStart = router.on('start', (event) => {
             const visitUrl = String(event?.detail?.visit?.url || '');
-            if (visitUrl.includes('/') && !visitUrl.includes('/product/') && !visitUrl.includes('/checkout')) {
+            if (
+                (visitUrl.includes('/') || visitUrl.includes('/category/'))
+                && !visitUrl.includes('/product/')
+                && !visitUrl.includes('/checkout')
+            ) {
                 isCatalogLoading.value = true;
             }
         });
@@ -27,9 +62,17 @@ export function useHomePage(props) {
         removeFinish?.();
     });
 
+    const productList = computed(() => (Array.isArray(props.products) ? props.products : []));
+
+    const resultTotal = computed(() => {
+        const total = props.pagination?.total;
+
+        return typeof total === 'number' ? total : productList.value.length;
+    });
+
     const saleProducts = computed(() => {
         const pinned = Array.isArray(occasion.value?.sale_ids) ? occasion.value.sale_ids : [];
-        const byId = new Map(props.products.map((product) => [product.id, product]));
+        const byId = new Map(productList.value.map((product) => [product.id, product]));
 
         if (pinned.length > 0) {
             return pinned
@@ -38,7 +81,7 @@ export function useHomePage(props) {
                 .slice(0, 4);
         }
 
-        return props.products
+        return productList.value
             .filter((product) => Number(product.compare_at_price) > Number(product.price))
             .slice(0, 4);
     });
@@ -47,12 +90,12 @@ export function useHomePage(props) {
 
     const catalogProducts = computed(() => {
         if (!showSale.value) {
-            return props.products;
+            return productList.value;
         }
 
         const hidden = new Set(saleProducts.value.map((product) => product.id));
 
-        return props.products.filter((product) => !hidden.has(product.id));
+        return productList.value.filter((product) => !hidden.has(product.id));
     });
 
     const featuredProduct = computed(() => catalogProducts.value[0] || null);
@@ -61,19 +104,33 @@ export function useHomePage(props) {
     const updateFilters = (newFilters) => {
         const currentFilters = { ...props.filters, ...newFilters };
 
-        Object.keys(currentFilters).forEach((key) => {
-            if (!currentFilters[key] || currentFilters[key] === 'all' || currentFilters[key] === 'newest') {
-                delete currentFilters[key];
-            }
-        });
+        if (newFilters.category !== undefined || newFilters.search !== undefined || newFilters.sort !== undefined || newFilters.offer !== undefined) {
+            currentFilters.page = 1;
+        }
 
         const isSearchChange = newFilters.search !== undefined;
+        const url = catalogPath(currentFilters.category);
+        const query = buildCatalogQuery(currentFilters);
 
-        router.get('/', currentFilters, {
+        router.get(url, query, {
             preserveState: true,
             preserveScroll: !isSearchChange,
             replace: true,
         });
+    };
+
+    const pageUrl = (targetPage) => {
+        const url = catalogPath(props.filters?.category);
+        const query = buildCatalogQuery(props.filters || {}, targetPage);
+        const params = new URLSearchParams();
+
+        Object.entries(query).forEach(([key, value]) => {
+            params.set(key, String(value));
+        });
+
+        const qs = params.toString();
+
+        return qs ? `${url}?${qs}` : url;
     };
 
     const handleSearch = (searchQuery) => {
@@ -81,7 +138,7 @@ export function useHomePage(props) {
     };
 
     const handleClearAllFilters = () => {
-        updateFilters({ search: '', category: 'all', sort: 'newest' });
+        updateFilters({ search: '', category: 'all', sort: 'newest', offer: false });
     };
 
     const handleSelectCategory = (categorySlug) => {
@@ -113,7 +170,9 @@ export function useHomePage(props) {
         catalogProducts,
         featuredProduct,
         remainingProducts,
+        resultTotal,
         updateFilters,
+        pageUrl,
         handleSearch,
         handleClearAllFilters,
         handleSelectCategory,

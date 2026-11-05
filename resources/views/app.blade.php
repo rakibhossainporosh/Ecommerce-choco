@@ -62,6 +62,7 @@
 
         @php
             $metaPixelId = \App\Support\MetaPixel::id();
+            $ga4MeasurementId = \App\Support\Ga4::measurementId();
         @endphp
         @if ($metaPixelId)
             <script>
@@ -77,6 +78,15 @@
                 fbq('track', 'PageView');
             </script>
             <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $metaPixelId }}&ev=PageView&noscript=1" alt=""></noscript>
+        @endif
+        @if ($ga4MeasurementId)
+            <script async src="https://www.googletagmanager.com/gtag/js?id={{ $ga4MeasurementId }}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '{{ $ga4MeasurementId }}');
+            </script>
         @endif
 
         <!-- Scripts & Styles -->

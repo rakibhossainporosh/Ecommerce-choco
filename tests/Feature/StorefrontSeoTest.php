@@ -31,12 +31,12 @@ test('a category page uses the category name and stays indexable', function () {
         'description' => 'Breathable cotton shirts for everyday wear.',
     ]);
 
-    $this->get('/?category='.$category->slug)
+    $this->get('/category/'.$category->slug)
         ->assertSuccessful()
         ->assertSee('Cotton Shirts', false)
         ->assertSee('Breathable cotton shirts for everyday wear.', false)
         ->assertSee('name="robots" content="index, follow"', false)
-        ->assertSee('/?category='.$category->slug, false);
+        ->assertSee('/category/'.$category->slug, false);
 });
 
 test('a product page uses the saved meta title and description', function () {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\OrderInvoiceController;
 use App\Http\Controllers\Admin\SiteLocaleController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\CustomerReturnController;
 use App\Http\Controllers\LocaleController;
@@ -17,6 +18,7 @@ Route::get('/robots.txt', [StorefrontSeoController::class, 'robots'])->name('seo
 Route::get('/sitemap.xml', [StorefrontSeoController::class, 'sitemap'])->name('seo.sitemap');
 
 Route::get('/', [StorefrontController::class, 'index'])->name('home');
+Route::get('/category/{slug}', [StorefrontController::class, 'category'])->name('category.show');
 Route::get('/search/suggestions', [StorefrontController::class, 'suggestions'])->name('search.suggestions');
 Route::get('/product/{slug}', [StorefrontController::class, 'show'])->name('product.show');
 Route::post('/product/{slug}/reviews', [StorefrontController::class, 'submitReview'])->middleware('throttle:15,1')->name('product.review.submit');
@@ -34,16 +36,26 @@ Route::post('/payments/{gateway}/ipn', [PaymentReturnController::class, 'ipn'])
     ->where('gateway', '[a-z0-9_]{2,30}')
     ->middleware('throttle:60,1')
     ->name('payments.ipn');
-Route::get('/track-order', [StorefrontController::class, 'trackOrder'])->name('track.order');
+Route::get('/track-order', [StorefrontController::class, 'trackOrder'])->middleware('throttle:20,1')->name('track.order');
 
 // Customer Authentication & Account Portal
 Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
 Route::post('/login', [CustomerAuthController::class, 'login'])->middleware('throttle:10,1')->name('customer.login.submit');
+Route::post('/login/otp', [CustomerAuthController::class, 'sendLoginOtp'])->middleware('throttle:5,1')->name('customer.login.otp.send');
+Route::post('/login/otp/verify', [CustomerAuthController::class, 'verifyLoginOtp'])->middleware('throttle:10,1')->name('customer.login.otp.verify');
+Route::get('/forgot-password', [CustomerAuthController::class, 'showForgotPassword'])->name('customer.password.forgot');
+Route::post('/forgot-password', [CustomerAuthController::class, 'sendPasswordResetCode'])->middleware('throttle:5,1')->name('customer.password.forgot.submit');
+Route::get('/reset-password', [CustomerAuthController::class, 'showResetPassword'])->name('customer.password.reset');
+Route::post('/reset-password', [CustomerAuthController::class, 'resetPassword'])->middleware('throttle:10,1')->name('customer.password.reset.submit');
 Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
 Route::post('/register', [CustomerAuthController::class, 'register'])->middleware('throttle:10,1')->name('customer.register.submit');
 Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
 Route::get('/account', [CustomerAuthController::class, 'showAccount'])->name('customer.account');
 Route::post('/account/profile', [CustomerAuthController::class, 'updateProfile'])->middleware('throttle:15,1')->name('customer.profile.update');
+Route::post('/account/addresses', [CustomerAddressController::class, 'store'])->middleware('throttle:15,1')->name('customer.addresses.store');
+Route::put('/account/addresses/{address}', [CustomerAddressController::class, 'update'])->middleware('throttle:15,1')->name('customer.addresses.update');
+Route::delete('/account/addresses/{address}', [CustomerAddressController::class, 'destroy'])->middleware('throttle:15,1')->name('customer.addresses.destroy');
+Route::post('/account/addresses/{address}/default', [CustomerAddressController::class, 'makeDefault'])->middleware('throttle:15,1')->name('customer.addresses.default');
 Route::post('/account/orders/{order}/returns', [CustomerReturnController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('customer.orders.returns.store');

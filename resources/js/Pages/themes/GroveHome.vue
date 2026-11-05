@@ -7,17 +7,19 @@ import CampaignSale from '../../Components/CampaignSale.vue';
 import ProductCard from '../../Components/ProductCard.vue';
 import Footer from '../../Components/Footer.vue';
 import ProductGridSkeleton from '../../Components/ProductGridSkeleton.vue';
+import CatalogPager from '../../Components/CatalogPager.vue';
 import { useHomePage } from '../../Composables/useHomePage';
 
 const props = defineProps({
     categories: { type: Array, default: () => [] },
     products: { type: Array, default: () => [] },
+    pagination: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
 });
 
 const {
     t, saleProducts, showSale, catalogProducts, isCatalogLoading,
-    updateFilters, handleSearch, handleClearAllFilters,
+    updateFilters, pageUrl, handleSearch, handleClearAllFilters,
     handleSelectCategory, handleSelectSort, emptyMessage,
 } = useHomePage(props);
 
@@ -141,6 +143,8 @@ const onSortChange = (event) => {
                 <div v-else-if="catalogProducts.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-4">
                     <ProductCard v-for="product in catalogProducts" :key="product.id" :product="product" />
                 </div>
+
+                <CatalogPager :pagination="pagination" :build-url="pageUrl" />
             </section>
         </main>
 

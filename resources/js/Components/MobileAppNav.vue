@@ -128,7 +128,7 @@ const onWishlist = () => {
                 <template v-else>
                     <div v-for="cat in categories" :key="cat.id">
                         <Link
-                            :href="'/?category=' + cat.slug"
+                            :href="'/category/' + cat.slug"
                             class="store-mobile-app-nav-sheet__item"
                             :class="shell.sheetItem"
                             @click="closeCategories"
@@ -139,7 +139,7 @@ const onWishlist = () => {
                         <Link
                             v-for="child in (cat.children || [])"
                             :key="child.id"
-                            :href="'/?category=' + child.slug"
+                            :href="'/category/' + child.slug"
                             class="store-mobile-app-nav-sheet__item store-mobile-app-nav-sheet__item--child"
                             :class="shell.sheetItem"
                             @click="closeCategories"

@@ -95,7 +95,7 @@ const onMainImageError = () => {
                 <nav class="mb-8 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8a9a92] overflow-x-auto">
                     <Link href="/" class="hover:text-[#0e6b58]">{{ t('header.home') }}</Link>
                     <ChevronRight class="w-3.5 h-3.5 shrink-0" />
-                    <Link :href="'/?category=' + product.category_slug" class="hover:text-[#0e6b58]">{{ productCategory }}</Link>
+                    <Link :href="'/category/' + product.category_slug" class="hover:text-[#0e6b58]">{{ productCategory }}</Link>
                     <ChevronRight class="w-3.5 h-3.5 shrink-0" />
                     <span class="text-[#1a2e28] truncate normal-case tracking-normal">{{ productTitle }}</span>
                 </nav>

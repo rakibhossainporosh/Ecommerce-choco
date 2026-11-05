@@ -351,7 +351,7 @@ onUnmounted(() => {
                                     class="relative group/sub"
                                 >
                                     <Link 
-                                        :href="'/?category=' + cat.slug"
+                                        :href="'/category/' + cat.slug"
                                         class="flex items-center justify-between px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
                                     >
                                         <span>{{ cat.display_name || cat.name }}</span>
@@ -369,7 +369,7 @@ onUnmounted(() => {
                                             class="relative group/subsub"
                                         >
                                             <Link 
-                                                :href="'/?category=' + subCat.slug"
+                                                :href="'/category/' + subCat.slug"
                                                 class="flex items-center justify-between px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
                                             >
                                                 <span>{{ subCat.display_name || subCat.name }}</span>
@@ -384,7 +384,7 @@ onUnmounted(() => {
                                                 <Link 
                                                     v-for="subSubCat in subCat.children" 
                                                     :key="subSubCat.id"
-                                                    :href="'/?category=' + subSubCat.slug"
+                                                    :href="'/category/' + subSubCat.slug"
                                                     class="block px-5 py-2.5 text-[#475569] hover:bg-[#FAF7F2] hover:text-[#E86A28] transition-colors text-[15px] w-full text-left"
                                                 >
                                                     {{ subSubCat.display_name || subSubCat.name }}

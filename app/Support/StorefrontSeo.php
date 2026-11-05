@@ -36,7 +36,7 @@ final class StorefrontSeo
         $routeName = $request->route()?->getName();
 
         $page = match ($routeName) {
-            'home' => self::home($request, $siteName),
+            'home', 'category.show' => self::home($request, $siteName),
             'product.show' => self::product($request, $siteName),
             'page.about' => self::content('about', $siteName),
             'page.contact' => self::content('contact', $siteName),
@@ -79,11 +79,12 @@ final class StorefrontSeo
      */
     private static function home(Request $request, string $siteName): array
     {
-        $categorySlug = trim((string) $request->query('category', 'all'));
+        $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', 'all')));
         $search = trim((string) $request->query('search', ''));
         $sort = trim((string) $request->query('sort', 'newest'));
         $offer = $request->boolean('offer');
-        $filtered = $search !== '' || $offer || ($sort !== '' && $sort !== 'newest');
+        $page = max(1, (int) $request->query('page', 1));
+        $filtered = $search !== '' || $offer || ($sort !== '' && $sort !== 'newest') || $page > 1;
 
         $category = null;
 
@@ -106,7 +107,7 @@ final class StorefrontSeo
         if ($category instanceof Category) {
             $categoryName = CatalogTranslator::category($category->slug, $category->name);
             $title = $categoryName;
-            $canonical = url('/?category='.$category->slug);
+            $canonical = route('category.show', ['slug' => $category->slug]);
             $categoryDescription = self::plain($category->description);
 
             $description = $categoryDescription !== ''

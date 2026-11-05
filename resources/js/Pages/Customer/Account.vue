@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
 import {
     Package, ShoppingBag, LogOut, Phone, Mail, Calendar,
-    Truck, ChevronRight, CheckCircle2, Edit3, RotateCcw, X, Bell
+    Truck, ChevronRight, CheckCircle2, Edit3, RotateCcw, X, Bell, MapPin
 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
@@ -31,6 +31,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    addresses: {
+        type: Array,
+        default: () => [],
+    },
     stats: {
         type: Object,
         default: () => ({ total_orders: 0, total_spent: 0 }),
@@ -46,7 +50,9 @@ const {
 
 const tabFromUrl = page.url.includes('tab=returns')
     ? 'returns'
-    : (page.url.includes('tab=notifications') ? 'notifications' : 'orders');
+    : (page.url.includes('tab=notifications')
+        ? 'notifications'
+        : (page.url.includes('tab=addresses') ? 'addresses' : 'orders'));
 const activeTab = ref(tabFromUrl);
 const unreadNotifications = computed(() => props.notifications.filter((n) => !n.read).length);
 const returnOrder = ref(null);
@@ -59,10 +65,49 @@ const profileForm = useForm({
     new_password_confirmation: '',
 });
 
+const addressForm = useForm({
+    name: props.customer.name,
+    phone: props.customer.phone,
+    address_line: '',
+    area: '',
+    city: 'Dhaka',
+    postcode: '',
+    is_default: false,
+});
+
 const returnForm = useForm({
     reason: '',
     items: [],
 });
+
+const saveAddress = () => {
+    addressForm.post('/account/addresses', {
+        preserveScroll: true,
+        onSuccess: () => {
+            addressForm.reset('address_line', 'area', 'postcode');
+            addressForm.is_default = false;
+            activeTab.value = 'addresses';
+        },
+    });
+};
+
+const deleteAddress = (address) => {
+    router.delete(`/account/addresses/${address.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            activeTab.value = 'addresses';
+        },
+    });
+};
+
+const makeDefaultAddress = (address) => {
+    router.post(`/account/addresses/${address.id}/default`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            activeTab.value = 'addresses';
+        },
+    });
+};
 
 const updateProfile = () => {
     profileForm.post('/account/profile', {
@@ -293,6 +338,16 @@ const submitReturn = () => {
                 </button>
 
                 <button
+                    @click="activeTab = 'addresses'"
+                    type="button"
+                    class="px-5 py-2.5 text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
+                    :class="activeTab === 'addresses' ? tabActiveClass : tabIdleClass"
+                >
+                    <MapPin class="w-4 h-4" />
+                    <span>{{ t('account.addresses_tab', { count: addresses.length }) }}</span>
+                </button>
+
+                <button
                     @click="activeTab = 'profile'"
                     type="button"
                     class="px-5 py-2.5 text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
@@ -374,6 +429,29 @@ const submitReturn = () => {
                         <span>{{ t('account.shipping_address', { address: order.shipping_address }) }}</span>
                         <span>{{ t('account.payment_line', { method: paymentLabel(order.payment_method) }) }}</span>
                     </div>
+
+                    <div v-if="order.shipments?.length" class="pt-3 space-y-2">
+                        <div
+                            v-for="shipment in order.shipments"
+                            :key="shipment.shipment_number"
+                            class="flex flex-wrap items-center justify-between gap-2 text-sm"
+                        >
+                            <span :class="inkClass">
+                                {{ t('account.shipment_tracking') }}:
+                                <span class="font-semibold">{{ shipment.tracking_code || shipment.shipment_number }}</span>
+                            </span>
+                            <a
+                                v-if="shipment.tracking_url"
+                                :href="shipment.tracking_url"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="font-semibold underline"
+                                :class="accentTextClass"
+                            >
+                                {{ t('account.open_tracking') }}
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 <div v-if="orders.length === 0" :class="[panelClass, 'p-12 text-center']">
@@ -386,6 +464,80 @@ const submitReturn = () => {
                     >
                         <span>{{ t('account.shop') }}</span>
                     </Link>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'addresses'" class="space-y-6">
+                <div :class="[panelClass, 'p-6 sm:p-8 space-y-4']">
+                    <h3 class="text-lg font-bold" :class="inkClass">{{ t('account.addresses_title') }}</h3>
+                    <div v-if="addresses.length === 0" class="text-sm" :class="mutedClass">{{ t('account.addresses_empty') }}</div>
+                    <div v-for="address in addresses" :key="address.id" :class="[softPanelClass, 'p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3']">
+                        <div>
+                            <p class="font-semibold" :class="inkClass">
+                                {{ address.name || customer.name }}
+                                <span v-if="address.is_default" class="ml-2 text-[11px] uppercase font-bold opacity-70">{{ t('account.address_default') }}</span>
+                            </p>
+                            <p class="text-sm mt-1" :class="mutedClass">{{ address.formatted }}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-if="!address.is_default"
+                                type="button"
+                                class="px-3 py-2 text-xs font-semibold"
+                                :class="softPanelClass"
+                                @click="makeDefaultAddress(address)"
+                            >
+                                {{ t('account.address_make_default') }}
+                            </button>
+                            <button
+                                type="button"
+                                class="px-3 py-2 text-xs font-semibold text-rose-600"
+                                @click="deleteAddress(address)"
+                            >
+                                {{ t('account.address_delete') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div :class="[panelClass, 'p-6 sm:p-8 max-w-2xl']">
+                    <h3 class="text-lg font-bold mb-4" :class="inkClass">{{ t('account.address_add') }}</h3>
+                    <form class="space-y-4" @submit.prevent="saveAddress">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.name') }}</label>
+                            <input v-model="addressForm.name" type="text" :class="fieldClass">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('checkout.phone') }}</label>
+                            <input v-model="addressForm.phone" type="text" :class="fieldClass">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('account.address_line') }} *</label>
+                            <textarea v-model="addressForm.address_line" required rows="3" :class="fieldClass"></textarea>
+                            <span v-if="addressForm.errors.address_line" class="text-red-500 text-xs">{{ addressForm.errors.address_line }}</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('account.address_area') }}</label>
+                                <input v-model="addressForm.area" type="text" :class="fieldClass">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('account.address_city') }} *</label>
+                                <input v-model="addressForm.city" type="text" required :class="fieldClass">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2" :class="mutedClass">{{ t('account.address_postcode') }}</label>
+                            <input v-model="addressForm.postcode" type="text" :class="fieldClass">
+                        </div>
+                        <label class="flex items-center gap-2 text-sm" :class="mutedClass">
+                            <input v-model="addressForm.is_default" type="checkbox" class="h-4 w-4">
+                            <span>{{ t('account.address_make_default') }}</span>
+                        </label>
+                        <button type="submit" :disabled="addressForm.processing" :class="[primaryButtonClass, 'px-5 py-3 text-sm']">
+                            {{ addressForm.processing ? t('account.address_saving') : t('account.address_save') }}
+                        </button>
+                    </form>
                 </div>
             </div>
 

@@ -45,7 +45,7 @@ class StorefrontSeoController extends Controller
                 ->get(['slug', 'updated_at'])
                 ->each(function (Category $category) use (&$urls): void {
                     $urls[] = [
-                        'loc' => url('/?category='.$category->slug),
+                        'loc' => route('category.show', ['slug' => $category->slug]),
                         'lastmod' => $category->updated_at?->toAtomString(),
                     ];
                 });

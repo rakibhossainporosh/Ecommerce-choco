@@ -133,7 +133,7 @@ const {
                     <Link
                         v-for="cat in categories"
                         :key="cat.id"
-                        :href="'/?category=' + cat.slug"
+                        :href="'/category/' + cat.slug"
                         class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[#334155] hover:text-[#1d4ed8] hover:bg-[#f4f7fb] rounded-sm whitespace-nowrap"
                     >
                         {{ cat.display_name || cat.name }}

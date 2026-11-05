@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Enums\SettingType;
 use App\Filament\Concerns\TranslatesPageNavigation;
 use App\Models\Setting;
+use App\Support\Ga4;
 use App\Support\MetaPixel;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -107,6 +108,7 @@ class FooterSettings extends Page
             'footer_payment_methods' => is_array($paymentMethods) ? $paymentMethods : ['bKash', 'Nagad', 'VISA'],
             'meta_pixel_id' => Setting::get('meta_pixel_id', ''),
             'meta_pixel_access_token' => '',
+            'ga4_measurement_id' => Setting::get('ga4_measurement_id', ''),
         ]);
     }
 
@@ -324,6 +326,16 @@ class FooterSettings extends Page
                                                 ->nullable(),
                                         ]),
                                     ]),
+                                Section::make('Google Analytics 4')
+                                    ->description(__('Paste the GA4 Measurement ID. Tracking stays off until an ID is saved.'))
+                                    ->schema([
+                                        TextInput::make('ga4_measurement_id')
+                                            ->label('GA4 Measurement ID')
+                                            ->placeholder('G-XXXXXXXXXX')
+                                            ->helperText(__('Starts with G-. Empty turns GA4 off.'))
+                                            ->nullable()
+                                            ->rules(['nullable', 'regex:/^(G-[A-Z0-9]{4,20})?$/i']),
+                                    ]),
                             ]),
 
                         Tab::make('Payments')
@@ -388,6 +400,11 @@ class FooterSettings extends Page
                 $val = MetaPixel::normalizeId(is_string($val) ? $val : null);
             }
 
+            if ($key === 'ga4_measurement_id') {
+                $group = 'marketing';
+                $val = Ga4::normalizeId(is_string($val) ? $val : null);
+            }
+
             if (in_array($key, ['site_name', 'site_tagline', 'site_logo', 'site_favicon', 'site_locale'])) {
                 $group = 'general';
             } elseif (in_array($key, ['facebook_url', 'twitter_url', 'instagram_url', 'youtube_url'])) {
@@ -445,6 +462,7 @@ class FooterSettings extends Page
             'footer_payment_methods' => 'Footer Payment Methods',
             'meta_pixel_id' => 'Meta Pixel ID',
             'meta_pixel_access_token' => 'Meta Conversions API token',
+            'ga4_measurement_id' => 'GA4 Measurement ID',
             default => str_replace('_', ' ', ucwords($key, '_')),
         };
     }
