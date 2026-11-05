@@ -82,7 +82,7 @@ const onGallerySwipe = (event) => {
     <div class="min-h-screen bg-[#f4f7fb] text-[#0f172a] flex flex-col">
         <Header />
 
-        <main class="flex-1 pb-20 lg:pb-0">
+        <main class="flex-1 pb-24 lg:pb-0">
             <div class="bg-white border-b border-[#d5e0ee]">
                 <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#6d83a0] overflow-x-auto">
                     <Link href="/" class="hover:text-[#1d4ed8]">{{ t('header.home') }}</Link>

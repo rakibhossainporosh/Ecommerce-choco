@@ -105,17 +105,17 @@ onUnmounted(() => {
     </section>
 
     <section v-else class="bg-[#f4f7fb]" @mouseenter="stopAutoPlay" @mouseleave="startAutoPlay">
-        <div class="relative overflow-hidden rounded-sm border border-[#d5e0ee] bg-white min-h-[20rem] shadow-[0_10px_30px_rgb(15_23_42/0.06)]">
+        <div class="relative overflow-hidden rounded-sm border border-[#d5e0ee] bg-white min-h-0 lg:min-h-[20rem] shadow-[0_10px_30px_rgb(15_23_42/0.06)]">
             <div
-                class="flex transition-transform duration-500 absolute inset-0"
+                class="flex transition-transform duration-500 relative lg:absolute lg:inset-0"
                 :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
             >
                 <div
                     v-for="(slide, index) in slides"
                     :key="index"
-                    class="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2"
+                    class="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 lg:h-full"
                 >
-                    <div class="p-6 sm:p-8 flex flex-col justify-center order-2 lg:order-1">
+                    <div class="p-6 sm:p-8 pb-12 flex flex-col justify-center order-2 lg:order-1">
                         <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#1d4ed8]">{{ siteName }}</p>
                         <h1 class="mt-3 text-3xl sm:text-4xl font-black text-[#0f172a] leading-tight">
                             {{ slide.lead }} <span class="text-[#1d4ed8]">{{ slide.accent }}</span>

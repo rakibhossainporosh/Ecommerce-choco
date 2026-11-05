@@ -372,7 +372,7 @@ const onMainImageError = () => {
             </div>
         </main>
 
-        <div class="fixed bottom-[var(--store-mobile-nav-offset)] inset-x-0 z-30 border-t border-[#1a2e28]/10 bg-[#f3efe8]/95 backdrop-blur-sm p-3 lg:px-8 lg:bottom-0">
+        <div class="lg:hidden fixed bottom-[var(--store-mobile-nav-offset)] inset-x-0 z-30 border-t border-[#1a2e28]/10 bg-[#f3efe8]/95 backdrop-blur-sm p-3">
             <div class="max-w-[88rem] mx-auto flex items-center gap-3">
                 <div class="min-w-0 hidden sm:block">
                     <p class="text-xs uppercase tracking-[0.14em] text-[#8a9a92]">{{ productTitle }}</p>

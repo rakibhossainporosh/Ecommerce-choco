@@ -34,7 +34,7 @@ const { t } = useI18n();
                 <span>{{ t('header.products') }}</span>
                 <span>{{ t('header.found', { count: suggestions.length }) }}</span>
             </div>
-            <div class="max-h-[380px] overflow-y-auto" :class="tone === 'harbor' ? 'divide-y divide-[#e7eef8]' : 'divide-y divide-[#e7f1ec]'">
+            <div class="max-h-[min(380px,50vh)] overflow-y-auto" :class="tone === 'harbor' ? 'divide-y divide-[#e7eef8]' : 'divide-y divide-[#e7f1ec]'">
                 <Link
                     v-for="item in suggestions"
                     :key="item.id"

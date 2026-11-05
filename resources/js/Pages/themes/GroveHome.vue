@@ -90,7 +90,7 @@ const onSortChange = (event) => {
 
             <CampaignSale v-if="showSale" :products="saleProducts" />
 
-            <section id="lookbook" class="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 scroll-mt-20">
+            <section id="lookbook" class="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 scroll-mt-32 md:scroll-mt-28">
                 <!-- Professional catalog toolbar -->
                 <div class="mb-6 pb-4 border-b border-[#1a2e28]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-end gap-3 min-w-0">

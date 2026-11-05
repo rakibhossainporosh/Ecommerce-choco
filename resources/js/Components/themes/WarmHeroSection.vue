@@ -101,16 +101,16 @@ onUnmounted(() => {
     </section>
     <section v-else class="py-6 sm:py-8" @mouseenter="stopAutoPlay" @mouseleave="startAutoPlay">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="hero-card relative overflow-hidden rounded-3xl bg-[#F6F1E8] border border-[#ECE5D8] shadow-[0_4px_24px_rgba(0,0,0,0.02)] min-h-[480px] sm:min-h-[600px] lg:min-h-[440px]">
+            <div class="hero-card relative overflow-hidden rounded-3xl bg-[#F6F1E8] border border-[#ECE5D8] shadow-[0_4px_24px_rgba(0,0,0,0.02)] min-h-0 sm:min-h-[600px] lg:min-h-[440px]">
                 
                 <!-- Slides Container -->
                 <div 
-                    class="flex transition-transform duration-700 ease-in-out h-full absolute inset-0"
+                    class="flex transition-transform duration-700 ease-in-out relative lg:absolute lg:inset-0 lg:h-full"
                     :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
                 >
-                    <div v-for="(slide, index) in slides" :key="index" class="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-12 h-full">
+                    <div v-for="(slide, index) in slides" :key="index" class="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-12 lg:h-full">
                         <!-- Left Column: Copy & CTA -->
-                        <div class="lg:col-span-5 p-8 sm:p-12 lg:pl-14 lg:pr-6 z-10 flex flex-col justify-center bg-[#F6F1E8] h-[280px] lg:h-full relative">
+                        <div class="lg:col-span-5 p-8 sm:p-12 pb-14 lg:pl-14 lg:pr-6 z-10 flex flex-col justify-center bg-[#F6F1E8] min-h-[280px] h-auto lg:h-full relative">
                             <h1 class="text-3xl sm:text-4xl lg:text-[44px] font-bold text-[#1E293B] leading-[1.25] tracking-tight">
                                 {{ slide.lead }}<br /><span class="text-[#1E293B]">{{ slide.accent }}</span>
                             </h1>

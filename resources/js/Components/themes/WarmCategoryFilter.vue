@@ -64,7 +64,7 @@ const currentSortLabel = computed(() => {
 </script>
 
 <template>
-    <div id="featured" class="store-catalog-bar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6">
+    <div id="featured" class="store-catalog-bar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 scroll-mt-28 lg:scroll-mt-24">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <!-- Section Heading -->
             <div class="flex items-center gap-3">

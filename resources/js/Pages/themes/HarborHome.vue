@@ -39,7 +39,7 @@ const scrollToFeatured = () => {
         <main class="flex-1">
             <div class="max-w-[90rem] mx-auto px-2 sm:px-4 lg:px-6 py-3">
                 <div class="flex gap-3 items-start">
-                    <aside class="hidden lg:block w-56 shrink-0 sticky top-[9.5rem] z-20">
+                    <aside class="hidden lg:block w-56 shrink-0 sticky top-[11rem] z-20">
                         <div class="bg-white border border-[#c5d0e0] rounded-sm overflow-hidden shadow-[0_8px_24px_rgb(15_23_42/0.06)]">
                             <div class="px-3 py-2.5 bg-[#1d4ed8] text-white text-[11px] font-black uppercase tracking-[0.12em] flex items-center gap-2">
                                 <Zap class="w-3.5 h-3.5 text-[#93c5fd]" />
@@ -104,7 +104,7 @@ const scrollToFeatured = () => {
 
                         <CampaignSale v-if="showSale" :products="saleProducts" />
 
-                        <section id="featured" class="bg-white border border-[#c5d0e0] rounded-sm shadow-[0_8px_24px_rgb(15_23_42/0.05)] scroll-mt-36">
+                        <section id="featured" class="bg-white border border-[#c5d0e0] rounded-sm shadow-[0_8px_24px_rgb(15_23_42/0.05)] scroll-mt-40 lg:scroll-mt-36">
                             <div class="px-3 py-3 border-b border-[#e2e8f0] flex flex-col sm:flex-row sm:items-center gap-2 justify-between bg-gradient-to-r from-[#f8fafc] to-white">
                                 <h2 class="text-[11px] font-black uppercase tracking-[0.14em] text-[#0f172a]">
                                     {{ filters.offer ? t('home.offers_title') : t('home.featured') }}
