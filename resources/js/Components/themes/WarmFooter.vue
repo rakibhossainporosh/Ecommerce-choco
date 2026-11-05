@@ -11,14 +11,11 @@ import {
 } from 'lucide-vue-next';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from '../../Composables/useI18n';
+import FooterCredit from '../FooterCredit.vue';
 
 const page = usePage();
 const { t } = useI18n();
 const settings = computed(() => page.props.site_settings || {});
-
-const copyrightText = computed(() => {
-    return t('footer.copyright_fallback').replace('{year}', String(new Date().getFullYear()));
-});
 
 const isInternalLink = (url) => {
     if (!url) return false;
@@ -190,9 +187,10 @@ const getGmailComposeUrl = (email) => {
 
             <!-- Bottom Row: Copyright & Payment Badges -->
             <div class="border-t border-[#EAE3D6] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <p class="text-[#64748B] text-sm">
-                    {{ copyrightText }}
-                </p>
+                <FooterCredit
+                    text-class="text-[#64748B] text-sm text-center md:text-left"
+                    link-class="font-medium text-[#E86A28] transition-colors duration-150 hover:text-[#c2410c]"
+                />
                 <div v-if="settings.footer_payment_methods && settings.footer_payment_methods.length > 0" class="flex flex-wrap items-center gap-2 opacity-80">
                     <div 
                         v-for="(method, idx) in settings.footer_payment_methods" 

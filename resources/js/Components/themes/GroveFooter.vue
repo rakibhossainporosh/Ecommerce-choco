@@ -3,14 +3,11 @@ import { computed } from 'vue';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-vue-next';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from '../../Composables/useI18n';
+import FooterCredit from '../FooterCredit.vue';
 
 const page = usePage();
 const { t } = useI18n();
 const settings = computed(() => page.props.site_settings || {});
-
-const copyrightText = computed(() => {
-    return t('footer.copyright_fallback').replace('{year}', String(new Date().getFullYear()));
-});
 
 const isInternalLink = (url) => Boolean(url && url.startsWith('/') && !url.includes('#'));
 
@@ -79,7 +76,10 @@ const getGmailComposeUrl = (email) => `https://mail.google.com/mail/?view=cm&fs=
             </div>
 
             <div class="mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p class="text-sm text-[#7f978c]">{{ copyrightText }}</p>
+                <FooterCredit
+                    text-class="text-sm text-[#7f978c] text-center sm:text-left"
+                    link-class="font-medium text-[#9fd6c4] transition-colors duration-150 hover:text-white"
+                />
                 <div v-if="settings.footer_payment_methods?.length" class="flex flex-wrap gap-3 justify-center">
                     <span
                         v-for="(method, idx) in settings.footer_payment_methods"

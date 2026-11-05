@@ -1,5 +1,53 @@
 /* Storefront themes. Warm is unstyled, so the current shop stays exactly as it is. */
 
+/* Agency credit: always theme-colored; hover shifts tone; never underline. */
+a.footer-credit-link,
+a.footer-credit-link:link,
+a.footer-credit-link:visited,
+a.footer-credit-link:hover,
+a.footer-credit-link:active,
+a.footer-credit-link:focus,
+a.footer-credit-link:focus-visible {
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
+}
+
+html[data-store-theme='warm'] a.footer-credit-link,
+html[data-store-theme='warm'] a.footer-credit-link:link,
+html[data-store-theme='warm'] a.footer-credit-link:visited {
+    color: #e86a28 !important;
+}
+
+html[data-store-theme='warm'] a.footer-credit-link:hover,
+html[data-store-theme='warm'] a.footer-credit-link:focus-visible {
+    color: #c2410c !important;
+}
+
+html[data-store-theme='grove'] a.footer-credit-link,
+html[data-store-theme='grove'] a.footer-credit-link:link,
+html[data-store-theme='grove'] a.footer-credit-link:visited {
+    color: #9fd6c4 !important;
+}
+
+html[data-store-theme='grove'] a.footer-credit-link:hover,
+html[data-store-theme='grove'] a.footer-credit-link:focus-visible {
+    color: #ffffff !important;
+}
+
+html[data-store-theme='harbor'] a.footer-credit-link,
+html[data-store-theme='harbor'] a.footer-credit-link:link,
+html[data-store-theme='harbor'] a.footer-credit-link:visited {
+    color: #60a5fa !important;
+}
+
+html[data-store-theme='harbor'] a.footer-credit-link:hover,
+html[data-store-theme='harbor'] a.footer-credit-link:focus-visible {
+    color: #93c5fd !important;
+}
+
 html[data-store-theme='grove'] {
     --store-brand: #0e6b58;
     --store-brand-hover: #0b5748;

@@ -3,14 +3,11 @@ import { computed } from 'vue';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-vue-next';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from '../../Composables/useI18n';
+import FooterCredit from '../FooterCredit.vue';
 
 const page = usePage();
 const { t } = useI18n();
 const settings = computed(() => page.props.site_settings || {});
-
-const copyrightText = computed(() => {
-    return t('footer.copyright_fallback').replace('{year}', String(new Date().getFullYear()));
-});
 
 const isInternalLink = (url) => Boolean(url && url.startsWith('/') && !url.includes('#'));
 
@@ -76,7 +73,10 @@ const getGmailComposeUrl = (email) => `https://mail.google.com/mail/?view=cm&fs=
 
         <div class="border-t border-white/10">
             <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#94a3b8]">
-                <p>{{ copyrightText }}</p>
+                <FooterCredit
+                    text-class="text-center sm:text-left"
+                    link-class="font-medium text-[#60a5fa] transition-colors duration-150 hover:text-[#93c5fd]"
+                />
                 <div v-if="settings.footer_payment_methods?.length" class="flex flex-wrap gap-1.5">
                     <span v-for="(method, idx) in settings.footer_payment_methods" :key="idx" class="px-2 py-1 border border-white/15 rounded-sm uppercase tracking-wider text-[10px] font-bold text-[#cbd5e1]">{{ method }}</span>
                 </div>

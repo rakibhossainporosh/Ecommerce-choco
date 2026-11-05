@@ -461,7 +461,6 @@ return [
         'compose_email' => 'Send email in Gmail',
         'about_fallback' => 'Your trusted everyday shopping destination. We stand behind the products we sell.',
         'default_address' => '523 Nobo Shop Tower, Dhanmondi, Dhaka 1205, Bangladesh',
-        'copyright_fallback' => '© {year} Nobo Shop. All rights reserved.',
     ],
     'pages' => [
         'about' => [
