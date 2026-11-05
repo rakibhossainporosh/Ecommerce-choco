@@ -11,6 +11,7 @@ use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\User;
+use App\Support\UiText;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\Livewire;
@@ -34,6 +35,33 @@ test('admin can access dashboard and view widgets', function () {
     $response->assertSuccessful()
         ->assertSeeLivewire(WorkspaceOverview::class)
         ->assertSeeLivewire(StatsOverview::class);
+});
+
+test('payments-only dashboard stats labels stay strings on windows locales', function () {
+    $role = Role::create([
+        'name' => 'Payments desk',
+        'guard_name' => 'web',
+    ]);
+    $role->givePermissionTo([
+        'dashboard.view',
+        'payments.view',
+    ]);
+
+    $user = User::factory()->create([
+        'can_access_admin_panel' => true,
+    ]);
+    $user->assignRole($role);
+
+    $this->actingAs($user);
+
+    foreach (['en', 'bn'] as $locale) {
+        app()->setLocale($locale);
+
+        Livewire::test(StatsOverview::class)
+            ->assertSuccessful()
+            ->assertSee(UiText::line('Payments'))
+            ->assertDontSee('Total Revenue');
+    }
 });
 
 test('limited module users still see a useful dashboard', function () {

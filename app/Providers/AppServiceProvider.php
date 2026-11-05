@@ -10,8 +10,11 @@ use App\Observers\OrderObserver;
 use App\Observers\ReturnRequestObserver;
 use App\Policies\ActivityPolicy;
 use App\Policies\RolePolicy;
+use App\Translation\SafeTranslator;
+use Illuminate\Contracts\Translation\Translator as TranslatorContract;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Translation\Translator;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 
@@ -22,7 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->extend('translator', function (Translator $translator): TranslatorContract {
+            $safe = new SafeTranslator($translator->getLoader(), $translator->getLocale());
+            $safe->setFallback($translator->getFallback());
+
+            return $safe;
+        });
     }
 
     /**

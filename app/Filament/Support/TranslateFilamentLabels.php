@@ -16,9 +16,13 @@ class TranslateFilamentLabels
     public static function register(): void
     {
         $translate = function (object $component): void {
-            if (method_exists($component, 'translateLabel')) {
-                $component->translateLabel();
+            if (! method_exists($component, 'translateLabel')) {
+                return;
             }
+
+            // Still enable Filament label translation; SafeTranslator guarantees
+            // bare keys like "Payments" never resolve to language-file arrays.
+            $component->translateLabel();
         };
 
         Component::configureUsing($translate);

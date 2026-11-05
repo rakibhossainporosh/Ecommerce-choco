@@ -16,6 +16,7 @@ use App\Models\Product;
 use App\Models\ReturnRequest;
 use App\Models\Review;
 use App\Support\AdminDashboard;
+use App\Support\UiText;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -30,6 +31,15 @@ class StatsOverview extends BaseWidget
     public static function canView(): bool
     {
         return AdminDashboard::canSeeOperationalStats();
+    }
+
+    /**
+     * Filament re-runs __() on Stat labels by default. On Windows that can load a whole
+     * language file (e.g. Payments -> payments.php) and return an array.
+     */
+    protected function metric(string $label, mixed $value): Stat
+    {
+        return Stat::make(UiText::line($label), $value)->translateLabel(false);
     }
 
     protected function getStats(): array
@@ -125,21 +135,21 @@ class StatsOverview extends BaseWidget
         $cards = [];
 
         if ($canSeeOrders) {
-            $cards[] = Stat::make(__('Total Revenue'), '৳ '.number_format($stats['total_revenue'], 2))
+            $cards[] = $this->metric('Total Revenue', '৳ '.number_format($stats['total_revenue'], 2))
                 ->description(__('Today: ৳ :amount', ['amount' => number_format($stats['today_revenue'], 2)]))
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->chart($stats['revenue_trend'])
                 ->color('success');
 
-            $cards[] = Stat::make(__('Total Orders'), number_format($stats['total_orders']))
-                ->description($pendingOrders > 0 ? __(':count pending review', ['count' => $pendingOrders]) : __('All orders processed'))
+            $cards[] = $this->metric('Total Orders', number_format($stats['total_orders']))
+                ->description($pendingOrders > 0 ? __(':count pending review', ['count' => $pendingOrders]) : UiText::line('All orders processed'))
                 ->descriptionIcon($pendingOrders > 0 ? 'heroicon-m-clock' : 'heroicon-m-check-circle')
                 ->chart($stats['orders_trend'])
                 ->color($pendingOrders > 0 ? 'warning' : 'primary');
         }
 
         if ($user?->can('customers.view')) {
-            $cards[] = Stat::make(__('Total Customers'), number_format($stats['total_customers']))
+            $cards[] = $this->metric('Total Customers', number_format($stats['total_customers']))
                 ->description(__(':count new this month', ['count' => $stats['new_customers_month']]))
                 ->descriptionIcon('heroicon-m-user-group')
                 ->chart($stats['customers_trend'])
@@ -147,15 +157,15 @@ class StatsOverview extends BaseWidget
         }
 
         if ($user?->can('inventory.view')) {
-            $cards[] = Stat::make(__('Stock Alert'), __(':count items', ['count' => number_format($lowStockCount)]))
-                ->description($outOfStockCount > 0 ? __(':count out of stock', ['count' => $outOfStockCount]) : ($lowStockCount > 0 ? __('Needs restock') : __('All items in stock')))
+            $cards[] = $this->metric('Stock Alert', __(':count items', ['count' => number_format($lowStockCount)]))
+                ->description($outOfStockCount > 0 ? __(':count out of stock', ['count' => $outOfStockCount]) : ($lowStockCount > 0 ? UiText::line('Needs restock') : UiText::line('All items in stock')))
                 ->descriptionIcon($lowStockCount > 0 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-check-badge')
                 ->color($lowStockCount > 0 ? 'danger' : 'success')
                 ->url('/admin/inventory/stock-overview');
         }
 
         if ($user?->can('products.view')) {
-            $cards[] = Stat::make(__('Products'), number_format($stats['products_total']))
+            $cards[] = $this->metric('Products', number_format($stats['products_total']))
                 ->description(__(':count active', ['count' => number_format($stats['products_active'])]))
                 ->descriptionIcon('heroicon-m-cube')
                 ->color('primary')
@@ -163,16 +173,16 @@ class StatsOverview extends BaseWidget
         }
 
         if ($user?->can('categories.view')) {
-            $cards[] = Stat::make(__('Categories'), number_format($stats['categories_total']))
-                ->description(__('Catalog structure'))
+            $cards[] = $this->metric('Categories', number_format($stats['categories_total']))
+                ->description(UiText::line('Catalog structure'))
                 ->descriptionIcon('heroicon-m-tag')
                 ->color('warning')
                 ->url('/admin/categories');
         }
 
         if ($user?->can('brands.view')) {
-            $cards[] = Stat::make(__('Brands'), number_format($stats['brands_total']))
-                ->description(__('Brand listings'))
+            $cards[] = $this->metric('Brands', number_format($stats['brands_total']))
+                ->description(UiText::line('Brand listings'))
                 ->descriptionIcon('heroicon-m-building-storefront')
                 ->color('info')
                 ->url('/admin/brands');
@@ -181,18 +191,18 @@ class StatsOverview extends BaseWidget
         if ($user?->can('courier-shipments.view')) {
             $pendingShipments = $stats['courier_shipments_pending'];
 
-            $cards[] = Stat::make(__('Courier Shipments'), number_format($stats['courier_shipments_total']))
+            $cards[] = $this->metric('Courier Shipments', number_format($stats['courier_shipments_total']))
                 ->description($pendingShipments > 0
                     ? __(':count awaiting dispatch', ['count' => $pendingShipments])
-                    : __('No pending shipments'))
+                    : UiText::line('No pending shipments'))
                 ->descriptionIcon($pendingShipments > 0 ? 'heroicon-m-clock' : 'heroicon-m-check-circle')
                 ->color($pendingShipments > 0 ? 'warning' : 'success')
                 ->url('/admin/courier-shipments');
         }
 
         if ($user?->can('activities.view')) {
-            $cards[] = Stat::make(__('Activities Today'), number_format($stats['activities_today']))
-                ->description(__('Admin audit trail'))
+            $cards[] = $this->metric('Activities Today', number_format($stats['activities_today']))
+                ->description(UiText::line('Admin audit trail'))
                 ->descriptionIcon('heroicon-m-clipboard-document-list')
                 ->color('gray')
                 ->url('/admin/activities');
@@ -201,32 +211,32 @@ class StatsOverview extends BaseWidget
         if ($user?->can('reviews.view')) {
             $pendingReviews = $stats['reviews_pending'];
 
-            $cards[] = Stat::make(__('Reviews'), number_format($pendingReviews))
-                ->description($pendingReviews > 0 ? __('Awaiting moderation') : __('All reviews moderated'))
+            $cards[] = $this->metric('Reviews', number_format($pendingReviews))
+                ->description($pendingReviews > 0 ? UiText::line('Awaiting moderation') : UiText::line('All reviews moderated'))
                 ->descriptionIcon($pendingReviews > 0 ? 'heroicon-m-star' : 'heroicon-m-check-badge')
                 ->color($pendingReviews > 0 ? 'warning' : 'success')
                 ->url('/admin/reviews');
         }
 
         if ($user?->can('returns.view')) {
-            $cards[] = Stat::make(__('Open Returns'), number_format($stats['returns_open']))
-                ->description(__('Needs attention'))
+            $cards[] = $this->metric('Open Returns', number_format($stats['returns_open']))
+                ->description(UiText::line('Needs attention'))
                 ->descriptionIcon('heroicon-m-arrow-uturn-left')
                 ->color($stats['returns_open'] > 0 ? 'danger' : 'success')
                 ->url('/admin/return-requests');
         }
 
         if ($user?->can('coupons.view')) {
-            $cards[] = Stat::make(__('Active Coupons'), number_format($stats['coupons_active']))
-                ->description(__('Ready to use'))
+            $cards[] = $this->metric('Active Coupons', number_format($stats['coupons_active']))
+                ->description(UiText::line('Ready to use'))
                 ->descriptionIcon('heroicon-m-ticket')
                 ->color('primary')
                 ->url('/admin/coupons');
         }
 
         if ($user?->can('payments.view') && ! $canSeeOrders) {
-            $cards[] = Stat::make(__('Payments'), number_format($stats['payments_total']))
-                ->description(__('Payment records'))
+            $cards[] = $this->metric('Payments', number_format($stats['payments_total']))
+                ->description(UiText::line('Payment records'))
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success')
                 ->url('/admin/payments');
