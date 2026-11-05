@@ -25,6 +25,22 @@ function buildCatalogQuery(filters, page = null) {
         query.offer = 1;
     }
 
+    if (filters.brand) {
+        query.brand = filters.brand;
+    }
+
+    if (filters.min_price !== null && filters.min_price !== undefined && filters.min_price !== '') {
+        query.min_price = filters.min_price;
+    }
+
+    if (filters.max_price !== null && filters.max_price !== undefined && filters.max_price !== '') {
+        query.max_price = filters.max_price;
+    }
+
+    if (filters.in_stock) {
+        query.in_stock = 1;
+    }
+
     const pageNumber = page ?? filters.page;
     if (pageNumber && Number(pageNumber) > 1) {
         query.page = Number(pageNumber);
@@ -138,7 +154,20 @@ export function useHomePage(props) {
     };
 
     const handleClearAllFilters = () => {
-        updateFilters({ search: '', category: 'all', sort: 'newest', offer: false });
+        updateFilters({
+            search: '',
+            category: 'all',
+            sort: 'newest',
+            offer: false,
+            brand: '',
+            min_price: null,
+            max_price: null,
+            in_stock: false,
+        });
+    };
+
+    const handleFacetUpdate = (facets) => {
+        updateFilters(facets);
     };
 
     const handleSelectCategory = (categorySlug) => {
@@ -177,6 +206,7 @@ export function useHomePage(props) {
         handleClearAllFilters,
         handleSelectCategory,
         handleSelectSort,
+        handleFacetUpdate,
         emptyMessage,
     };
 }

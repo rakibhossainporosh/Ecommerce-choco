@@ -266,8 +266,16 @@ const onGallerySwipe = (event) => {
                     <div v-if="product.reviews?.length" class="divide-y divide-[#e7eef8]">
                         <article v-for="review in product.reviews" :key="review.id" class="py-4">
                             <div class="flex items-center justify-between gap-3 mb-1">
-                                <p class="text-sm font-bold">{{ review.reviewer_name }}</p>
-                                <span class="text-[11px] text-[#6d83a0]">{{ review.created_at }}</span>
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <p class="text-sm font-bold truncate">{{ review.reviewer_name }}</p>
+                                    <span
+                                        v-if="review.is_verified_purchase"
+                                        class="shrink-0 text-[10px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5"
+                                    >
+                                        {{ t('product.verified_purchase') }}
+                                    </span>
+                                </div>
+                                <span class="text-[11px] text-[#6d83a0] shrink-0">{{ review.created_at }}</span>
                             </div>
                             <div class="flex items-center gap-0.5 mb-2">
                                 <Star v-for="i in 5" :key="i" class="w-3 h-3" :class="i <= review.rating ? 'fill-[#1d4ed8] text-[#1d4ed8]' : 'text-[#d5e0ee]'" />

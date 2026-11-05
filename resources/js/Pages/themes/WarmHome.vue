@@ -8,11 +8,13 @@ import CategoryFilter from '../../Components/CategoryFilter.vue';
 import ProductCard from '../../Components/ProductCard.vue';
 import ProductGridSkeleton from '../../Components/ProductGridSkeleton.vue';
     import CatalogPager from '../../Components/CatalogPager.vue';
-    import Footer from '../../Components/Footer.vue';
-    import { useHomePage } from '../../Composables/useHomePage';
+import CatalogFacets from '../../Components/CatalogFacets.vue';
+import Footer from '../../Components/Footer.vue';
+import { useHomePage } from '../../Composables/useHomePage';
 
 const props = defineProps({
     categories: { type: Array, default: () => [] },
+    brands: { type: Array, default: () => [] },
     products: { type: Array, default: () => [] },
     pagination: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
@@ -21,7 +23,7 @@ const props = defineProps({
 const {
     t, saleProducts, showSale, catalogProducts, isCatalogLoading, resultTotal,
     updateFilters, pageUrl, handleSearch, handleClearAllFilters,
-    handleSelectCategory, handleSelectSort, emptyMessage,
+    handleSelectCategory, handleSelectSort, handleFacetUpdate, emptyMessage,
 } = useHomePage(props);
 </script>
 
@@ -75,6 +77,8 @@ const {
                             <X class="w-3.5 h-3.5" />
                         </button>
                     </div>
+
+                    <CatalogFacets :brands="brands" :filters="filters" @update="handleFacetUpdate" />
 
                     <div v-if="isCatalogLoading" class="py-1">
                         <ProductGridSkeleton :count="8" tone="warm" />

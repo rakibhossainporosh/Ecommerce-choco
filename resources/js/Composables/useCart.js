@@ -94,20 +94,68 @@ export function setCartContact(next) {
     scheduleRemember();
 }
 
-export function setCartCustomer(customer) {
-    const previousId = window.__noboCustomer?.id || null;
-    window.__noboCustomer = customer || null;
+let wishlistSyncInFlight = false;
 
-    if (customer?.id && customer.id !== previousId && cartItems.value.length > 0) {
-        scheduleRemember();
-    }
-}
+const csrfToken = () =>
+    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+const wishlistHeaders = () => ({
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': csrfToken(),
+});
 
 const saveWishlist = () => {
     if (typeof window !== 'undefined') {
         localStorage.setItem('nobo_wishlist', JSON.stringify(wishlistItems.value));
     }
 };
+
+const replaceWishlist = (items) => {
+    wishlistItems.value = Array.isArray(items) ? items : [];
+    saveWishlist();
+};
+
+const syncWishlistWithAccount = async () => {
+    if (typeof window === 'undefined' || !window.__noboCustomer?.id || wishlistSyncInFlight) {
+        return;
+    }
+
+    wishlistSyncInFlight = true;
+
+    try {
+        const localIds = wishlistItems.value.map((item) => item.id).filter(Boolean);
+        const response = await fetch('/account/wishlist/sync', {
+            method: 'POST',
+            headers: wishlistHeaders(),
+            body: JSON.stringify({ product_ids: localIds }),
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const payload = await response.json();
+        replaceWishlist(payload.items || []);
+    } catch {
+        // Keep local wishlist if sync fails.
+    } finally {
+        wishlistSyncInFlight = false;
+    }
+};
+
+export function setCartCustomer(customer) {
+    const previousId = window.__noboCustomer?.id || null;
+    window.__noboCustomer = customer || null;
+
+    if (customer?.id && customer.id !== previousId) {
+        if (cartItems.value.length > 0) {
+            scheduleRemember();
+        }
+
+        syncWishlistWithAccount();
+    }
+}
 
 export function useCart() {
     const addToCart = (product, quantity = 1, variant = null) => {
@@ -183,7 +231,9 @@ export function useCart() {
 
     const toggleWishlist = (product) => {
         const index = wishlistItems.value.findIndex((item) => item.id === product.id);
-        if (index > -1) {
+        const removing = index > -1;
+
+        if (removing) {
             wishlistItems.value.splice(index, 1);
         } else {
             wishlistItems.value.push({
@@ -206,6 +256,21 @@ export function useCart() {
             });
         }
         saveWishlist();
+
+        if (typeof window !== 'undefined' && window.__noboCustomer?.id) {
+            fetch('/account/wishlist/toggle', {
+                method: 'POST',
+                headers: wishlistHeaders(),
+                body: JSON.stringify({ product_id: product.id }),
+            })
+                .then((response) => (response.ok ? response.json() : null))
+                .then((payload) => {
+                    if (payload?.items) {
+                        replaceWishlist(payload.items);
+                    }
+                })
+                .catch(() => {});
+        }
     };
 
     const isInWishlist = (productId) => {

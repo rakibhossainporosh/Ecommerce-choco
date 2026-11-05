@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
 import {
     Package, ShoppingBag, LogOut, Phone, Mail, Calendar,
-    Truck, ChevronRight, CheckCircle2, Edit3, RotateCcw, X, Bell, MapPin
+    Truck, ChevronRight, CheckCircle2, Edit3, RotateCcw, X, Bell, MapPin, FileText
 } from 'lucide-vue-next';
 import Header from '../../Components/Header.vue';
 import Footer from '../../Components/Footer.vue';
@@ -186,7 +186,7 @@ const paymentLabel = (method) => {
 const openReturnModal = (order) => {
     returnOrder.value = order;
     returnForm.reason = '';
-    returnForm.items = (order.items || [])
+    returnForm.items = (order.returnable_items || order.items || [])
         .filter((item) => Number(item.remaining_quantity ?? item.quantity) > 0)
         .map((item) => {
             const max = Number(item.remaining_quantity ?? item.quantity);
@@ -384,6 +384,15 @@ const submitReturn = () => {
                             <span class="text-lg font-bold" :class="inkClass">
                                 {{ formatPrice(order.grand_total) }}
                             </span>
+                            <a
+                                :href="order.invoice_url || ('/account/orders/' + order.id + '/invoice')"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                :class="[softPanelClass, 'px-4 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-90']"
+                            >
+                                <FileText class="w-3.5 h-3.5" />
+                                <span>{{ t('account.download_invoice') }}</span>
+                            </a>
                             <Link
                                 :href="'/track-order?order_number=' + order.order_number + '&phone=' + customer.phone"
                                 :class="[softPanelClass, 'px-4 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-90']"

@@ -200,8 +200,7 @@ class CustomerAuthController extends Controller
                     ], true));
 
                 $remainingByItem = ReturnItemValidator::remainingQuantities($order);
-                $returnableItems = $order->items
-                    ->filter(fn ($item): bool => (int) ($remainingByItem[$item->id] ?? 0) > 0)
+                $lineItems = $order->items
                     ->map(function ($item) use ($remainingByItem) {
                         $remaining = (int) ($remainingByItem[$item->id] ?? 0);
 
@@ -214,6 +213,10 @@ class CustomerAuthController extends Controller
                             'line_total' => (float) $item->line_total,
                         ];
                     })
+                    ->values();
+
+                $returnableItems = $lineItems
+                    ->filter(fn (array $item): bool => (int) ($item['remaining_quantity'] ?? 0) > 0)
                     ->values();
 
                 return [
@@ -230,6 +233,7 @@ class CustomerAuthController extends Controller
                     'created_at' => $order->created_at->format('d M Y, h:i A'),
                     'shipping_address' => $order->shipping_address_line.', '.$order->shipping_city,
                     'items_count' => $order->items->sum('quantity'),
+                    'invoice_url' => route('customer.orders.invoice', $order),
                     'can_request_return' => $order->status === OrderStatus::Delivered
                         && $order->isWithinReturnWindow()
                         && $openReturn === null
@@ -241,7 +245,8 @@ class CustomerAuthController extends Controller
                         'reason' => $openReturn->reason,
                         'created_at' => $openReturn->created_at?->format('d M Y, h:i A'),
                     ] : null,
-                    'items' => $returnableItems,
+                    'items' => $lineItems,
+                    'returnable_items' => $returnableItems,
                     'shipments' => $order->shipments->map(fn ($shipment) => [
                         'shipment_number' => $shipment->shipment_number,
                         'status' => $shipment->status->value,

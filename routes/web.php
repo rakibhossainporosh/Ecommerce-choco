@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\SiteLocaleController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\CustomerInvoiceController;
 use App\Http\Controllers\CustomerReturnController;
+use App\Http\Controllers\CustomerWishlistController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\StorefrontController;
@@ -56,6 +58,10 @@ Route::post('/account/addresses', [CustomerAddressController::class, 'store'])->
 Route::put('/account/addresses/{address}', [CustomerAddressController::class, 'update'])->middleware('throttle:15,1')->name('customer.addresses.update');
 Route::delete('/account/addresses/{address}', [CustomerAddressController::class, 'destroy'])->middleware('throttle:15,1')->name('customer.addresses.destroy');
 Route::post('/account/addresses/{address}/default', [CustomerAddressController::class, 'makeDefault'])->middleware('throttle:15,1')->name('customer.addresses.default');
+Route::get('/account/wishlist', [CustomerWishlistController::class, 'index'])->middleware('throttle:60,1')->name('customer.wishlist.index');
+Route::post('/account/wishlist/toggle', [CustomerWishlistController::class, 'toggle'])->middleware('throttle:30,1')->name('customer.wishlist.toggle');
+Route::post('/account/wishlist/sync', [CustomerWishlistController::class, 'sync'])->middleware('throttle:20,1')->name('customer.wishlist.sync');
+Route::get('/account/orders/{order}/invoice', [CustomerInvoiceController::class, 'show'])->middleware('throttle:30,1')->name('customer.orders.invoice');
 Route::post('/account/orders/{order}/returns', [CustomerReturnController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('customer.orders.returns.store');

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'title',
     'body',
     'is_approved',
+    'is_verified_purchase',
 ])]
 class Review extends Model
 {
@@ -27,6 +28,7 @@ class Review extends Model
         'user_id' => 'integer',
         'rating' => 'integer',
         'is_approved' => 'boolean',
+        'is_verified_purchase' => 'boolean',
     ];
 
     protected static function booted(): void

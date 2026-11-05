@@ -8,10 +8,12 @@ import ProductCard from '../../Components/ProductCard.vue';
 import Footer from '../../Components/Footer.vue';
 import ProductGridSkeleton from '../../Components/ProductGridSkeleton.vue';
 import CatalogPager from '../../Components/CatalogPager.vue';
+import CatalogFacets from '../../Components/CatalogFacets.vue';
 import { useHomePage } from '../../Composables/useHomePage';
 
 const props = defineProps({
     categories: { type: Array, default: () => [] },
+    brands: { type: Array, default: () => [] },
     products: { type: Array, default: () => [] },
     pagination: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
@@ -20,7 +22,7 @@ const props = defineProps({
 const {
     t, saleProducts, showSale, catalogProducts, isCatalogLoading,
     updateFilters, pageUrl, handleSearch, handleClearAllFilters,
-    handleSelectCategory, handleSelectSort, emptyMessage,
+    handleSelectCategory, handleSelectSort, handleFacetUpdate, emptyMessage,
 } = useHomePage(props);
 
 const sortOptions = computed(() => [
@@ -154,6 +156,8 @@ const scrollToFeatured = () => {
                                         {{ t('home.browse_all') }} <X class="w-3 h-3" />
                                     </button>
                                 </div>
+
+                                <CatalogFacets :brands="brands" :filters="filters" @update="handleFacetUpdate" />
 
                                 <div v-if="isCatalogLoading" class="py-1">
                                     <ProductGridSkeleton :count="8" tone="harbor" />

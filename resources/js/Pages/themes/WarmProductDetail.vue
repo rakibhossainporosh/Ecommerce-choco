@@ -659,7 +659,10 @@ const submitReview = () => {
                                 <div>
                                     <div class="flex items-center gap-2">
                                         <h4 class="text-sm font-bold text-[#1E293B]">{{ review.reviewer_name }}</h4>
-                                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                        <span
+                                            v-if="review.is_verified_purchase"
+                                            class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200"
+                                        >
                                             <Check class="w-3 h-3 stroke-[2.5]" />
                                             {{ t('product.verified_purchase') }}
                                         </span>

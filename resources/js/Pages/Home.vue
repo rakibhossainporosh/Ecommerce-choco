@@ -6,6 +6,7 @@ import HarborHome from './themes/HarborHome.vue';
 
 defineProps({
     categories: { type: Array, default: () => [] },
+    brands: { type: Array, default: () => [] },
     products: { type: Array, default: () => [] },
     pagination: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
@@ -22,6 +23,7 @@ const View = resolveThemeComponent({
     <component
         :is="View"
         :categories="categories"
+        :brands="brands"
         :products="products"
         :pagination="pagination"
         :filters="filters"

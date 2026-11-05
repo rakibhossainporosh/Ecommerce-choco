@@ -115,6 +115,8 @@ class HandleInertiaRequests extends Middleware
                         'shipping_outside_dhaka' => 120.0,
                         'return_window_days' => ReturnPolicySettings::windowDays(),
                         'theme' => 'warm',
+                        'whatsapp_number' => null,
+                        'whatsapp_message' => '',
                     ];
                 }
 
@@ -138,6 +140,8 @@ class HandleInertiaRequests extends Middleware
 
                 $defaults = LocalizedContent::settingDefaults();
                 $contactPhone = (string) Setting::get('contact_phone', '+৮৮০ ৫২৩৪ ৫৬৭৮৯০');
+                $whatsappRaw = (string) Setting::get('whatsapp_number', '');
+                $whatsappDigits = preg_replace('/\D+/', '', $whatsappRaw !== '' ? $whatsappRaw : LocalizedContent::asciiDigits($contactPhone)) ?? '';
 
                 return [
                     'site_name' => Setting::get('site_name', 'Nobo Shop'),
@@ -147,6 +151,8 @@ class HandleInertiaRequests extends Middleware
                     'footer_about' => LocalizedContent::text((string) Setting::get('footer_about', $defaults['footer_about']['bn']), $defaults['footer_about']),
                     'contact_phone' => LocalizedContent::digits($contactPhone),
                     'contact_phone_tel' => LocalizedContent::asciiDigits($contactPhone),
+                    'whatsapp_number' => $whatsappDigits !== '' ? $whatsappDigits : null,
+                    'whatsapp_message' => (string) Setting::get('whatsapp_message', ''),
                     'contact_email' => Setting::get('contact_email', 'support@noboshop.com'),
                     'contact_address' => LocalizedContent::text((string) Setting::get('contact_address', $defaults['contact_address']['bn']), $defaults['contact_address']),
                     'facebook_url' => Setting::get('facebook_url', 'https://facebook.com'),

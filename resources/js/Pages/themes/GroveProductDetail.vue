@@ -335,8 +335,16 @@ const onMainImageError = () => {
                     <div v-if="product.reviews?.length" class="space-y-0 divide-y divide-[#1a2e28]/10 border border-[#1a2e28]/10 bg-white">
                         <article v-for="review in product.reviews" :key="review.id" class="p-4 sm:p-5">
                             <div class="flex items-center justify-between gap-3 mb-2">
-                                <p class="font-semibold text-[#1a2e28]">{{ review.reviewer_name }}</p>
-                                <span class="text-xs text-[#8a9a92]">{{ review.created_at }}</span>
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <p class="font-semibold text-[#1a2e28] truncate">{{ review.reviewer_name }}</p>
+                                    <span
+                                        v-if="review.is_verified_purchase"
+                                        class="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-[#0e6b58] bg-[#e8f5f0] border border-[#0e6b58]/20 px-1.5 py-0.5"
+                                    >
+                                        {{ t('product.verified_purchase') }}
+                                    </span>
+                                </div>
+                                <span class="text-xs text-[#8a9a92] shrink-0">{{ review.created_at }}</span>
                             </div>
                             <div class="flex items-center gap-0.5 mb-2">
                                 <Star

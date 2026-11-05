@@ -109,6 +109,8 @@ class FooterSettings extends Page
             'meta_pixel_id' => Setting::get('meta_pixel_id', ''),
             'meta_pixel_access_token' => '',
             'ga4_measurement_id' => Setting::get('ga4_measurement_id', ''),
+            'whatsapp_number' => Setting::get('whatsapp_number', ''),
+            'whatsapp_message' => Setting::get('whatsapp_message', ''),
         ]);
     }
 
@@ -336,6 +338,21 @@ class FooterSettings extends Page
                                             ->nullable()
                                             ->rules(['nullable', 'regex:/^(G-[A-Z0-9]{4,20})?$/i']),
                                     ]),
+                                Section::make('WhatsApp chat')
+                                    ->description(__('Floating chat button on the storefront. Leave blank to use the contact phone digits.'))
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            TextInput::make('whatsapp_number')
+                                                ->label('WhatsApp number')
+                                                ->placeholder('8801XXXXXXXXX')
+                                                ->helperText(__('Country code + number, digits only preferred.'))
+                                                ->nullable(),
+                                            TextInput::make('whatsapp_message')
+                                                ->label('Default message')
+                                                ->placeholder(__('Hi, I need help with an order.'))
+                                                ->nullable(),
+                                        ]),
+                                    ]),
                             ]),
 
                         Tab::make('Payments')
@@ -405,6 +422,11 @@ class FooterSettings extends Page
                 $val = Ga4::normalizeId(is_string($val) ? $val : null);
             }
 
+            if (in_array($key, ['whatsapp_number', 'whatsapp_message'], true)) {
+                $group = 'contact';
+                $val = is_string($val) ? trim($val) : '';
+            }
+
             if (in_array($key, ['site_name', 'site_tagline', 'site_logo', 'site_favicon', 'site_locale'])) {
                 $group = 'general';
             } elseif (in_array($key, ['facebook_url', 'twitter_url', 'instagram_url', 'youtube_url'])) {
@@ -463,6 +485,8 @@ class FooterSettings extends Page
             'meta_pixel_id' => 'Meta Pixel ID',
             'meta_pixel_access_token' => 'Meta Conversions API token',
             'ga4_measurement_id' => 'GA4 Measurement ID',
+            'whatsapp_number' => 'WhatsApp number',
+            'whatsapp_message' => 'WhatsApp default message',
             default => str_replace('_', ' ', ucwords($key, '_')),
         };
     }

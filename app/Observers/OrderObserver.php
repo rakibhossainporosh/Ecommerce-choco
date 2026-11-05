@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
+use App\Notifications\OrderStatusAlert;
 use App\Services\OrderMailer;
 use App\Services\OrderSmsNotifier;
 use Filament\Actions\Action;
@@ -74,6 +75,16 @@ class OrderObserver
                 app(OrderSmsNotifier::class)->send($fresh, $step);
             } catch (Throwable $exception) {
                 Log::error('Order SMS failed for order '.$orderId.': '.$exception->getMessage());
+            }
+
+            try {
+                $customer = $fresh->customer;
+
+                if ($customer) {
+                    $customer->notify(new OrderStatusAlert($fresh, $step));
+                }
+            } catch (Throwable $exception) {
+                Log::error('Order account alert failed for order '.$orderId.': '.$exception->getMessage());
             }
         };
 

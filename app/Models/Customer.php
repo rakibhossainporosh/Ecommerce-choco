@@ -95,6 +95,14 @@ class Customer extends Authenticatable
     }
 
     /**
+     * @return HasMany<WishlistItem, $this>
+     */
+    public function wishlistItems(): HasMany
+    {
+        return $this->hasMany(WishlistItem::class, 'customer_id');
+    }
+
+    /**
      * Get the primary default shipping address.
      *
      * @return HasOne<CustomerAddress, $this>

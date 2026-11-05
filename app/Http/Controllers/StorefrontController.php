@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Exceptions\PaymentException;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Customer;
@@ -23,6 +24,7 @@ use App\Support\CatalogTranslator;
 use App\Support\CheckoutShipping;
 use App\Support\CheckoutStock;
 use App\Support\MetaPixel;
+use App\Support\VerifiedPurchase;
 use App\Support\YoutubeVideo;
 use DomainException;
 use Illuminate\Http\JsonResponse;
@@ -72,6 +74,10 @@ class StorefrontController extends Controller
         $search = $request->query('search', '');
         $sort = $request->query('sort', 'newest');
         $offer = $request->boolean('offer');
+        $brandSlug = trim((string) $request->query('brand', ''));
+        $minPrice = $request->filled('min_price') ? (float) $request->query('min_price') : null;
+        $maxPrice = $request->filled('max_price') ? (float) $request->query('max_price') : null;
+        $inStock = $request->boolean('in_stock');
 
         $categories = Category::query()
             ->where('is_active', true)
@@ -85,10 +91,21 @@ class StorefrontController extends Controller
                 'display_name' => CatalogTranslator::category($category->slug, $category->name),
             ]);
 
+        $brands = Brand::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->map(fn (Brand $brand): array => [
+                'id' => $brand->id,
+                'name' => $brand->name,
+                'slug' => $brand->slug,
+            ]);
+
         $productsQuery = Product::query()
             ->where('products.is_active', true)
             ->with([
                 'categories:id,name,slug',
+                'brand:id,name,slug',
                 'defaultVariant:id,product_id,selling_price,compare_at_price,is_active',
                 'defaultVariant.inventory',
                 'media',
@@ -99,6 +116,28 @@ class StorefrontController extends Controller
         if ($selectedCategory !== '' && $selectedCategory !== 'all') {
             $productsQuery->whereHas('categories', function ($q) use ($selectedCategory) {
                 $q->where('slug', $selectedCategory);
+            });
+        }
+
+        if ($brandSlug !== '') {
+            $productsQuery->whereHas('brand', function ($q) use ($brandSlug) {
+                $q->where('slug', $brandSlug);
+            });
+        }
+
+        if ($minPrice !== null || $maxPrice !== null || $inStock) {
+            $productsQuery->whereHas('defaultVariant', function ($q) use ($minPrice, $maxPrice, $inStock) {
+                if ($minPrice !== null) {
+                    $q->where('selling_price', '>=', $minPrice);
+                }
+
+                if ($maxPrice !== null) {
+                    $q->where('selling_price', '<=', $maxPrice);
+                }
+
+                if ($inStock) {
+                    $q->whereHas('inventory', fn ($inventory) => $inventory->where('quantity', '>', 0));
+                }
             });
         }
 
@@ -171,6 +210,7 @@ class StorefrontController extends Controller
 
         return Inertia::render('Home', [
             'categories' => $categories,
+            'brands' => $brands,
             'products' => $paginator->items(),
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
@@ -187,6 +227,10 @@ class StorefrontController extends Controller
                 'search' => $search,
                 'sort' => $sort,
                 'offer' => $offer,
+                'brand' => $brandSlug,
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
+                'in_stock' => $inStock,
             ],
         ]);
     }
@@ -431,11 +475,13 @@ class StorefrontController extends Controller
                 'title' => $review->title,
                 'body' => $review->body,
                 'reviewer_name' => $review->user?->name ?? __('storefront.reviews.satisfied_customer'),
+                'is_verified_purchase' => (bool) $review->is_verified_purchase,
                 'created_at' => $review->created_at->format('d M Y'),
             ];
         });
 
         $reviewsCount = $reviews->count();
+        $verifiedReviewsCount = $reviews->where('is_verified_purchase', true)->count();
         $avgRating = $reviewsCount > 0 ? round($reviews->avg('rating'), 1) : 0.0;
 
         // Breakdown percentages for 5, 4, 3, 2, 1 stars
@@ -472,6 +518,7 @@ class StorefrontController extends Controller
             'rating' => $avgRating > 0 ? $avgRating : 5.0,
             'rating_raw' => $avgRating,
             'reviews_count' => $reviewsCount,
+            'verified_reviews_count' => $verifiedReviewsCount,
             'rating_breakdown' => $ratingBreakdown,
             'reviews' => $reviews,
             'images' => $mediaImages,
@@ -973,12 +1020,15 @@ class StorefrontController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
+        $isVerifiedPurchase = VerifiedPurchase::customerBoughtProduct($customerUser, $product);
+
         if ($existingReview) {
             $existingReview->update([
                 'rating' => $validated['rating'],
                 'title' => $validated['title'] ?: "রিভিউ করেছেন: {$user->name}",
                 'body' => $validated['body'],
                 'is_approved' => false,
+                'is_verified_purchase' => $isVerifiedPurchase || (bool) $existingReview->is_verified_purchase,
             ]);
 
             return back()->with('success', __('storefront.reviews.thanks'));
@@ -991,6 +1041,7 @@ class StorefrontController extends Controller
             'title' => $validated['title'] ?: "রিভিউ করেছেন: {$user->name}",
             'body' => $validated['body'],
             'is_approved' => false,
+            'is_verified_purchase' => $isVerifiedPurchase,
         ]);
 
         return back()->with('success', __('storefront.reviews.thanks'));
