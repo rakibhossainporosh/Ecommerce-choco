@@ -72,7 +72,7 @@ test('stats overview widget correctly calculates revenue, orders, customers and 
         ->assertSee('1 pending review')
         ->assertSee('Total Customers')
         ->assertSee('Stock Alert')
-        ->assertSee('1 Items');
+        ->assertSee('1 items');
 });
 
 test('orders chart widget calculates data with filters', function () {

@@ -11,6 +11,13 @@ class OrdersChart extends ChartWidget
 {
     protected ?string $heading = 'Order & Sales Analytics';
 
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+
+        return (bool) ($user?->can('orders.view') || $user?->can('reports.view'));
+    }
+
     protected static ?int $sort = 2;
 
     protected ?string $maxHeight = '275px';

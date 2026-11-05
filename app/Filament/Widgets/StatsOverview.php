@@ -15,6 +15,13 @@ class StatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
 
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+
+        return (bool) ($user?->can('orders.view') || $user?->can('reports.view') || $user?->can('customers.view') || $user?->can('inventory.view'));
+    }
+
     protected function getStats(): array
     {
         $stats = Cache::remember('admin.dashboard.stats_overview', now()->addSeconds(60), function (): array {
@@ -81,31 +88,40 @@ class StatsOverview extends BaseWidget
         $pendingOrders = $stats['pending_orders'];
         $lowStockCount = $stats['low_stock'];
         $outOfStockCount = $stats['out_of_stock'];
+        $user = auth()->user();
+        $canSeeOrders = (bool) ($user?->can('orders.view') || $user?->can('reports.view'));
+        $cards = [];
 
-        return [
-            Stat::make(__('Total Revenue'), '৳ '.number_format($stats['total_revenue'], 2))
+        if ($canSeeOrders) {
+            $cards[] = Stat::make(__('Total Revenue'), '৳ '.number_format($stats['total_revenue'], 2))
                 ->description(__('Today: ৳ :amount', ['amount' => number_format($stats['today_revenue'], 2)]))
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->chart($stats['revenue_trend'])
-                ->color('success'),
+                ->color('success');
 
-            Stat::make(__('Total Orders'), number_format($stats['total_orders']))
+            $cards[] = Stat::make(__('Total Orders'), number_format($stats['total_orders']))
                 ->description($pendingOrders > 0 ? __(':count pending review', ['count' => $pendingOrders]) : __('All orders processed'))
                 ->descriptionIcon($pendingOrders > 0 ? 'heroicon-m-clock' : 'heroicon-m-check-circle')
                 ->chart($stats['orders_trend'])
-                ->color($pendingOrders > 0 ? 'warning' : 'primary'),
+                ->color($pendingOrders > 0 ? 'warning' : 'primary');
+        }
 
-            Stat::make(__('Total Customers'), number_format($stats['total_customers']))
+        if ($user?->can('customers.view')) {
+            $cards[] = Stat::make(__('Total Customers'), number_format($stats['total_customers']))
                 ->description(__(':count new this month', ['count' => $stats['new_customers_month']]))
                 ->descriptionIcon('heroicon-m-user-group')
                 ->chart($stats['customers_trend'])
-                ->color('info'),
+                ->color('info');
+        }
 
-            Stat::make(__('Stock Alert'), __(':count items', ['count' => number_format($lowStockCount)]))
+        if ($user?->can('inventory.view')) {
+            $cards[] = Stat::make(__('Stock Alert'), __(':count items', ['count' => number_format($lowStockCount)]))
                 ->description($outOfStockCount > 0 ? __(':count out of stock', ['count' => $outOfStockCount]) : ($lowStockCount > 0 ? __('Needs restock') : __('All items in stock')))
                 ->descriptionIcon($lowStockCount > 0 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-check-badge')
                 ->color($lowStockCount > 0 ? 'danger' : 'success')
-                ->url('/admin/inventory/stock-overview'),
-        ];
+                ->url('/admin/inventory/stock-overview');
+        }
+
+        return $cards;
     }
 }

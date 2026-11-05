@@ -16,6 +16,13 @@ class LatestOrders extends BaseWidget
 {
     protected static ?int $sort = 4;
 
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+
+        return (bool) ($user?->can('orders.view') || $user?->can('reports.view'));
+    }
+
     protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table

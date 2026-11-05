@@ -11,6 +11,13 @@ class OrderStatusChart extends ChartWidget
 {
     protected ?string $heading = 'Order Status Breakdown';
 
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+
+        return (bool) ($user?->can('orders.view') || $user?->can('reports.view'));
+    }
+
     public function getHeading(): string|Htmlable|null
     {
         return $this->heading ? __($this->heading) : null;

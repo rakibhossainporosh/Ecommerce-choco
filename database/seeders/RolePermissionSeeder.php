@@ -109,6 +109,14 @@ class RolePermissionSeeder extends Seeder
             'settings.update',
             'settings.delete',
             'activities.view',
+            'roles.view',
+            'roles.create',
+            'roles.update',
+            'roles.delete',
+            'users.view',
+            'users.create',
+            'users.update',
+            'users.delete',
         ];
 
         if ($this->isLegacyRp3bTestEnvironment()) {
